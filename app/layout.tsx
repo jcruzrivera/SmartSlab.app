@@ -25,15 +25,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hasClerkPublishableKey = Boolean(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  );
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-        <ClerkProvider>
+        {hasClerkPublishableKey ? (
+          <ClerkProvider>
+            <AppProviders>{children}</AppProviders>
+          </ClerkProvider>
+        ) : (
           <AppProviders>{children}</AppProviders>
-        </ClerkProvider>
+        )}
       </body>
     </html>
   );

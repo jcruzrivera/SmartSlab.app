@@ -1,4 +1,7 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  clerkMiddleware,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { hasRolePermission, type AppRole } from "@/lib/auth/roles";
@@ -6,6 +9,10 @@ import { hasRolePermission, type AppRole } from "@/lib/auth/roles";
 const isVendorRoute = createRouteMatcher(["/dashboard(.*)"]);
 const isBuyerRoute = createRouteMatcher(["/account(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const hasClerkConfig = Boolean(
+  process.env.CLERK_SECRET_KEY &&
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+);
 
 function getRoleFromClaims(sessionClaims: unknown): AppRole | undefined {
   if (typeof sessionClaims !== "object" || !sessionClaims) {
@@ -21,6 +28,10 @@ function getRoleFromClaims(sessionClaims: unknown): AppRole | undefined {
 }
 
 export default clerkMiddleware(async (auth, req) => {
+  if (!hasClerkConfig) {
+    return NextResponse.next();
+  }
+
   const { userId, sessionClaims, redirectToSignIn } = await auth();
   const needsAuth =
     isVendorRoute(req) || isBuyerRoute(req) || isAdminRoute(req);
