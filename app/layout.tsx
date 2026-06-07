@@ -8,6 +8,7 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteHeader } from "@/components/site/site-header";
@@ -79,6 +80,7 @@ export default function RootLayout({
         <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
           <SiteHeader authSlot={<GuestAuthSlot />} />
           <AppProviders>{children}</AppProviders>
+          <Analytics />
         </body>
       </html>
     );
@@ -94,6 +96,7 @@ export default function RootLayout({
           <SiteHeader authSlot={<ClerkAuthSlot />} />
           <AppProviders>{children}</AppProviders>
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
