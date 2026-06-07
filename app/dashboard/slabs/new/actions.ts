@@ -29,7 +29,7 @@ const createSlabSchema = z.object({
   quantity: z.coerce.number().int().positive().default(1),
   isNegotiable: z.boolean().default(false),
   notes: z.string().trim().max(2000).optional(),
-  imageUrl: z.string().trim().url().optional().or(z.literal("")),
+  imageUrls: z.array(z.string().url()).max(6).default([]),
 });
 
 export type CreateSlabState = {
@@ -69,7 +69,10 @@ export async function createSlabAction(
     quantity: optional(formData.get("quantity")) ?? 1,
     isNegotiable: formData.get("isNegotiable") === "on",
     notes: optional(formData.get("notes")),
-    imageUrl: optional(formData.get("imageUrl")) ?? "",
+    imageUrls: formData
+      .getAll("imageUrls")
+      .map((value) => (typeof value === "string" ? value.trim() : ""))
+      .filter((value) => value.length > 0),
   });
 
   if (!parsed.success) {
@@ -96,7 +99,7 @@ export async function createSlabAction(
       quantity: data.quantity,
       isNegotiable: data.isNegotiable,
       notes: data.notes,
-      imageUrl: data.imageUrl || undefined,
+      imageUrls: data.imageUrls,
     });
   } catch {
     return {

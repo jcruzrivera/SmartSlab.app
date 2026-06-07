@@ -7,6 +7,7 @@ import {
   createSlabAction,
   type CreateSlabState,
 } from "@/app/dashboard/slabs/new/actions";
+import { ImageUploader } from "@/components/slab/image-uploader";
 
 type MaterialOption = { id: string; name: string };
 
@@ -110,15 +111,10 @@ export function SlabForm({ materials }: { materials: MaterialOption[] }) {
         </Field>
       </div>
 
-      <Field label="Photo URL (optional)" htmlFor="imageUrl">
-        <input
-          id="imageUrl"
-          name="imageUrl"
-          type="url"
-          placeholder="https://..."
-          className={inputClass}
-        />
-      </Field>
+      <div className="flex flex-col gap-1.5">
+        <span className={labelClass}>Photos</span>
+        <ImageUploader />
+      </div>
 
       <Field label="Notes" htmlFor="notes">
         <textarea

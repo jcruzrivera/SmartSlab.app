@@ -117,7 +117,7 @@ export type CreateSlabInput = {
   quantity: number;
   isNegotiable: boolean;
   notes?: string;
-  imageUrl?: string;
+  imageUrls?: string[];
 };
 
 function computePricePerSqft(
@@ -170,12 +170,16 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
 
   const slabId = row.id;
 
-  if (input.imageUrl) {
-    await db.insert(slabImages).values({
-      slabId,
-      url: input.imageUrl,
-      isPrimary: true,
-    });
+  const imageUrls = (input.imageUrls ?? []).filter(Boolean);
+
+  if (imageUrls.length > 0) {
+    await db.insert(slabImages).values(
+      imageUrls.map((url, index) => ({
+        slabId,
+        url,
+        isPrimary: index === 0,
+      })),
+    );
   }
 
   return slabId;
