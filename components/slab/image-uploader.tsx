@@ -35,10 +35,13 @@ export function ImageUploader() {
       }
       setUrls((prev) => [...prev, ...uploaded]);
     } catch (uploadError) {
+      const message =
+        uploadError instanceof Error ? uploadError.message : String(uploadError);
+      const isTokenError = /token/i.test(message);
       setError(
-        uploadError instanceof Error
-          ? uploadError.message
-          : "Could not upload image. You can paste an image URL instead.",
+        isTokenError
+          ? "Photo storage isn't set up yet (Vercel Blob). Paste an image URL below to add photos for now."
+          : message || "Could not upload image. You can paste an image URL instead.",
       );
     } finally {
       setIsUploading(false);
