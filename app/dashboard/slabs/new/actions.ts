@@ -2,52 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 import { isDbConfigured } from "@/lib/db/client";
 import { createSlab } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { parseSlabFormData } from "@/lib/validations/slab-form";
 
-const createSlabSchema = z.object({
-  name: z.string().trim().min(2, "Name is too short").max(120),
-  type: z.enum(["full_slab", "remnant"]),
-  materialId: z.string().uuid().optional(),
-  finish: z.enum([
-    "polished",
-    "honed",
-    "leathered",
-    "brushed",
-    "sandblasted",
-    "other",
-  ]),
-  colorFamily: z.string().trim().max(60).optional(),
-  brandSupplier: z.string().trim().max(120).optional(),
-  city: z.string().trim().max(80).optional(),
-  state: z.string().trim().max(60).optional(),
-  zip: z.string().trim().max(20).optional(),
-  widthCm: z.coerce.number().positive().optional(),
-  heightCm: z.coerce.number().positive().optional(),
-  thicknessCm: z.coerce.number().positive().optional(),
-  price: z.coerce.number().min(0, "Price must be 0 or more"),
-  quantity: z.coerce.number().int().positive().default(1),
-  isNegotiable: z.boolean().default(false),
-  notes: z.string().trim().max(2000).optional(),
-  imageUrls: z.array(z.string().url()).max(6).default([]),
-});
-
-export type CreateSlabState = {
+export type SlabFormState = {
   error?: string;
 };
 
-function optional(value: FormDataEntryValue | null): string | undefined {
-  const text = typeof value === "string" ? value.trim() : "";
-  return text.length > 0 ? text : undefined;
-}
-
 export async function createSlabAction(
-  _prevState: CreateSlabState,
+  _prevState: SlabFormState,
   formData: FormData,
-): Promise<CreateSlabState> {
+): Promise<SlabFormState> {
   if (!isDbConfigured()) {
     return { error: "The marketplace database is not configured yet." };
   }
@@ -58,28 +26,7 @@ export async function createSlabAction(
     return { error: "You must be signed in to publish a listing." };
   }
 
-  const parsed = createSlabSchema.safeParse({
-    name: formData.get("name"),
-    type: formData.get("type"),
-    materialId: optional(formData.get("materialId")),
-    finish: formData.get("finish"),
-    colorFamily: optional(formData.get("colorFamily")),
-    brandSupplier: optional(formData.get("brandSupplier")),
-    city: optional(formData.get("city")),
-    state: optional(formData.get("state")),
-    zip: optional(formData.get("zip")),
-    widthCm: optional(formData.get("widthCm")),
-    heightCm: optional(formData.get("heightCm")),
-    thicknessCm: optional(formData.get("thicknessCm")),
-    price: formData.get("price"),
-    quantity: optional(formData.get("quantity")) ?? 1,
-    isNegotiable: formData.get("isNegotiable") === "on",
-    notes: optional(formData.get("notes")),
-    imageUrls: formData
-      .getAll("imageUrls")
-      .map((value) => (typeof value === "string" ? value.trim() : ""))
-      .filter((value) => value.length > 0),
-  });
+  const parsed = parseSlabFormData(formData);
 
   if (!parsed.success) {
     return {

@@ -141,6 +141,123 @@ function computePricePerSqft(
   return (price / sqft).toFixed(2);
 }
 
+export async function getSlabForVendor(
+  slabId: string,
+  vendorId: string,
+): Promise<SlabWithRelations | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  const db = getDb();
+  const row = await db.query.slabs.findFirst({
+    where: and(eq(slabs.id, slabId), eq(slabs.vendorId, vendorId)),
+    with: slabRelations,
+  });
+
+  return (row as SlabWithRelations | undefined) ?? null;
+}
+
+export type UpdateSlabInput = Omit<CreateSlabInput, "vendorId">;
+
+export async function updateSlab(
+  slabId: string,
+  vendorId: string,
+  input: UpdateSlabInput,
+): Promise<void> {
+  const db = getDb();
+
+  const existing = await db.query.slabs.findFirst({
+    where: and(eq(slabs.id, slabId), eq(slabs.vendorId, vendorId)),
+    columns: { id: true, status: true },
+  });
+
+  if (!existing) {
+    throw new Error("Listing not found.");
+  }
+
+  if (existing.status === "sold") {
+    throw new Error("Sold listings cannot be edited.");
+  }
+
+  await db
+    .update(slabs)
+    .set({
+      name: input.name,
+      type: input.type,
+      materialId: input.materialId,
+      finish: input.finish,
+      colorFamily: input.colorFamily,
+      brandSupplier: input.brandSupplier,
+      city: input.city,
+      state: input.state,
+      zip: input.zip,
+      widthCm: input.widthCm?.toString(),
+      heightCm: input.heightCm?.toString(),
+      thicknessCm: input.thicknessCm?.toString(),
+      price: input.price.toString(),
+      pricePerSqft: computePricePerSqft(
+        input.price,
+        input.widthCm,
+        input.heightCm,
+      ),
+      quantity: input.quantity,
+      isNegotiable: input.isNegotiable,
+      notes: input.notes,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(slabs.id, slabId), eq(slabs.vendorId, vendorId)));
+
+  await db.delete(slabImages).where(eq(slabImages.slabId, slabId));
+
+  const imageUrls = (input.imageUrls ?? []).filter(Boolean);
+
+  if (imageUrls.length > 0) {
+    await db.insert(slabImages).values(
+      imageUrls.map((url, index) => ({
+        slabId,
+        url,
+        isPrimary: index === 0,
+      })),
+    );
+  }
+}
+
+export async function deleteSlabForVendor(
+  slabId: string,
+  vendorId: string,
+): Promise<void> {
+  const db = getDb();
+
+  const existing = await db.query.slabs.findFirst({
+    where: and(eq(slabs.id, slabId), eq(slabs.vendorId, vendorId)),
+    columns: { id: true, status: true },
+  });
+
+  if (!existing) {
+    throw new Error("Listing not found.");
+  }
+
+  if (existing.status === "sold") {
+    throw new Error("Sold listings cannot be deleted.");
+  }
+
+  const pendingSale = await db.query.transactions.findFirst({
+    where: and(
+      eq(transactions.slabId, slabId),
+      eq(transactions.status, "pending"),
+    ),
+  });
+
+  if (pendingSale) {
+    throw new Error("This listing has a pending checkout and cannot be deleted.");
+  }
+
+  await db
+    .delete(slabs)
+    .where(and(eq(slabs.id, slabId), eq(slabs.vendorId, vendorId)));
+}
+
 export async function createSlab(input: CreateSlabInput): Promise<string> {
   const db = getDb();
   await ensureMaterials();

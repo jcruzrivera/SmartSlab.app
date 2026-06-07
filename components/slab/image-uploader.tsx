@@ -5,8 +5,12 @@ import { useRef, useState } from "react";
 
 const MAX_IMAGES = 6;
 
-export function ImageUploader() {
-  const [urls, setUrls] = useState<string[]>([]);
+type ImageUploaderProps = {
+  initialUrls?: string[];
+};
+
+export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
+  const [urls, setUrls] = useState<string[]>(initialUrls);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [manualUrl, setManualUrl] = useState("");
@@ -103,7 +107,7 @@ export function ImageUploader() {
               <button
                 type="button"
                 onClick={() => removeUrl(url)}
-                className="absolute right-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100"
+                className="absolute right-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100"
               >
                 Remove
               </button>

@@ -71,6 +71,7 @@ export default async function DashboardSlabsPage() {
                 <th className="px-4 py-3">Dimensions</th>
                 <th className="px-4 py-3">Price</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -99,6 +100,14 @@ export default async function DashboardSlabsPage() {
                     >
                       {slab.status}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/dashboard/slabs/${slab.id}/edit`}
+                      className="text-sm font-medium text-[#0d8fa8] hover:underline"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))}
