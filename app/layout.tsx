@@ -25,9 +25,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const hasClerkPublishableKey = Boolean(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  );
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+  const secretKey = process.env.CLERK_SECRET_KEY ?? "";
+  const hasClerkConfig =
+    publishableKey.startsWith("pk_") && secretKey.startsWith("sk_");
 
   return (
     <html
@@ -35,7 +36,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-        {hasClerkPublishableKey ? (
+        {hasClerkConfig ? (
           <ClerkProvider>
             <AppProviders>{children}</AppProviders>
           </ClerkProvider>
