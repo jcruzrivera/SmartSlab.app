@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BuyButton } from "@/components/payments/buy-button";
 import { getSlabById, getVendorContactForSlab } from "@/lib/db/slabs";
 import { isDbConfigured } from "@/lib/db/client";
 import { getCurrentDbUser } from "@/lib/db/users";
+import { isStripeConfigured } from "@/lib/stripe";
 import {
   formatDimensions,
   formatLocation,
@@ -16,6 +18,7 @@ export const dynamic = "force-dynamic";
 
 type SlabDetailPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ paid?: string; canceled?: string }>;
 };
 
 const finishLabels: Record<string, string> = {
@@ -27,8 +30,12 @@ const finishLabels: Record<string, string> = {
   other: "Other",
 };
 
-export default async function SlabDetailPage({ params }: SlabDetailPageProps) {
+export default async function SlabDetailPage({
+  params,
+  searchParams,
+}: SlabDetailPageProps) {
   const { slug } = await params;
+  const { paid, canceled } = await searchParams;
 
   if (!isDbConfigured()) {
     notFound();
@@ -185,14 +192,34 @@ export default async function SlabDetailPage({ params }: SlabDetailPageProps) {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button className="inline-flex h-11 items-center rounded-lg bg-[#1bb0ce] px-5 text-sm font-medium text-white transition hover:bg-[#0d8fa8]">
-              Request quote
-            </button>
-            <button className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-5 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-900">
-              Save
-            </button>
-          </div>
+          {paid ? (
+            <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              Payment received. The vendor's contact details are now unlocked
+              below.
+            </div>
+          ) : null}
+          {canceled ? (
+            <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+              Checkout canceled. You can try again whenever you're ready.
+            </div>
+          ) : null}
+
+          {slab.status === "available" ? (
+            isStripeConfigured() ? (
+              <BuyButton slabId={slab.id} />
+            ) : (
+              <button
+                disabled
+                className="inline-flex h-11 w-fit cursor-not-allowed items-center rounded-lg bg-slate-300 px-5 text-sm font-medium text-white"
+              >
+                Checkout coming soon
+              </button>
+            )
+          ) : (
+            <span className="inline-flex h-11 w-fit items-center rounded-lg bg-slate-200 px-5 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              No longer available
+            </span>
+          )}
         </div>
       </div>
     </main>

@@ -97,6 +97,46 @@ export async function getOrCreateCurrentDbUser(): Promise<DbUser | null> {
   });
 }
 
+export async function setStripeAccountId(
+  userId: string,
+  stripeAccountId: string,
+): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ stripeAccountId, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+}
+
+export async function setVendorVerified(
+  stripeAccountId: string,
+  isVerified: boolean,
+): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ isVerified, updatedAt: new Date() })
+    .where(eq(users.stripeAccountId, stripeAccountId));
+}
+
+export async function getDbUserById(id: string): Promise<DbUser | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  const db = getDb();
+  const row = await db.query.users.findFirst({ where: eq(users.id, id) });
+  return row ?? null;
+}
+
 export async function getCurrentDbUser(): Promise<DbUser | null> {
   if (!isDbConfigured()) {
     return null;

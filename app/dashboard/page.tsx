@@ -52,6 +52,15 @@ export default async function DashboardHomePage() {
           </p>
         </Link>
         <Link
+          href="/dashboard/payments"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+        >
+          <p className="font-medium">Payments &amp; payouts</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            Connect Stripe to receive payments for your slabs.
+          </p>
+        </Link>
+        <Link
           href="/browse"
           className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
         >
