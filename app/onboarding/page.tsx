@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 
 import { RoleOnboardingForm } from "@/components/auth/role-onboarding-form";
 import { hasValidClerkConfig } from "@/lib/auth/config";
+import { FALLBACK_ROUTES } from "@/lib/auth/roles";
+import { getCurrentDbUser } from "@/lib/db/users";
+
+export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
   if (!hasValidClerkConfig()) {
@@ -13,6 +17,12 @@ export default async function OnboardingPage() {
 
   if (!userId) {
     redirect("/sign-in");
+  }
+
+  // If the user already completed onboarding, send them to their workspace.
+  const existing = await getCurrentDbUser();
+  if (existing?.role) {
+    redirect(FALLBACK_ROUTES[existing.role]);
   }
 
   return (

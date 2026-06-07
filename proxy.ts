@@ -2,50 +2,25 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
 import { hasValidClerkConfig } from "@/lib/auth/config";
-import { hasRolePermission, parseAppRole } from "@/lib/auth/roles";
 
-const isVendorRoute = createRouteMatcher(["/dashboard(.*)"]);
-const isBuyerRoute = createRouteMatcher(["/account(.*)"]);
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
-const isApiRoute = createRouteMatcher(["/api(.*)"]);
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/account(.*)",
+  "/admin(.*)",
+  "/onboarding(.*)",
+]);
+
 const hasClerkConfig = hasValidClerkConfig();
 
 const withClerkMiddleware = hasClerkConfig
   ? clerkMiddleware(async (auth, req) => {
-      const { userId, sessionClaims, redirectToSignIn } = await auth();
-      const needsAuth =
-        isVendorRoute(req) ||
-        isBuyerRoute(req) ||
-        isAdminRoute(req) ||
-        isOnboardingRoute(req);
+      const { userId, redirectToSignIn } = await auth();
 
-      if (!userId && needsAuth) {
+      // Only gate on authentication here. Fine-grained role enforcement is
+      // handled in the server pages using the database, which avoids depending
+      // on a customized Clerk session token (a common cause of redirect loops).
+      if (!userId && isProtectedRoute(req)) {
         return redirectToSignIn({ returnBackUrl: req.url });
-      }
-
-      if (!userId) {
-        return NextResponse.next();
-      }
-
-      const role = parseAppRole(
-        (sessionClaims as { metadata?: { role?: string } })?.metadata?.role,
-      );
-
-      if (!role && !isOnboardingRoute(req) && !isApiRoute(req)) {
-        return NextResponse.redirect(new URL("/onboarding", req.url));
-      }
-
-      if (isAdminRoute(req) && !hasRolePermission(role, "admin")) {
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
-      }
-
-      if (isVendorRoute(req) && !hasRolePermission(role, "vendor")) {
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
-      }
-
-      if (isBuyerRoute(req) && !hasRolePermission(role, "buyer")) {
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
 
       return NextResponse.next();

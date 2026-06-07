@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type RoleOption = "buyer" | "vendor" | "both";
@@ -24,7 +23,6 @@ const roleOptions: Array<{ value: RoleOption; title: string; subtitle: string }>
 ];
 
 export function RoleOnboardingForm() {
-  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<RoleOption>("buyer");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,12 +47,11 @@ export function RoleOnboardingForm() {
         throw new Error(payload?.error ?? "Unable to save role.");
       }
 
-      if (selectedRole === "buyer") {
-        router.push("/account");
-        return;
-      }
+      const destination = selectedRole === "buyer" ? "/account" : "/dashboard";
 
-      router.push("/dashboard");
+      // Full navigation so the middleware and server components re-run with the
+      // freshly persisted role instead of a cached client transition.
+      window.location.assign(destination);
     } catch (submitError) {
       setError(
         submitError instanceof Error
