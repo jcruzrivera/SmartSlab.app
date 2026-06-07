@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
+import { hasValidClerkConfig } from "@/lib/auth/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,10 +26,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-  const secretKey = process.env.CLERK_SECRET_KEY ?? "";
-  const hasClerkConfig =
-    publishableKey.startsWith("pk_") && secretKey.startsWith("sk_");
+  const hasClerkConfig = hasValidClerkConfig();
 
   return (
     <html

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-14">
@@ -13,6 +15,26 @@ export default function Home() {
         Drizzle schema for all core entities, Neon client setup, and role-based
         route protection for vendor, buyer, and admin areas.
       </p>
+      <div className="mt-1 flex flex-wrap gap-3">
+        <Link
+          href="/sign-up"
+          className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+        >
+          Create account
+        </Link>
+        <Link
+          href="/sign-in"
+          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-900"
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/browse"
+          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-900"
+        >
+          Browse slabs
+        </Link>
+      </div>
       <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <p className="font-medium">Vendor Portal</p>

@@ -15,7 +15,10 @@ SmartSlab is a Next.js 16 full-stack marketplace and inventory platform for ston
 - App shell, base routes, and SmartSlab brand defaults
 - Drizzle schema for core domain entities (users, locations, materials, slabs, images, transactions, messages, reviews)
 - Neon DB client and Drizzle config
-- Next.js `proxy.ts` with Clerk-based role protection for `/dashboard`, `/account`, and `/admin`
+- Clerk sign-in/sign-up and role onboarding flow (`/sign-in`, `/sign-up`, `/onboarding`)
+- Next.js `proxy.ts` with Clerk-based role protection for `/dashboard`, `/account`, and `/admin` when Clerk is configured
+- Onboarding API endpoint to save user role in Clerk metadata
+- Clerk webhook endpoint (`/api/webhooks/clerk`) to sync users into Neon
 - Environment variable template in `.env.example`
 - RLS bootstrap SQL in `drizzle/0000_bootstrap_rls.sql`
 
