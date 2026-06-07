@@ -10,6 +10,7 @@ import {
 } from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
+import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { hasValidClerkConfig } from "@/lib/auth/config";
 import "./globals.css";
@@ -79,6 +80,7 @@ export default function RootLayout({
         <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
           <SiteHeader authSlot={<GuestAuthSlot />} />
           <AppProviders>{children}</AppProviders>
+          <SiteFooter />
         </body>
       </html>
     );
@@ -93,6 +95,7 @@ export default function RootLayout({
         <ClerkProvider>
           <SiteHeader authSlot={<ClerkAuthSlot />} />
           <AppProviders>{children}</AppProviders>
+          <SiteFooter />
         </ClerkProvider>
       </body>
     </html>
