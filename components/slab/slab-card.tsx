@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { SlabWithRelations } from "@/lib/db/slabs";
-import { formatLocation, formatPrice } from "@/lib/format";
+import { formatLocation, formatPrice, formatSqft } from "@/lib/format";
 
 const typeLabels: Record<string, string> = {
   full_slab: "Full slab",
@@ -14,6 +14,7 @@ export function SlabCard({ slab }: { slab: SlabWithRelations }) {
   const location = formatLocation(slab.vendor?.city, slab.vendor?.state);
   const vendorName =
     slab.vendor?.companyName ?? slab.vendor?.contactName ?? "SmartSlab vendor";
+  const sqft = formatSqft(slab.widthCm, slab.heightCm);
 
   return (
     <Link
@@ -52,6 +53,9 @@ export function SlabCard({ slab }: { slab: SlabWithRelations }) {
           {vendorName}
           {location ? ` · ${location}` : ""}
         </p>
+        {sqft ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400">{sqft}</p>
+        ) : null}
         <div className="mt-2 flex items-center justify-between">
           <span className="text-lg font-semibold">{formatPrice(slab.price)}</span>
           {slab.isNegotiable ? (

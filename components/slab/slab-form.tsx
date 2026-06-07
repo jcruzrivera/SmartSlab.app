@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import {
@@ -34,6 +34,15 @@ export function SlabForm({ materials }: { materials: MaterialOption[] }) {
     createSlabAction,
     {},
   );
+  const [widthIn, setWidthIn] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+
+  const w = Number.parseFloat(widthIn);
+  const h = Number.parseFloat(heightIn);
+  const totalSqft =
+    Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0
+      ? (w * h) / 144
+      : null;
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -88,15 +97,42 @@ export function SlabForm({ materials }: { materials: MaterialOption[] }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Width (cm)" htmlFor="widthCm">
-          <input id="widthCm" name="widthCm" type="number" step="0.1" min="0" className={inputClass} />
+        <Field label="Width (in)" htmlFor="widthCm">
+          <input
+            id="widthCm"
+            name="widthCm"
+            type="number"
+            step="0.1"
+            min="0"
+            value={widthIn}
+            onChange={(event) => setWidthIn(event.target.value)}
+            className={inputClass}
+          />
         </Field>
-        <Field label="Height (cm)" htmlFor="heightCm">
-          <input id="heightCm" name="heightCm" type="number" step="0.1" min="0" className={inputClass} />
+        <Field label="Height (in)" htmlFor="heightCm">
+          <input
+            id="heightCm"
+            name="heightCm"
+            type="number"
+            step="0.1"
+            min="0"
+            value={heightIn}
+            onChange={(event) => setHeightIn(event.target.value)}
+            className={inputClass}
+          />
         </Field>
-        <Field label="Thickness (cm)" htmlFor="thicknessCm">
+        <Field label="Thickness (in)" htmlFor="thicknessCm">
           <input id="thicknessCm" name="thicknessCm" type="number" step="0.1" min="0" className={inputClass} />
         </Field>
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm dark:border-slate-800 dark:bg-slate-900">
+        <span className="text-slate-600 dark:text-slate-300">
+          Total area (width × height ÷ 144)
+        </span>
+        <span className="font-semibold">
+          {totalSqft !== null ? `${totalSqft.toFixed(1)} sq ft` : "—"}
+        </span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

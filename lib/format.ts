@@ -49,34 +49,68 @@ function toNumber(value: string | number | null | undefined): number | null {
   return Number.isNaN(numeric) ? null : numeric;
 }
 
+/**
+ * Dimensions across the app are stored and displayed in inches.
+ */
 export function formatDimensions(
-  widthCm: string | number | null | undefined,
-  heightCm: string | number | null | undefined,
-  thicknessCm: string | number | null | undefined,
+  width: string | number | null | undefined,
+  height: string | number | null | undefined,
+  thickness: string | number | null | undefined,
 ): string {
-  const width = toNumber(widthCm);
-  const height = toNumber(heightCm);
-  const thickness = toNumber(thicknessCm);
+  const w = toNumber(width);
+  const h = toNumber(height);
+  const t = toNumber(thickness);
 
-  if (width === null && height === null && thickness === null) {
+  if (w === null && h === null && t === null) {
     return "Dimensions not provided";
   }
 
   const parts: string[] = [];
 
-  if (width !== null && height !== null) {
-    parts.push(`${trim(width)} × ${trim(height)} cm`);
-  } else if (width !== null) {
-    parts.push(`W ${trim(width)} cm`);
-  } else if (height !== null) {
-    parts.push(`H ${trim(height)} cm`);
+  if (w !== null && h !== null) {
+    parts.push(`${trim(w)}" × ${trim(h)}"`);
+  } else if (w !== null) {
+    parts.push(`W ${trim(w)}"`);
+  } else if (h !== null) {
+    parts.push(`H ${trim(h)}"`);
   }
 
-  if (thickness !== null) {
-    parts.push(`${trim(thickness)} cm thick`);
+  if (t !== null) {
+    parts.push(`${trim(t)}" thick`);
   }
 
   return parts.join(" · ");
+}
+
+/**
+ * Total area of the piece in square feet, computed from width × height (in
+ * inches) divided by 144. Returns null when either dimension is missing.
+ */
+export function computeSqft(
+  width: string | number | null | undefined,
+  height: string | number | null | undefined,
+): number | null {
+  const w = toNumber(width);
+  const h = toNumber(height);
+
+  if (w === null || h === null || w <= 0 || h <= 0) {
+    return null;
+  }
+
+  return (w * h) / 144;
+}
+
+export function formatSqft(
+  width: string | number | null | undefined,
+  height: string | number | null | undefined,
+): string | null {
+  const sqft = computeSqft(width, height);
+
+  if (sqft === null) {
+    return null;
+  }
+
+  return `${sqft.toFixed(1)} sq ft`;
 }
 
 export function formatLocation(

@@ -10,7 +10,8 @@ export function ImageUploader() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [manualUrl, setManualUrl] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const remaining = MAX_IMAGES - urls.length;
 
@@ -41,8 +42,11 @@ export function ImageUploader() {
       );
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      if (galleryInputRef.current) {
+        galleryInputRef.current.value = "";
+      }
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = "";
       }
     }
   }
@@ -107,32 +111,51 @@ export function ImageUploader() {
 
       {remaining > 0 ? (
         <div className="flex flex-col gap-2">
-          <label
-            className={`flex h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-sm text-slate-500 transition hover:border-[#1bb0ce] dark:border-slate-700 ${
-              isUploading ? "pointer-events-none opacity-60" : ""
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(event) => handleFiles(event.target.files)}
-            />
-            {isUploading ? (
-              <span>Uploading...</span>
-            ) : (
-              <>
-                <span className="font-medium text-slate-700 dark:text-slate-200">
-                  Click to upload photos
-                </span>
-                <span className="mt-0.5 text-xs">
-                  JPG, PNG, WEBP up to 10MB · {remaining} left
-                </span>
-              </>
-            )}
-          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label
+              className={`flex h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-sm text-slate-500 transition hover:border-[#1bb0ce] dark:border-slate-700 ${
+                isUploading ? "pointer-events-none opacity-60" : ""
+              }`}
+            >
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(event) => handleFiles(event.target.files)}
+              />
+              <span className="font-medium text-slate-700 dark:text-slate-200">
+                Gallery / files
+              </span>
+              <span className="mt-0.5 text-xs">JPG · PNG · WEBP · 10MB</span>
+            </label>
+
+            <label
+              className={`flex h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-sm text-slate-500 transition hover:border-[#1bb0ce] dark:border-slate-700 ${
+                isUploading ? "pointer-events-none opacity-60" : ""
+              }`}
+            >
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(event) => handleFiles(event.target.files)}
+              />
+              <span className="font-medium text-slate-700 dark:text-slate-200">
+                Take photo
+              </span>
+              <span className="mt-0.5 text-xs">Use device camera</span>
+            </label>
+          </div>
+
+          {isUploading ? (
+            <p className="text-xs text-slate-500">Uploading… please wait.</p>
+          ) : (
+            <p className="text-xs text-slate-500">{remaining} photo(s) left</p>
+          )}
 
           <div className="flex gap-2">
             <input

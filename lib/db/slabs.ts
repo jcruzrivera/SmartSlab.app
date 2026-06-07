@@ -122,14 +122,15 @@ export type CreateSlabInput = {
 
 function computePricePerSqft(
   price: number,
-  widthCm?: number,
-  heightCm?: number,
+  widthIn?: number,
+  heightIn?: number,
 ): string | undefined {
-  if (!widthCm || !heightCm || widthCm <= 0 || heightCm <= 0) {
+  if (!widthIn || !heightIn || widthIn <= 0 || heightIn <= 0) {
     return undefined;
   }
 
-  const sqft = (widthCm * heightCm) / 929.0304;
+  // Dimensions are in inches: square feet = (w * h) / 144.
+  const sqft = (widthIn * heightIn) / 144;
 
   if (sqft <= 0) {
     return undefined;

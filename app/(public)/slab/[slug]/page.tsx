@@ -8,6 +8,7 @@ import {
   formatLocation,
   formatPrice,
   formatPricePrecise,
+  formatSqft,
 } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -117,6 +118,9 @@ export default async function SlabDetailPage({ params }: SlabDetailPageProps) {
           <dl className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 p-4 text-sm dark:border-slate-800">
             <Detail label="Dimensions">
               {formatDimensions(slab.widthCm, slab.heightCm, slab.thicknessCm)}
+            </Detail>
+            <Detail label="Total area">
+              {formatSqft(slab.widthCm, slab.heightCm) ?? "—"}
             </Detail>
             <Detail label="Finish">
               {finishLabels[slab.finish] ?? slab.finish}
