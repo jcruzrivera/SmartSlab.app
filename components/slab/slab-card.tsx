@@ -1,0 +1,66 @@
+import Link from "next/link";
+
+import type { SlabWithRelations } from "@/lib/db/slabs";
+import { formatLocation, formatPrice } from "@/lib/format";
+
+const typeLabels: Record<string, string> = {
+  full_slab: "Full slab",
+  remnant: "Remnant",
+};
+
+export function SlabCard({ slab }: { slab: SlabWithRelations }) {
+  const primaryImage =
+    slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
+  const location = formatLocation(slab.vendor?.city, slab.vendor?.state);
+  const vendorName =
+    slab.vendor?.companyName ?? slab.vendor?.contactName ?? "SmartSlab vendor";
+
+  return (
+    <Link
+      href={`/slab/${slab.id}`}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+        {primaryImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={primaryImage}
+            alt={slab.name}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">
+            No photo yet
+          </div>
+        )}
+        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+          {typeLabels[slab.type] ?? slab.type}
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-1 p-4">
+        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#0d8fa8]">
+          {slab.material?.name ?? "Stone"}
+          {slab.colorFamily ? (
+            <span className="text-slate-400">· {slab.colorFamily}</span>
+          ) : null}
+        </div>
+        <h3 className="line-clamp-1 text-base font-semibold tracking-tight">
+          {slab.name}
+        </h3>
+        <p className="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">
+          {vendorName}
+          {location ? ` · ${location}` : ""}
+        </p>
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-lg font-semibold">{formatPrice(slab.price)}</span>
+          {slab.isNegotiable ? (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+              Negotiable
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </Link>
+  );
+}

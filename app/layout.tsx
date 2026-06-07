@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import {
   ClerkProvider,
@@ -9,6 +10,7 @@ import {
 } from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
+import { SiteHeader } from "@/components/site/site-header";
 import { hasValidClerkConfig } from "@/lib/auth/config";
 import "./globals.css";
 
@@ -23,9 +25,43 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartSlab",
-  description: "Slab & remnant inventory and B2B marketplace platform.",
+  title: "SmartSlab — Slab & Remnant Marketplace",
+  description:
+    "Buy and sell natural stone slabs and remnants. Granite, quartz, quartzite, marble and more.",
 };
+
+function ClerkAuthSlot() {
+  return (
+    <>
+      <Show when="signed-out">
+        <SignInButton mode="modal">
+          <button className="text-sm font-medium text-slate-600 transition hover:text-[#0d8fa8] dark:text-slate-300">
+            Sign in
+          </button>
+        </SignInButton>
+        <SignUpButton mode="modal">
+          <button className="inline-flex h-9 items-center rounded-lg bg-[#1bb0ce] px-3.5 text-sm font-medium text-white transition hover:bg-[#0d8fa8]">
+            Get started
+          </button>
+        </SignUpButton>
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </>
+  );
+}
+
+function GuestAuthSlot() {
+  return (
+    <Link
+      href="/browse"
+      className="inline-flex h-9 items-center rounded-lg bg-[#1bb0ce] px-3.5 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+    >
+      Browse slabs
+    </Link>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -34,30 +70,30 @@ export default function RootLayout({
 }>) {
   const hasClerkConfig = hasValidClerkConfig();
 
+  if (!hasClerkConfig) {
+    return (
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
+        <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+          <SiteHeader authSlot={<GuestAuthSlot />} />
+          <AppProviders>{children}</AppProviders>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-        {hasClerkConfig ? (
-          <ClerkProvider>
-            <header className="border-b border-slate-200 bg-white/90 px-6 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
-              <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3">
-                <Show when="signed-out">
-                  <SignInButton />
-                  <SignUpButton />
-                </Show>
-                <Show when="signed-in">
-                  <UserButton />
-                </Show>
-              </div>
-            </header>
-            <AppProviders>{children}</AppProviders>
-          </ClerkProvider>
-        ) : (
+      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+        <ClerkProvider>
+          <SiteHeader authSlot={<ClerkAuthSlot />} />
           <AppProviders>{children}</AppProviders>
-        )}
+        </ClerkProvider>
       </body>
     </html>
   );

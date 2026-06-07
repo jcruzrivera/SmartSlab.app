@@ -3,15 +3,28 @@ import { drizzle } from "drizzle-orm/neon-http";
 
 import * as schema from "@/lib/db/schema";
 
-const databaseUrl = process.env.DATABASE_URL;
+export type Database = ReturnType<typeof createDb>;
 
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required to initialize the database client.");
+let cached: Database | null = null;
+
+export function isDbConfigured(): boolean {
+  return Boolean(process.env.DATABASE_URL);
 }
 
-const sql = neon(databaseUrl);
+function createDb(databaseUrl: string) {
+  return drizzle({ client: neon(databaseUrl), schema });
+}
 
-export const db = drizzle({
-  client: sql,
-  schema,
-});
+export function getDb(): Database {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is required to initialize the database client.");
+  }
+
+  if (!cached) {
+    cached = createDb(databaseUrl);
+  }
+
+  return cached;
+}
