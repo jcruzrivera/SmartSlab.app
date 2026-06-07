@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { ensureMaterials } from "@/lib/db/materials";
@@ -8,6 +8,8 @@ import {
   slabs,
   slabStatusEnum,
   slabTypeEnum,
+  transactions,
+  users,
 } from "@/lib/db/schema";
 
 export type SlabFinish = (typeof finishTypeEnum.enumValues)[number];
@@ -20,12 +22,12 @@ export type SlabWithRelations = typeof slabs.$inferSelect & {
   vendor: {
     id: string;
     companyName: string | null;
-    contactName: string | null;
-    city: string | null;
-    state: string | null;
   } | null;
 };
 
+// Public projection: never expose the vendor's address, phone, or email here.
+// Exact contact details are gated behind a paid transaction (see
+// getVendorContactForSlab).
 const slabRelations = {
   images: true,
   material: {
@@ -35,9 +37,6 @@ const slabRelations = {
     columns: {
       id: true,
       companyName: true,
-      contactName: true,
-      city: true,
-      state: true,
     },
   },
 } as const;
@@ -110,6 +109,9 @@ export type CreateSlabInput = {
   finish: SlabFinish;
   colorFamily?: string;
   brandSupplier?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
   widthCm?: number;
   heightCm?: number;
   thicknessCm?: number;
@@ -153,6 +155,9 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
       finish: input.finish,
       colorFamily: input.colorFamily,
       brandSupplier: input.brandSupplier,
+      city: input.city,
+      state: input.state,
+      zip: input.zip,
       widthCm: input.widthCm?.toString(),
       heightCm: input.heightCm?.toString(),
       thicknessCm: input.thicknessCm?.toString(),
@@ -184,6 +189,74 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
   }
 
   return slabId;
+}
+
+export type VendorContact = {
+  contactName: string | null;
+  companyName: string | null;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+};
+
+// Transaction statuses that grant a buyer access to the vendor's private
+// contact details (i.e. once payment has been processed by Stripe).
+const PAID_STATUSES = ["paid", "shipped", "delivered"] as const;
+
+/**
+ * Returns the vendor's full contact details for a slab ONLY when the given
+ * buyer has a paid transaction for it. This prevents buyers from contacting
+ * vendors directly and bypassing the platform before payment.
+ */
+export async function getVendorContactForSlab(
+  slabId: string,
+  buyerId: string | null,
+): Promise<VendorContact | null> {
+  if (!isDbConfigured() || !buyerId) {
+    return null;
+  }
+
+  const db = getDb();
+
+  const paid = await db.query.transactions.findFirst({
+    where: and(
+      eq(transactions.slabId, slabId),
+      eq(transactions.buyerId, buyerId),
+      inArray(transactions.status, [...PAID_STATUSES]),
+    ),
+  });
+
+  if (!paid) {
+    return null;
+  }
+
+  const slab = await db.query.slabs.findFirst({
+    where: eq(slabs.id, slabId),
+    columns: { vendorId: true },
+  });
+
+  if (!slab) {
+    return null;
+  }
+
+  const vendor = await db.query.users.findFirst({
+    where: eq(users.id, slab.vendorId),
+    columns: {
+      contactName: true,
+      companyName: true,
+      email: true,
+      phone: true,
+      address: true,
+      city: true,
+      state: true,
+      zip: true,
+    },
+  });
+
+  return vendor ?? null;
 }
 
 export async function setSlabStatus(

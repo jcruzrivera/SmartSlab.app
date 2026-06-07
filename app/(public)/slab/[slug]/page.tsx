@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getSlabById } from "@/lib/db/slabs";
+import { getSlabById, getVendorContactForSlab } from "@/lib/db/slabs";
 import { isDbConfigured } from "@/lib/db/client";
+import { getCurrentDbUser } from "@/lib/db/users";
 import {
   formatDimensions,
   formatLocation,
@@ -42,9 +43,15 @@ export default async function SlabDetailPage({ params }: SlabDetailPageProps) {
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
   const gallery = slab.images.filter((image) => image.url !== primaryImage);
-  const location = formatLocation(slab.vendor?.city, slab.vendor?.state);
-  const vendorName =
-    slab.vendor?.companyName ?? slab.vendor?.contactName ?? "SmartSlab vendor";
+  const location = formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
+  const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
+
+  // Reveal the vendor's exact address/phone only after the viewer has paid.
+  const viewer = await getCurrentDbUser();
+  const vendorContact = await getVendorContactForSlab(
+    slab.id,
+    viewer?.id ?? null,
+  );
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -143,6 +150,39 @@ export default async function SlabDetailPage({ params }: SlabDetailPageProps) {
             {location ? (
               <p className="mt-1 text-sm text-slate-500">{location}</p>
             ) : null}
+
+            {vendorContact ? (
+              <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-sm dark:border-slate-700">
+                <p className="font-medium text-emerald-600 dark:text-emerald-400">
+                  Contact details unlocked
+                </p>
+                {vendorContact.contactName ? (
+                  <p>{vendorContact.contactName}</p>
+                ) : null}
+                {vendorContact.phone ? <p>{vendorContact.phone}</p> : null}
+                <p>{vendorContact.email}</p>
+                {vendorContact.address ? (
+                  <p className="text-slate-500">
+                    {[
+                      vendorContact.address,
+                      vendorContact.city,
+                      vendorContact.state,
+                      vendorContact.zip,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="mt-3 flex items-start gap-2 border-t border-slate-200 pt-3 text-sm text-slate-500 dark:border-slate-700">
+                <span aria-hidden>🔒</span>
+                <span>
+                  Exact address and phone are shared securely after your payment
+                  is processed through SmartSlab.
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-3">

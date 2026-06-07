@@ -135,6 +135,25 @@ export function SlabForm({ materials }: { materials: MaterialOption[] }) {
         </span>
       </div>
 
+      <div className="flex flex-col gap-2 rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+        <p className="text-sm font-medium">Location</p>
+        <p className="text-xs text-slate-500">
+          Only city, state and ZIP are shown publicly. Your exact address and
+          phone stay private until a buyer completes payment.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="City" htmlFor="city">
+            <input id="city" name="city" placeholder="e.g. Miami" className={inputClass} />
+          </Field>
+          <Field label="State" htmlFor="state">
+            <input id="state" name="state" placeholder="e.g. FL" className={inputClass} />
+          </Field>
+          <Field label="ZIP code" htmlFor="zip">
+            <input id="zip" name="zip" placeholder="e.g. 33101" className={inputClass} />
+          </Field>
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Price (USD)" htmlFor="price">
           <input id="price" name="price" type="number" step="0.01" min="0" required className={inputClass} />

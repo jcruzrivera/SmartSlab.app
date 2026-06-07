@@ -11,9 +11,9 @@ const typeLabels: Record<string, string> = {
 export function SlabCard({ slab }: { slab: SlabWithRelations }) {
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
-  const location = formatLocation(slab.vendor?.city, slab.vendor?.state);
-  const vendorName =
-    slab.vendor?.companyName ?? slab.vendor?.contactName ?? "SmartSlab vendor";
+  const location =
+    formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
+  const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
   const sqft = formatSqft(slab.widthCm, slab.heightCm);
 
   return (
