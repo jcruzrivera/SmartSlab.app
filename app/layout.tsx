@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+import {
+  ClerkProvider,
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { hasValidClerkConfig } from "@/lib/auth/config";
@@ -36,6 +42,17 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
         {hasClerkConfig ? (
           <ClerkProvider>
+            <header className="border-b border-slate-200 bg-white/90 px-6 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+              <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3">
+                <Show when="signed-out">
+                  <SignInButton />
+                  <SignUpButton />
+                </Show>
+                <Show when="signed-in">
+                  <UserButton />
+                </Show>
+              </div>
+            </header>
             <AppProviders>{children}</AppProviders>
           </ClerkProvider>
         ) : (
