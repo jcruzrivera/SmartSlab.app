@@ -127,6 +127,42 @@ export async function setVendorVerified(
     .where(eq(users.stripeAccountId, stripeAccountId));
 }
 
+export type UserProfileInput = {
+  companyName?: string | null;
+  contactName?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  country?: string | null;
+};
+
+export async function updateUserProfile(
+  userId: string,
+  input: UserProfileInput,
+): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({
+      companyName: input.companyName ?? null,
+      contactName: input.contactName ?? null,
+      phone: input.phone ?? null,
+      address: input.address ?? null,
+      city: input.city ?? null,
+      state: input.state ?? null,
+      zip: input.zip ?? null,
+      country: input.country ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+}
+
 export async function getDbUserById(id: string): Promise<DbUser | null> {
   if (!isDbConfigured()) {
     return null;

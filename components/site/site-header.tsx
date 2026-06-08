@@ -8,7 +8,9 @@ const navItems: NavItem[] = [
   { href: "/browse", label: "Browse slabs" },
   { href: "/dashboard/slabs/new", label: "Sell a slab" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/sales", label: "Sales" },
   { href: "/dashboard/payments", label: "Payments" },
+  { href: "/account", label: "My account" },
 ];
 
 export function SiteHeader({ authSlot }: { authSlot?: ReactNode }) {

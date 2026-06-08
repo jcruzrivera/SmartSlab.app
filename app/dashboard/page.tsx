@@ -52,6 +52,15 @@ export default async function DashboardHomePage() {
           </p>
         </Link>
         <Link
+          href="/dashboard/sales"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+        >
+          <p className="font-medium">Sales &amp; orders</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            Track orders and earnings from your listings.
+          </p>
+        </Link>
+        <Link
           href="/dashboard/payments"
           className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
         >

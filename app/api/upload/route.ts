@@ -2,6 +2,17 @@ import { auth } from "@clerk/nextjs/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
+// Health-check: lets you verify (in the browser) whether the running server
+// actually has the Blob token loaded and the session is recognized. Does NOT
+// expose the token value.
+export async function GET(): Promise<NextResponse> {
+  const { userId } = await auth();
+  return NextResponse.json({
+    blobConfigured: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    signedIn: Boolean(userId),
+  });
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json(

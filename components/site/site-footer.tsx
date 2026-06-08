@@ -30,6 +30,7 @@ export function SiteFooter() {
           <FooterLink href="/browse">Browse all</FooterLink>
           <FooterLink href="/dashboard/slabs/new">Sell a slab</FooterLink>
           <FooterLink href="/dashboard">Vendor dashboard</FooterLink>
+          <FooterLink href="/dashboard/sales">Sales &amp; orders</FooterLink>
           <FooterLink href="/dashboard/payments">Payments</FooterLink>
         </FooterColumn>
 
