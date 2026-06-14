@@ -1,8 +1,15 @@
 import Link from "next/link";
 
+import { EngagementMetrics } from "@/components/dashboard/engagement-metrics";
+import { GettingStarted } from "@/components/dashboard/getting-started";
+import { MarketplacePerformance } from "@/components/dashboard/marketplace-performance";
+import { VerificationBadge } from "@/components/dashboard/verification-badge";
+import { WalletPreview } from "@/components/dashboard/wallet-preview";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
+import { listSalesByVendor } from "@/lib/db/transactions";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { buildVendorInsights } from "@/lib/dashboard/insights";
 import { formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -11,12 +18,15 @@ export default async function DashboardHomePage() {
   const dbReady = isDbConfigured();
   const user = dbReady ? await getOrCreateCurrentDbUser() : null;
   const slabs = user ? await listSlabsByVendor(user.id) : [];
+  const sales = user ? await listSalesByVendor(user.id) : [];
 
   const activeCount = slabs.filter((slab) => slab.status === "available").length;
   const soldCount = slabs.filter((slab) => slab.status === "sold").length;
   const inventoryValue = slabs
     .filter((slab) => slab.status === "available")
     .reduce((sum, slab) => sum + Number(slab.price ?? 0), 0);
+
+  const insights = buildVendorInsights({ user, slabs, sales });
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -40,6 +50,8 @@ export default async function DashboardHomePage() {
         <Metric label="Inventory value" value={formatPrice(inventoryValue)} />
         <Metric label="Sold" value={soldCount.toString()} />
       </div>
+
+      <EngagementMetrics engagement={insights.engagement} />
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
         <Link
@@ -78,6 +90,19 @@ export default async function DashboardHomePage() {
             See how buyers discover slabs across SmartSlab.
           </p>
         </Link>
+      </div>
+
+      <div className="mt-8 grid gap-4 lg:grid-cols-2">
+        <GettingStarted steps={insights.onboarding} />
+        <VerificationBadge status={insights.verification} />
+      </div>
+
+      <div className="mt-8">
+        <MarketplacePerformance performance={insights.performance} />
+      </div>
+
+      <div className="mt-8">
+        <WalletPreview wallet={insights.wallet} />
       </div>
     </main>
   );
