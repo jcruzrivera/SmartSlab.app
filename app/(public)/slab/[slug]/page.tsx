@@ -1,14 +1,15 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { BuyButton } from "@/components/payments/buy-button";
 import { getSlabById, getVendorContactForSlab } from "@/lib/db/slabs";
 import { isDbConfigured } from "@/lib/db/client";
 import { getCurrentDbUser } from "@/lib/db/users";
+import { fulfillCheckoutSession } from "@/lib/payments/fulfill";
 import { isStripeConfigured } from "@/lib/stripe";
+import { getOrigin } from "@/lib/url";
 import {
   formatDimensions,
-  formatLocation,
   formatPrice,
   formatPricePrecise,
   formatSqft,
@@ -18,7 +19,11 @@ export const dynamic = "force-dynamic";
 
 type SlabDetailPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ paid?: string; canceled?: string }>;
+  searchParams: Promise<{
+    paid?: string;
+    canceled?: string;
+    session_id?: string;
+  }>;
 };
 
 const finishLabels: Record<string, string> = {
@@ -35,10 +40,22 @@ export default async function SlabDetailPage({
   searchParams,
 }: SlabDetailPageProps) {
   const { slug } = await params;
-  const { paid, canceled } = await searchParams;
+  const { paid, canceled, session_id: sessionId } = await searchParams;
 
   if (!isDbConfigured()) {
     notFound();
+  }
+
+  // Fallback fulfillment: if the buyer just returned from Stripe Checkout, verify
+  // and complete the order here so contact details unlock immediately even when
+  // the webhook is delayed or not configured.
+  if (paid && sessionId) {
+    try {
+      const origin = await getOrigin();
+      await fulfillCheckoutSession(sessionId, origin);
+    } catch {
+      // Non-fatal: the webhook remains the source of truth.
+    }
   }
 
   const slab = await getSlabById(slug);
@@ -50,7 +67,6 @@ export default async function SlabDetailPage({
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
   const gallery = slab.images.filter((image) => image.url !== primaryImage);
-  const location = formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
   const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
 
   // Reveal the vendor's exact address/phone only after the viewer has paid.
@@ -62,12 +78,13 @@ export default async function SlabDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
-      <Link
-        href="/browse"
-        className="text-sm font-medium text-slate-500 transition hover:text-[#0d8fa8]"
-      >
-        ← Back to browse
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Browse", href: "/browse" },
+          { label: slab.name },
+        ]}
+      />
 
       <div className="mt-4 grid gap-8 lg:grid-cols-2">
         <div className="flex flex-col gap-3">
@@ -153,10 +170,9 @@ export default async function SlabDetailPage({
           ) : null}
 
           <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
-            <p className="text-sm font-medium">Sold by {vendorName}</p>
-            {location ? (
-              <p className="mt-1 text-sm text-slate-500">{location}</p>
-            ) : null}
+            <p className="text-sm font-medium">
+              {vendorContact ? `Sold by ${vendorName}` : "Sold by a verified SmartSlab vendor"}
+            </p>
 
             {vendorContact ? (
               <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-sm dark:border-slate-700">
@@ -185,8 +201,9 @@ export default async function SlabDetailPage({
               <div className="mt-3 flex items-start gap-2 border-t border-slate-200 pt-3 text-sm text-slate-500 dark:border-slate-700">
                 <span aria-hidden>🔒</span>
                 <span>
-                  Exact address and phone are shared securely after your payment
-                  is processed through SmartSlab.
+                  The vendor&apos;s name, phone, and the slab&apos;s exact
+                  location are shared securely once your payment is processed
+                  through SmartSlab.
                 </span>
               </div>
             )}

@@ -22,7 +22,7 @@ export default async function Home() {
   return (
     <main className="flex flex-1 flex-col">
       <section className="border-b border-slate-200 bg-gradient-to-b from-[#1bb0ce]/10 to-transparent dark:border-slate-800">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-16">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-8 pt-10 md:gap-6 md:py-16">
           <p className="inline-flex w-fit rounded-full bg-[#1bb0ce]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0d8fa8]">
             Slab & remnant marketplace
           </p>
@@ -60,10 +60,40 @@ export default async function Home() {
               </Link>
             ))}
           </div>
+
+          {/* Mobile scroll hint so buyers notice the listings below the fold. */}
+          <a
+            href="#listings"
+            aria-label="Scroll to latest listings"
+            className="mx-auto mt-1 flex flex-col items-center gap-0.5 text-[#0d8fa8] md:hidden"
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-wide">
+              See slabs
+            </span>
+            <svg
+              className="animate-bounce"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M6 9l6 6 6-6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-6 py-12">
+      <section
+        id="listings"
+        className="mx-auto w-full max-w-6xl scroll-mt-20 px-6 pb-12 pt-6 md:py-12"
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">
             Latest listings
@@ -90,11 +120,21 @@ export default async function Home() {
             </Link>
           </div>
         ) : (
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((slab) => (
-              <SlabCard key={slab.id} slab={slab} />
-            ))}
-          </div>
+          <>
+            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((slab) => (
+                <SlabCard key={slab.id} slab={slab} />
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              <Link
+                href="/browse"
+                className="inline-flex h-11 items-center rounded-lg border border-[#1bb0ce] px-6 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce] hover:text-white"
+              >
+                View all slabs
+              </Link>
+            </div>
+          </>
         )}
       </section>
     </main>

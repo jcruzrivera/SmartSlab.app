@@ -33,6 +33,38 @@ sale.
 
 Versions are listed newest first. Each entry maps to a release commit.
 
+### Orders · Notifications, privacy and navigation (unreleased)
+
+Hardened the post-purchase flow after the first real transaction and improved
+everyday navigation.
+
+- **Order notifications.** On a completed payment the buyer, the vendor, and the
+  platform now each receive an email (buyer gets the unlocked vendor contact,
+  vendor gets the buyer contact + payout breakdown, platform gets an internal
+  copy). Sent via Resend (`RESEND_API_KEY`, optional `EMAIL_FROM` and
+  `PLATFORM_NOTIFICATION_EMAIL`); if email isn't configured it is skipped
+  gracefully and never blocks the order.
+- **Reliable fulfillment.** Besides the Stripe webhook, the buyer's return to
+  the slab page (`?paid=1&session_id=...`) now verifies the Checkout Session and
+  completes the order as a fallback — so contact details unlock and emails fire
+  even if the webhook is delayed or not configured yet. Marking paid is
+  idempotent, so notifications are sent exactly once.
+- **Privacy until paid.** The slab detail page now hides the vendor's name and
+  the slab's exact location until payment is processed; browse cards no longer
+  show the vendor's company name (only the general area/distance for discovery).
+- **Easier to find purchases.** Added a "My purchases" entry to the header menu
+  and a dashboard card linking straight to the purchase history (`/account#purchases`).
+- **Breadcrumbs.** Added a breadcrumb trail across browse, slab detail, the
+  dashboard pages, and the account page.
+- **Contrasting hover.** Menu and dashboard buttons now show a teal overlay on
+  hover.
+- **Bottom "View all".** Added a "View all slabs" button under the home page
+  listings, mirroring the top-right link.
+
+> Onboarding note: SmartSlab's sign-in MFA (two-factor) is configured in the
+> Clerk Dashboard (User & authentication → Multi-factor), not in code. To reduce
+> drop-off for non-technical users, set MFA to optional there.
+
 ### Search · Phase 3 — Geolocation, distance and richer tags (unreleased)
 
 Made the marketplace location-aware and added two new ways to describe a slab.

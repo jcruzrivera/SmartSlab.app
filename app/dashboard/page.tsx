@@ -5,6 +5,7 @@ import { GettingStarted } from "@/components/dashboard/getting-started";
 import { MarketplacePerformance } from "@/components/dashboard/marketplace-performance";
 import { VerificationBadge } from "@/components/dashboard/verification-badge";
 import { WalletPreview } from "@/components/dashboard/wallet-preview";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
 import { listSalesByVendor } from "@/lib/db/transactions";
@@ -30,6 +31,7 @@ export default async function DashboardHomePage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Dashboard" }]} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
@@ -56,7 +58,7 @@ export default async function DashboardHomePage() {
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
         <Link
           href="/dashboard/slabs"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
         >
           <p className="font-medium">Manage inventory</p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -65,7 +67,7 @@ export default async function DashboardHomePage() {
         </Link>
         <Link
           href="/dashboard/sales"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
         >
           <p className="font-medium">Sales &amp; orders</p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -73,8 +75,17 @@ export default async function DashboardHomePage() {
           </p>
         </Link>
         <Link
+          href="/account#purchases"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
+        >
+          <p className="font-medium">My purchases</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            See the slabs you&apos;ve bought and unlock vendor contacts.
+          </p>
+        </Link>
+        <Link
           href="/dashboard/payments"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
         >
           <p className="font-medium">Payments &amp; payouts</p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -83,7 +94,7 @@ export default async function DashboardHomePage() {
         </Link>
         <Link
           href="/browse"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
         >
           <p className="font-medium">View marketplace</p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">

@@ -106,7 +106,7 @@ export async function startCheckout(
       metadata: { transactionId, slabId: slab.id, buyerId: buyer.id },
     },
     metadata: { transactionId, slabId: slab.id, buyerId: buyer.id },
-    success_url: `${origin}/slab/${slab.id}?paid=1`,
+    success_url: `${origin}/slab/${slab.id}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/slab/${slab.id}?canceled=1`,
   });
 

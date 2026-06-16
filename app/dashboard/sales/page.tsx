@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import {
   listSalesByVendor,
@@ -54,6 +55,13 @@ export default async function SalesPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Sales" },
+        ]}
+      />
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Sales</h1>
         <p className="mt-1 text-slate-600 dark:text-slate-300">

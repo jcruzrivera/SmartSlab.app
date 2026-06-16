@@ -9,6 +9,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/slabs/new", label: "Sell a slab" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/sales", label: "Sales" },
+  { href: "/account#purchases", label: "My purchases" },
   { href: "/dashboard/payments", label: "Payments" },
   { href: "/account", label: "My account" },
 ];
@@ -29,18 +30,30 @@ export function SiteHeader({ authSlot }: { authSlot?: ReactNode }) {
           </Link>
         </div>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 sm:flex">
-          <Link href="/browse" className="transition hover:text-[#0d8fa8]">
+        <nav className="hidden items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 sm:flex">
+          <Link
+            href="/browse"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+          >
             Browse
           </Link>
           <Link
             href="/dashboard/slabs/new"
-            className="transition hover:text-[#0d8fa8]"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
           >
             Sell a slab
           </Link>
-          <Link href="/dashboard" className="transition hover:text-[#0d8fa8]">
+          <Link
+            href="/dashboard"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+          >
             Dashboard
+          </Link>
+          <Link
+            href="/account#purchases"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+          >
+            Purchases
           </Link>
         </nav>
 

@@ -1,4 +1,5 @@
 import { ConnectButton } from "@/components/payments/connect-button";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
 import {
   getExpressAccountStatus,
@@ -55,6 +56,13 @@ export default async function PaymentsPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Payments" },
+        ]}
+      />
       <h1 className="text-3xl font-semibold tracking-tight">Payments</h1>
       <p className="mt-1 text-slate-600 dark:text-slate-300">
         Receive payments from buyers through SmartSlab.

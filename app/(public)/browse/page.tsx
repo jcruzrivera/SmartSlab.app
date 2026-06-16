@@ -6,6 +6,7 @@ import { GeoSlabGrid } from "@/components/search/GeoSlabGrid";
 import { MobileFilters } from "@/components/search/MobileFilters";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SortSelect } from "@/components/search/SortSelect";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { searchSlabs } from "@/lib/db/search";
@@ -96,6 +97,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   return (
     <GeoProvider>
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Browse" }]} />
         <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-semibold tracking-tight">Browse slabs</h1>
           <SearchBar initialQuery={filters.q} suggestions={suggestions} />

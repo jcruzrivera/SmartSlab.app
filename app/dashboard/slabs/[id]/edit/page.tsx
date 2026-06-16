@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SlabForm, type SlabFormInitialValues } from "@/components/slab/slab-form";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { getSlabForVendor } from "@/lib/db/slabs";
@@ -63,12 +63,14 @@ export default async function EditSlabPage({ params }: EditSlabPageProps) {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-10">
-      <Link
-        href="/dashboard/slabs"
-        className="text-sm font-medium text-slate-500 transition hover:text-[#0d8fa8]"
-      >
-        ← Back to inventory
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inventory", href: "/dashboard/slabs" },
+          { label: "Edit listing" },
+        ]}
+      />
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">
         Edit listing
       </h1>

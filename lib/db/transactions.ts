@@ -49,11 +49,15 @@ export async function attachPaymentIntent(
 
 /**
  * Marks the transaction as paid and reserves the slab. Idempotent: safe to call
- * multiple times from webhook retries.
+ * multiple times from webhook retries. Returns true only when this call is the
+ * one that transitioned the transaction to "paid" (so the caller can fire
+ * notifications exactly once).
  */
-export async function markTransactionPaid(transactionId: string): Promise<void> {
+export async function markTransactionPaid(
+  transactionId: string,
+): Promise<boolean> {
   if (!isDbConfigured()) {
-    return;
+    return false;
   }
 
   const db = getDb();
@@ -62,7 +66,7 @@ export async function markTransactionPaid(transactionId: string): Promise<void> 
   });
 
   if (!tx || tx.status === "paid") {
-    return;
+    return false;
   }
 
   await db
@@ -74,6 +78,83 @@ export async function markTransactionPaid(transactionId: string): Promise<void> 
     .update(slabs)
     .set({ status: "sold", updatedAt: new Date() })
     .where(eq(slabs.id, tx.slabId));
+
+  return true;
+}
+
+export type TransactionEmailData = {
+  slabName: string;
+  slabId: string;
+  total: string;
+  vendorPayout: string;
+  platformFee: string;
+  buyer: { email: string; name: string | null };
+  vendor: {
+    email: string;
+    name: string | null;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip: string | null;
+  };
+};
+
+/**
+ * Loads everything needed to email both parties about a completed order.
+ */
+export async function getTransactionEmailData(
+  transactionId: string,
+): Promise<TransactionEmailData | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  const db = getDb();
+  const tx = await db.query.transactions.findFirst({
+    where: eq(transactions.id, transactionId),
+    with: {
+      slab: { columns: { id: true, name: true } },
+      buyer: { columns: { email: true, contactName: true, companyName: true } },
+      vendor: {
+        columns: {
+          email: true,
+          contactName: true,
+          companyName: true,
+          phone: true,
+          address: true,
+          city: true,
+          state: true,
+          zip: true,
+        },
+      },
+    },
+  });
+
+  if (!tx || !tx.buyer || !tx.vendor) {
+    return null;
+  }
+
+  return {
+    slabName: tx.slab?.name ?? "Slab",
+    slabId: tx.slab?.id ?? tx.slabId,
+    total: tx.total,
+    vendorPayout: tx.vendorPayout,
+    platformFee: tx.platformFee,
+    buyer: {
+      email: tx.buyer.email,
+      name: tx.buyer.contactName ?? tx.buyer.companyName ?? null,
+    },
+    vendor: {
+      email: tx.vendor.email,
+      name: tx.vendor.companyName ?? tx.vendor.contactName ?? null,
+      phone: tx.vendor.phone,
+      address: tx.vendor.address,
+      city: tx.vendor.city,
+      state: tx.vendor.state,
+      zip: tx.vendor.zip,
+    },
+  };
 }
 
 export type SaleWithRelations = Transaction & {

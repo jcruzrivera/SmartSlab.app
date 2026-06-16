@@ -50,7 +50,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8] dark:text-slate-200"
                   >
                     {item.label}
                   </Link>

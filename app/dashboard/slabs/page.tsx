@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
@@ -33,6 +34,13 @@ export default async function DashboardSlabsPage() {
 
   return (
     <section className="mx-auto w-full max-w-6xl px-6 py-10">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inventory" },
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Inventory</h1>

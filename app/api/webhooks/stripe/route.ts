@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
-import {
-  attachPaymentIntent,
-  markTransactionPaid,
-} from "@/lib/db/transactions";
+import { fulfillTransaction } from "@/lib/payments/fulfill";
 import { setVendorVerified } from "@/lib/db/users";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 
@@ -48,10 +45,11 @@ export async function POST(request: Request): Promise<NextResponse> {
         const transactionId = session.metadata?.transactionId;
 
         if (transactionId) {
-          if (typeof session.payment_intent === "string") {
-            await attachPaymentIntent(transactionId, session.payment_intent);
-          }
-          await markTransactionPaid(transactionId);
+          const paymentIntentId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : undefined;
+          await fulfillTransaction(transactionId, { paymentIntentId });
         }
         break;
       }

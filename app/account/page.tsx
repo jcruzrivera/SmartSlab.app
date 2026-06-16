@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ProfileForm } from "@/components/account/profile-form";
+import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { listPurchasesByBuyer } from "@/lib/db/transactions";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
@@ -46,6 +47,7 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "My account" }]} />
       <h1 className="text-3xl font-semibold tracking-tight">Account settings</h1>
       <p className="mt-1 text-slate-600 dark:text-slate-300">
         Manage your profile and review your orders.
@@ -73,7 +75,7 @@ export default async function AccountPage() {
         </div>
       </section>
 
-      <section className="mt-10">
+      <section id="purchases" className="mt-10 scroll-mt-24">
         <h2 className="text-lg font-semibold">Purchase history</h2>
         {purchases.length === 0 ? (
           <div className="mt-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">

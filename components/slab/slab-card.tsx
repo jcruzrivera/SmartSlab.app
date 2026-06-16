@@ -20,7 +20,6 @@ export function SlabCard({
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
   const location =
     formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
-  const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
   const sqft = formatSqft(slab.widthCm, slab.heightCm);
   const locationOrDistance =
     distanceMiles !== undefined ? formatDistance(distanceMiles) : location;
@@ -59,9 +58,6 @@ export function SlabCard({
         <h3 className="line-clamp-1 text-base font-semibold tracking-tight">
           {slab.name}
         </h3>
-        <p className="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">
-          {vendorName}
-        </p>
         {locationOrDistance ? (
           <p className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
