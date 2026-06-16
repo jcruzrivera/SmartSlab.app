@@ -1,19 +1,39 @@
-import Link from "next/link";
-
-import { SlabCard } from "@/components/slab/slab-card";
+import { FilterChips } from "@/components/search/FilterChips";
+import { FilterSidebar } from "@/components/search/FilterSidebar";
+import { MobileFilters } from "@/components/search/MobileFilters";
+import { SearchBar } from "@/components/search/SearchBar";
+import { SlabGrid } from "@/components/search/SlabGrid";
+import { SortSelect } from "@/components/search/SortSelect";
 import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
-import { listPublicSlabs } from "@/lib/db/slabs";
+import { searchSlabs } from "@/lib/db/search";
+import {
+  buildActiveChips,
+  countActiveFilters,
+  parseFilters,
+} from "@/lib/search/filters";
 
 export const dynamic = "force-dynamic";
 
 type BrowsePageProps = {
-  searchParams: Promise<{ material?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function BrowsePage({ searchParams }: BrowsePageProps) {
-  const { material } = await searchParams;
+function toSearchParams(
+  raw: Record<string, string | string[] | undefined>,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(raw)) {
+    if (Array.isArray(value)) {
+      if (value.length > 0) params.set(key, value.join(","));
+    } else if (value !== undefined) {
+      params.set(key, value);
+    }
+  }
+  return params;
+}
 
+export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   if (!isDbConfigured()) {
     return (
       <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -27,75 +47,78 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     );
   }
 
-  const [materials, slabs] = await Promise.all([
+  const filters = parseFilters(toSearchParams(await searchParams));
+
+  const [materials, result] = await Promise.all([
     listMaterials(),
-    listPublicSlabs({ materialSlug: material }),
+    searchSlabs(filters),
   ]);
 
-  return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Browse slabs</h1>
-        <p className="text-slate-600 dark:text-slate-300">
-          {slabs.length} listing{slabs.length === 1 ? "" : "s"} available
-        </p>
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        <FilterChip label="All" href="/browse" active={!material} />
-        {materials.map((item) => (
-          <FilterChip
-            key={item.id}
-            label={item.name}
-            href={`/browse?material=${item.slug}`}
-            active={material === item.slug}
-          />
-        ))}
-      </div>
-
-      {slabs.length === 0 ? (
-        <div className="mt-12 rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
-          <p className="text-lg font-medium">No slabs here yet</p>
-          <p className="mt-2 text-slate-600 dark:text-slate-300">
-            Be the first to list inventory in this category.
-          </p>
-          <Link
-            href="/dashboard/slabs/new"
-            className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
-          >
-            List a slab
-          </Link>
-        </div>
-      ) : (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {slabs.map((slab) => (
-            <SlabCard key={slab.id} slab={slab} />
-          ))}
-        </div>
-      )}
-    </main>
+  const materialLabels = Object.fromEntries(
+    materials.map((material) => [material.slug, material.name]),
   );
-}
+  const brandLabels = Object.fromEntries(
+    result.brandOptions.map((brand) => [brand.value, brand.label]),
+  );
 
-function FilterChip({
-  label,
-  href,
-  active,
-}: {
-  label: string;
-  href: string;
-  active: boolean;
-}) {
+  const chips = buildActiveChips(filters, {
+    material: materialLabels,
+    brand: brandLabels,
+  });
+  const activeCount = countActiveFilters(filters);
+
+  // Autocomplete suggestions: material names + listing names + brands.
+  const suggestionSet = new Map<string, string>();
+  for (const material of materials) {
+    suggestionSet.set(material.name.toLowerCase(), material.name);
+  }
+  for (const slab of result.slabs) {
+    suggestionSet.set(slab.name.toLowerCase(), slab.name);
+  }
+  for (const brand of result.brandOptions) {
+    suggestionSet.set(brand.label.toLowerCase(), brand.label);
+  }
+  const suggestions = [...suggestionSet.values()]
+    .slice(0, 80)
+    .map((label) => ({ label, value: label }));
+
+  const sidebar = (
+    <FilterSidebar
+      filters={filters}
+      materials={materials}
+      brandOptions={result.brandOptions}
+      facets={result.facets}
+    />
+  );
+
   return (
-    <Link
-      href={href}
-      className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-        active
-          ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
-          : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
-      }`}
-    >
-      {label}
-    </Link>
+    <main className="mx-auto w-full max-w-6xl px-6 py-8">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-3xl font-semibold tracking-tight">Browse slabs</h1>
+        <SearchBar initialQuery={filters.q} suggestions={suggestions} />
+      </div>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
+        <aside className="hidden lg:block">
+          <div className="sticky top-6">{sidebar}</div>
+        </aside>
+
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <MobileFilters activeCount={activeCount}>{sidebar}</MobileFilters>
+              <span className="text-sm text-slate-500">
+                {result.total} result{result.total === 1 ? "" : "s"}
+              </span>
+            </div>
+            <SortSelect value={filters.sort} />
+          </div>
+
+          <FilterChips chips={chips} />
+
+          <SlabGrid slabs={result.slabs} />
+        </section>
+      </div>
+    </main>
   );
 }

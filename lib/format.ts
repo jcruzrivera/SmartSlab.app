@@ -50,7 +50,8 @@ function toNumber(value: string | number | null | undefined): number | null {
 }
 
 /**
- * Dimensions across the app are stored and displayed in inches.
+ * Width and height are in inches; thickness is in centimeters (the regional
+ * standard for slab thickness).
  */
 export function formatDimensions(
   width: string | number | null | undefined,
@@ -76,7 +77,7 @@ export function formatDimensions(
   }
 
   if (t !== null) {
-    parts.push(`${trim(t)}" thick`);
+    parts.push(`${trim(t)} cm thick`);
   }
 
   return parts.join(" · ");

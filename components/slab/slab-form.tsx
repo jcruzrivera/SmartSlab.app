@@ -195,7 +195,7 @@ export function SlabForm({
               className={inputClass}
             />
           </Field>
-          <Field label="Thickness (in)" htmlFor="thicknessCm">
+          <Field label="Thickness (cm)" htmlFor="thicknessCm">
             <input
               id="thicknessCm"
               name="thicknessCm"
