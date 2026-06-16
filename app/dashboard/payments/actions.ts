@@ -38,21 +38,45 @@ export async function startConnectOnboarding(
   }
 
   let accountId = user.stripeAccountId;
+  let url: string;
 
-  if (!accountId) {
-    accountId = await createConnectedAccount({
-      displayName: user.companyName ?? user.contactName ?? user.email,
-      email: user.email,
-      dbUserId: user.id,
+  // Stripe calls are wrapped so any API error surfaces as a readable message
+  // in the UI instead of crashing the page with a generic 500.
+  try {
+    if (!accountId) {
+      accountId = await createConnectedAccount({
+        displayName: user.companyName ?? user.contactName ?? user.email,
+        email: user.email,
+        dbUserId: user.id,
+      });
+      await setStripeAccountId(user.id, accountId);
+    }
+
+    const origin = await getOrigin();
+    url = await createOnboardingLink(accountId, {
+      refreshUrl: `${origin}/dashboard/payments?refresh=1`,
+      returnUrl: `${origin}/dashboard/payments?connected=1`,
     });
-    await setStripeAccountId(user.id, accountId);
+  } catch (error) {
+    return { error: toStripeErrorMessage(error) };
   }
 
-  const origin = await getOrigin();
-  const url = await createOnboardingLink(accountId, {
-    refreshUrl: `${origin}/dashboard/payments?refresh=1`,
-    returnUrl: `${origin}/dashboard/payments?connected=1`,
-  });
-
+  // redirect() must be called OUTSIDE the try/catch: it works by throwing a
+  // special NEXT_REDIRECT error that we must not swallow.
   redirect(url);
+}
+
+/**
+ * Extracts a human-readable message from a Stripe error, with a hint for the
+ * most common setup problem (Connect not enabled / platform profile pending).
+ */
+function toStripeErrorMessage(error: unknown): string {
+  const message =
+    error instanceof Error ? error.message : "Could not start Stripe onboarding.";
+
+  if (/connect|platform|capability|not enabled|review/i.test(message)) {
+    return `${message} — Make sure Connect is enabled in your Stripe Dashboard and your platform profile is complete.`;
+  }
+
+  return message;
 }
