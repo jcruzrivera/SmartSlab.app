@@ -1,11 +1,16 @@
 import { ConnectButton } from "@/components/payments/connect-button";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
-import { getPlatformFeePercent, getStripe, isStripeConfigured } from "@/lib/stripe";
+import { getPlatformFeePercent } from "@/lib/stripe";
+import { getAccountStatus, isStripeConfigured } from "@/lib/stripe-connect";
 
 export const dynamic = "force-dynamic";
 
 type PayoutStatus = "not_started" | "pending" | "active";
 
+/**
+ * Reads the vendor's payout readiness LIVE from the Stripe V2 API (recipient
+ * `stripe_transfers` capability + outstanding requirements).
+ */
 async function resolvePayoutStatus(
   stripeAccountId: string | null,
 ): Promise<PayoutStatus> {
@@ -14,10 +19,8 @@ async function resolvePayoutStatus(
   }
 
   try {
-    const account = await getStripe().accounts.retrieve(stripeAccountId);
-    return account.charges_enabled && account.payouts_enabled
-      ? "active"
-      : "pending";
+    const status = await getAccountStatus(stripeAccountId);
+    return status.readyToReceivePayments ? "active" : "pending";
   } catch {
     return "pending";
   }

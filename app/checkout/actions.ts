@@ -6,12 +6,8 @@ import { isDbConfigured } from "@/lib/db/client";
 import { getSlabById } from "@/lib/db/slabs";
 import { createTransaction } from "@/lib/db/transactions";
 import { getDbUserById, getOrCreateCurrentDbUser } from "@/lib/db/users";
-import {
-  computeFees,
-  getStripe,
-  isStripeConfigured,
-  toCents,
-} from "@/lib/stripe";
+import { computeFees, getStripe, isStripeConfigured, toCents } from "@/lib/stripe";
+import { getAccountStatus } from "@/lib/stripe-connect";
 import { getOrigin } from "@/lib/url";
 
 export type CheckoutState = { error?: string };
@@ -50,6 +46,17 @@ export async function startCheckout(
 
   if (!vendor?.stripeAccountId) {
     return { error: "This vendor hasn't enabled payments yet." };
+  }
+
+  // Ensure the vendor's connected account can actually receive the transfer
+  // before we charge the buyer (avoids failed destination charges).
+  try {
+    const status = await getAccountStatus(vendor.stripeAccountId);
+    if (!status.readyToReceivePayments) {
+      return { error: "This vendor hasn't finished enabling payments yet." };
+    }
+  } catch {
+    return { error: "Could not verify the vendor's payout account. Please try again." };
   }
 
   const subtotal = Number(slab.price);
