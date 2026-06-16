@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 
 import { getOrCreateCurrentDbUser, setStripeAccountId } from "@/lib/db/users";
 import {
-  createConnectedAccount,
-  createOnboardingLink,
+  createAccountOnboardingLink,
+  createExpressAccount,
   isStripeConfigured,
-} from "@/lib/stripe-connect";
+} from "@/lib/stripe";
 import { getOrigin } from "@/lib/url";
 
 export type ConnectState = { error?: string };
@@ -44,16 +44,12 @@ export async function startConnectOnboarding(
   // in the UI instead of crashing the page with a generic 500.
   try {
     if (!accountId) {
-      accountId = await createConnectedAccount({
-        displayName: user.companyName ?? user.contactName ?? user.email,
-        email: user.email,
-        dbUserId: user.id,
-      });
+      accountId = await createExpressAccount({ email: user.email });
       await setStripeAccountId(user.id, accountId);
     }
 
     const origin = await getOrigin();
-    url = await createOnboardingLink(accountId, {
+    url = await createAccountOnboardingLink(accountId, {
       refreshUrl: `${origin}/dashboard/payments?refresh=1`,
       returnUrl: `${origin}/dashboard/payments?connected=1`,
     });

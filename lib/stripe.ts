@@ -27,6 +27,85 @@ export function getPlatformFeePercent(): number {
   return Number.isFinite(raw) && raw >= 0 && raw <= 100 ? raw : 10;
 }
 
+/**
+ * ---------------------------------------------------------------------------
+ * Stripe Connect — Express (classic) flow used by the live marketplace
+ * ---------------------------------------------------------------------------
+ *
+ * This is the standard, battle-tested marketplace pattern: each vendor gets an
+ * Express connected account with the `transfers` capability, Stripe hosts
+ * onboarding/KYC, and buyer payments are taken as destination charges
+ * (`transfer_data.destination` + `application_fee_amount`) on the classic
+ * Checkout API. It integrates natively with `checkout.sessions.create`.
+ */
+
+/** Creates an Express connected account that can receive transfers. */
+export async function createExpressAccount(input: {
+  email: string;
+}): Promise<string> {
+  const stripe = getStripe();
+
+  const account = await stripe.accounts.create({
+    type: "express",
+    country: "US",
+    email: input.email,
+    capabilities: {
+      transfers: { requested: true },
+    },
+  });
+
+  return account.id;
+}
+
+/** Creates a hosted Express onboarding link for the connected account. */
+export async function createAccountOnboardingLink(
+  accountId: string,
+  urls: { refreshUrl: string; returnUrl: string },
+): Promise<string> {
+  const stripe = getStripe();
+
+  const link = await stripe.accountLinks.create({
+    account: accountId,
+    type: "account_onboarding",
+    refresh_url: urls.refreshUrl,
+    return_url: urls.returnUrl,
+  });
+
+  return link.url;
+}
+
+export type ExpressAccountStatus = {
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  transfersActive: boolean;
+  /** True when the account can receive destination-charge transfers. */
+  readyToReceivePayments: boolean;
+};
+
+/** Reads live readiness of an Express connected account. */
+export async function getExpressAccountStatus(
+  accountId: string,
+): Promise<ExpressAccountStatus> {
+  const stripe = getStripe();
+  const account = await stripe.accounts.retrieve(accountId);
+
+  const transfersActive = account.capabilities?.transfers === "active";
+  const payoutsEnabled = Boolean(account.payouts_enabled);
+  const chargesEnabled = Boolean(account.charges_enabled);
+  const detailsSubmitted = Boolean(account.details_submitted);
+
+  return {
+    chargesEnabled,
+    payoutsEnabled,
+    detailsSubmitted,
+    transfersActive,
+    // For receiving destination charges, the transfers capability being active
+    // is the requirement.
+    readyToReceivePayments: transfersActive,
+  };
+}
+
 export type FeeBreakdown = {
   subtotal: number;
   platformFee: number;

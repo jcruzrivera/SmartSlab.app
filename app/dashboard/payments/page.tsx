@@ -1,7 +1,10 @@
 import { ConnectButton } from "@/components/payments/connect-button";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
-import { getPlatformFeePercent } from "@/lib/stripe";
-import { getAccountStatus, isStripeConfigured } from "@/lib/stripe-connect";
+import {
+  getExpressAccountStatus,
+  getPlatformFeePercent,
+  isStripeConfigured,
+} from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +22,7 @@ async function resolvePayoutStatus(
   }
 
   try {
-    const status = await getAccountStatus(stripeAccountId);
+    const status = await getExpressAccountStatus(stripeAccountId);
     return status.readyToReceivePayments ? "active" : "pending";
   } catch {
     return "pending";
