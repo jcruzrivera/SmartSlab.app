@@ -2,19 +2,28 @@ import Link from "next/link";
 
 import type { SlabWithRelations } from "@/lib/db/slabs";
 import { formatLocation, formatPrice, formatSqft } from "@/lib/format";
+import { formatDistance } from "@/lib/search/geo";
 
 const typeLabels: Record<string, string> = {
   full_slab: "Full slab",
   remnant: "Remnant",
 };
 
-export function SlabCard({ slab }: { slab: SlabWithRelations }) {
+export function SlabCard({
+  slab,
+  distanceMiles,
+}: {
+  slab: SlabWithRelations;
+  distanceMiles?: number;
+}) {
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
   const location =
     formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
   const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
   const sqft = formatSqft(slab.widthCm, slab.heightCm);
+  const locationOrDistance =
+    distanceMiles !== undefined ? formatDistance(distanceMiles) : location;
 
   return (
     <Link
@@ -52,8 +61,20 @@ export function SlabCard({ slab }: { slab: SlabWithRelations }) {
         </h3>
         <p className="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">
           {vendorName}
-          {location ? ` · ${location}` : ""}
         </p>
+        {locationOrDistance ? (
+          <p className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            {locationOrDistance}
+          </p>
+        ) : null}
         {sqft ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">{sqft}</p>
         ) : null}

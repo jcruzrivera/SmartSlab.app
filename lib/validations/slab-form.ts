@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AESTHETIC_VALUES, ROOM_VALUES } from "@/lib/search/filters";
+
 export const slabFormSchema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(120),
   type: z.enum(["full_slab", "remnant"]),
@@ -25,6 +27,8 @@ export const slabFormSchema = z.object({
   isNegotiable: z.boolean().default(false),
   notes: z.string().trim().max(2000).optional(),
   imageUrls: z.array(z.string().url()).max(6).default([]),
+  roomUse: z.array(z.string()).max(12).default([]),
+  aestheticTags: z.array(z.string()).max(12).default([]),
 });
 
 export type SlabFormValues = z.infer<typeof slabFormSchema>;
@@ -56,5 +60,13 @@ export function parseSlabFormData(formData: FormData) {
       .getAll("imageUrls")
       .map((value) => (typeof value === "string" ? value.trim() : ""))
       .filter((value) => value.length > 0),
+    roomUse: formData
+      .getAll("roomUse")
+      .map((value) => (typeof value === "string" ? value.trim() : ""))
+      .filter((value) => ROOM_VALUES.has(value)),
+    aestheticTags: formData
+      .getAll("aestheticTags")
+      .map((value) => (typeof value === "string" ? value.trim() : ""))
+      .filter((value) => AESTHETIC_VALUES.has(value)),
   });
 }

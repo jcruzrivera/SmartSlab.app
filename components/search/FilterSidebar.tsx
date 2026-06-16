@@ -2,18 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useBuyerGeo } from "@/components/search/GeoProvider";
 import { useFilterNav } from "@/components/search/use-filter-nav";
 import type { BrandOption, Facets } from "@/lib/db/search";
 import {
+  AESTHETIC_OPTIONS,
   COLOR_OPTIONS,
   FINISH_OPTIONS,
   PRICE_MAX,
   PRICE_MIN,
+  ROOM_OPTIONS,
   SQFT_MAX,
   THICKNESS_OPTIONS,
   TYPE_OPTIONS,
   type SearchFilters,
 } from "@/lib/search/filters";
+import { RADIUS_OPTIONS } from "@/lib/search/geo";
 
 type MaterialOption = { id: string; name: string; slug: string };
 
@@ -147,6 +151,39 @@ export function FilterSidebar({
           </div>
         </Section>
       ) : null}
+
+      <Section title="Room / application">
+        <div className="flex flex-col gap-1.5">
+          {ROOM_OPTIONS.map((option) => (
+            <CheckRow
+              key={option.value}
+              label={option.label}
+              count={facets.room[option.value] ?? 0}
+              checked={filters.room.includes(option.value)}
+              onToggle={() => toggleCsv("room", option.value)}
+            />
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Aesthetic">
+        <div className="flex flex-wrap gap-2">
+          {AESTHETIC_OPTIONS.map((option) => (
+            <Pill
+              key={option.value}
+              label={option.label}
+              count={facets.aesthetic[option.value] ?? 0}
+              active={filters.aesthetic.includes(option.value)}
+              onClick={() => toggleCsv("aesthetic", option.value)}
+            />
+          ))}
+        </div>
+      </Section>
+
+      <DistanceSection
+        radius={filters.radius}
+        onChange={(value) => setParam("radius", value)}
+      />
 
       <Section title="Availability">
         <div className="flex flex-col gap-2">
@@ -324,6 +361,53 @@ function PriceRange({
         ${localMin || 0} – ${localMax || PRICE_MAX}
       </p>
     </div>
+  );
+}
+
+function DistanceSection({
+  radius,
+  onChange,
+}: {
+  radius: number;
+  onChange: (value: string | null) => void;
+}) {
+  const { geo } = useBuyerGeo();
+
+  // Only useful once we know where the buyer is.
+  if (!geo) {
+    return null;
+  }
+
+  return (
+    <Section title="Distance">
+      <div className="flex flex-wrap gap-2">
+        {RADIUS_OPTIONS.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onChange(String(option))}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+              radius === option
+                ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
+                : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+            }`}
+          >
+            {option} mi
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+            radius === 0
+              ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
+              : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+          }`}
+        >
+          Any
+        </button>
+      </div>
+    </Section>
   );
 }
 

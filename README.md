@@ -17,8 +17,9 @@ sale.
 
 ## Main features
 
-- Public marketplace: product-focused homepage, browse with material filters,
-  and detailed slab pages.
+- Public marketplace: product-focused homepage, an advanced browse/search
+  experience (text search, multi-filters, faceted counts, shareable URLs, and
+  distance-based geolocation), and detailed slab pages.
 - Vendor tools: create, edit, hide/unhide and delete listings, manage inventory,
   upload photos (camera or gallery), and track sales and earnings.
 - Buyer tools: account profile, purchase history, and secure checkout.
@@ -31,6 +32,55 @@ sale.
 ## Changelog (in plain language)
 
 Versions are listed newest first. Each entry maps to a release commit.
+
+### Search · Phase 3 — Geolocation, distance and richer tags (unreleased)
+
+Made the marketplace location-aware and added two new ways to describe a slab.
+
+- **Buyer geolocation.** On `/browse` the app figures out roughly where the
+  buyer is — first from an approximate IP location (Vercel edge headers via the
+  new `/api/geo` endpoint), then, if the buyer allows it, from precise browser
+  location. A friendly banner explains the choice ("Use my location" / "Keep
+  {city}"). Coordinates are kept only in the browser (localStorage + memory),
+  never written to the URL or sent to our servers.
+- **Distance everywhere.** Slab cards show "12 mi away" when location is known
+  (and fall back to "City, State" otherwise). A new **Distance** filter (25 / 50
+  / 100 / 250 mi / Any) appears only once a location is available, and a new
+  **Nearest first** sort orders results by proximity. Distance math runs in the
+  browser using the Haversine formula.
+- **Slab coordinates.** When a vendor saves a listing, the public
+  city/state/ZIP is geocoded to coordinates (free OpenStreetMap Nominatim) and
+  stored on the slab, so it can appear in nearby searches. The exact address
+  stays private as before.
+- **Room / application and Aesthetic.** Listings can now be tagged with where
+  they fit (Kitchen, Bathroom, Vanity, Bar, Outdoor, Flooring, Wall, Fireplace,
+  Island) and how they look (Veined, Subtle, Solid, Sparkling, Speckled,
+  Concrete, Wood, Bookmatched). Both are editable in the upload/edit form and
+  are filterable in the sidebar with live counts.
+- **Database.** Added `lat`, `lng`, `room_use` and `aesthetic_tags` to the
+  `slabs` table (additive, nullable migration `0002`). Existing listings keep
+  working; they gain coordinates the next time they are saved.
+
+> Note: the original spec referenced Next.js's old `request.geo`, which no
+> longer exists in Next.js 16. The IP fallback uses Vercel's `x-vercel-ip-*`
+> headers instead.
+
+### Search · Phase 2 — Advanced search and filters (`3aa9802`)
+
+Replaced the simple material tabs on `/browse` with a full search module while
+keeping the page server-rendered and every search shareable via its URL.
+
+- **Search bar** with keyboard-navigable autocomplete (debounced) and a clear
+  button; searches across name, color, brand, material and notes.
+- **Filter sidebar**: material, slab type, color swatches, finish, thickness
+  (in cm), brand/supplier, price range, minimum square footage, availability
+  and negotiable-only — all combinable and reflected in the URL.
+- **Faceted counts** next to each option (e.g. "Quartz (5)"), active filter
+  **chips** with one-click removal, a **sort** dropdown, a **mobile filter
+  sheet**, and a loading skeleton.
+- **Thickness in centimeters.** Slab thickness now uses cm (the regional
+  standard) across the form and listing displays, while width and height stay in
+  inches.
 
 ### Edit listings (`63bc847`)
 

@@ -112,6 +112,10 @@ export type CreateSlabInput = {
   city?: string;
   state?: string;
   zip?: string;
+  lat?: number;
+  lng?: number;
+  roomUse?: string[];
+  aestheticTags?: string[];
   widthCm?: number;
   heightCm?: number;
   thicknessCm?: number;
@@ -192,6 +196,10 @@ export async function updateSlab(
       city: input.city,
       state: input.state,
       zip: input.zip,
+      lat: input.lat?.toString(),
+      lng: input.lng?.toString(),
+      roomUse: input.roomUse ?? [],
+      aestheticTags: input.aestheticTags ?? [],
       widthCm: input.widthCm?.toString(),
       heightCm: input.heightCm?.toString(),
       thicknessCm: input.thicknessCm?.toString(),
@@ -275,6 +283,10 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
       city: input.city,
       state: input.state,
       zip: input.zip,
+      lat: input.lat?.toString(),
+      lng: input.lng?.toString(),
+      roomUse: input.roomUse ?? [],
+      aestheticTags: input.aestheticTags ?? [],
       widthCm: input.widthCm?.toString(),
       heightCm: input.heightCm?.toString(),
       thicknessCm: input.thicknessCm?.toString(),

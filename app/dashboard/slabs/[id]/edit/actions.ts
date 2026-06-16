@@ -11,6 +11,7 @@ import {
   updateSlab,
 } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { buildAddressQuery, geocodeAddress } from "@/lib/geo/geocode";
 import { parseSlabFormData } from "@/lib/validations/slab-form";
 
 export type SlabFormState = {
@@ -57,6 +58,10 @@ export async function updateSlabAction(
 
   const data = parsed.data;
 
+  const point = await geocodeAddress(
+    buildAddressQuery({ city: data.city, state: data.state, zip: data.zip }),
+  );
+
   try {
     await updateSlab(slabId, user.id, {
       name: data.name,
@@ -68,6 +73,10 @@ export async function updateSlabAction(
       city: data.city,
       state: data.state,
       zip: data.zip,
+      lat: point?.lat,
+      lng: point?.lng,
+      roomUse: data.roomUse,
+      aestheticTags: data.aestheticTags,
       widthCm: data.widthCm,
       heightCm: data.heightCm,
       thicknessCm: data.thicknessCm,

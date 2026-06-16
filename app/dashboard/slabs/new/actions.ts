@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { isDbConfigured } from "@/lib/db/client";
 import { createSlab } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { buildAddressQuery, geocodeAddress } from "@/lib/geo/geocode";
 import { parseSlabFormData } from "@/lib/validations/slab-form";
 
 export type SlabFormState = {
@@ -36,6 +37,10 @@ export async function createSlabAction(
 
   const data = parsed.data;
 
+  const point = await geocodeAddress(
+    buildAddressQuery({ city: data.city, state: data.state, zip: data.zip }),
+  );
+
   try {
     await createSlab({
       vendorId: user.id,
@@ -48,6 +53,10 @@ export async function createSlabAction(
       city: data.city,
       state: data.state,
       zip: data.zip,
+      lat: point?.lat,
+      lng: point?.lng,
+      roomUse: data.roomUse,
+      aestheticTags: data.aestheticTags,
       widthCm: data.widthCm,
       heightCm: data.heightCm,
       thicknessCm: data.thicknessCm,

@@ -56,6 +56,8 @@ export default async function EditSlabPage({ params }: EditSlabPageProps) {
     isNegotiable: slab.isNegotiable,
     notes: slab.notes,
     imageUrls,
+    roomUse: slab.roomUse,
+    aestheticTags: slab.aestheticTags,
     status: slab.status,
   };
 

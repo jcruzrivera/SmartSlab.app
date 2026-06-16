@@ -10,6 +10,7 @@ import {
 } from "@/app/dashboard/slabs/[id]/edit/actions";
 import { ImageUploader } from "@/components/slab/image-uploader";
 import { SlabEditActions } from "@/components/slab/slab-edit-actions";
+import { AESTHETIC_OPTIONS, ROOM_OPTIONS } from "@/lib/search/filters";
 
 type MaterialOption = { id: string; name: string };
 
@@ -31,6 +32,8 @@ export type SlabFormInitialValues = {
   isNegotiable: boolean;
   notes?: string | null;
   imageUrls: string[];
+  roomUse?: string[] | null;
+  aestheticTags?: string[] | null;
   status?: string;
 };
 
@@ -72,6 +75,22 @@ export function SlabForm({
   );
   const [widthIn, setWidthIn] = useState(initialValues?.widthCm ?? "");
   const [heightIn, setHeightIn] = useState(initialValues?.heightCm ?? "");
+  const [rooms, setRooms] = useState<string[]>(initialValues?.roomUse ?? []);
+  const [aesthetics, setAesthetics] = useState<string[]>(
+    initialValues?.aestheticTags ?? [],
+  );
+
+  function toggleValue(
+    list: string[],
+    setList: (next: string[]) => void,
+    value: string,
+  ) {
+    setList(
+      list.includes(value)
+        ? list.filter((item) => item !== value)
+        : [...list, value],
+    );
+  }
 
   const w = Number.parseFloat(widthIn);
   const h = Number.parseFloat(heightIn);
@@ -253,6 +272,67 @@ export function SlabForm({
                 className={inputClass}
               />
             </Field>
+          </div>
+          <p className="text-xs text-slate-500">
+            We use the city/state/ZIP to place your slab on the map so nearby
+            buyers can find it. The exact address stays private.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className={labelClass}>Room / application</span>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {ROOM_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  name="roomUse"
+                  value={option.value}
+                  checked={rooms.includes(option.value)}
+                  onChange={() => toggleValue(rooms, setRooms, option.value)}
+                  disabled={isSold}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className={labelClass}>Aesthetic</span>
+          <div className="flex flex-wrap gap-2">
+            {aesthetics.map((value) => (
+              <input
+                key={value}
+                type="hidden"
+                name="aestheticTags"
+                value={value}
+              />
+            ))}
+            {AESTHETIC_OPTIONS.map((option) => {
+              const active = aesthetics.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  disabled={isSold}
+                  onClick={() =>
+                    toggleValue(aesthetics, setAesthetics, option.value)
+                  }
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                    active
+                      ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
+                      : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

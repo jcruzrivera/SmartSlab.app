@@ -16,6 +16,8 @@ export type Facets = {
   finish: Record<string, number>;
   thickness: Record<string, number>;
   brand: Record<string, number>;
+  room: Record<string, number>;
+  aesthetic: Record<string, number>;
 };
 
 export type BrandOption = { value: string; label: string };
@@ -39,7 +41,9 @@ type FilterDimension =
   | "color"
   | "finish"
   | "thickness"
-  | "brand";
+  | "brand"
+  | "room"
+  | "aesthetic";
 
 function num(value: string | number | null | undefined): number | null {
   if (value === null || value === undefined) return null;
@@ -145,6 +149,16 @@ function matches(
     }
   }
 
+  if (skip !== "room" && filters.room.length > 0) {
+    const rooms = slab.roomUse ?? [];
+    if (!filters.room.some((r) => rooms.includes(r))) return false;
+  }
+
+  if (skip !== "aesthetic" && filters.aesthetic.length > 0) {
+    const tags = slab.aestheticTags ?? [];
+    if (!filters.aesthetic.some((a) => tags.includes(a))) return false;
+  }
+
   const price = num(slab.price) ?? 0;
   if (price < filters.priceMin || price > filters.priceMax) return false;
 
@@ -173,6 +187,8 @@ function computeFacets(
     finish: {},
     thickness: {},
     brand: {},
+    room: {},
+    aesthetic: {},
   };
 
   for (const slab of base) {
@@ -195,6 +211,14 @@ function computeFacets(
     if (matches(slab, filters, "brand")) {
       const brand = normalizeBrand(slab.brandSupplier);
       if (brand) increment(facets.brand, brand);
+    }
+    if (matches(slab, filters, "room")) {
+      for (const room of slab.roomUse ?? []) increment(facets.room, room);
+    }
+    if (matches(slab, filters, "aesthetic")) {
+      for (const tag of slab.aestheticTags ?? []) {
+        increment(facets.aesthetic, tag);
+      }
     }
   }
 
@@ -240,7 +264,16 @@ export async function searchSlabs(
     return {
       slabs: [],
       total: 0,
-      facets: { material: {}, type: {}, color: {}, finish: {}, thickness: {}, brand: {} },
+      facets: {
+        material: {},
+        type: {},
+        color: {},
+        finish: {},
+        thickness: {},
+        brand: {},
+        room: {},
+        aesthetic: {},
+      },
       brandOptions: [],
     };
   }

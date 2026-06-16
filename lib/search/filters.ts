@@ -12,7 +12,8 @@ export type SlabSort =
   | "price_asc"
   | "price_desc"
   | "sqft_desc"
-  | "ppsf_asc";
+  | "ppsf_asc"
+  | "distance";
 
 export type SearchFilters = {
   q: string;
@@ -22,9 +23,13 @@ export type SearchFilters = {
   finish: string[];
   thickness: string[]; // 1 | 2 | 3 | 4plus (centimeters)
   brand: string[];
+  room: string[]; // kitchen | bathroom | ...
+  aesthetic: string[]; // veined | sparkling | ...
   priceMin: number;
   priceMax: number;
   minSqft: number;
+  /** Distance radius in miles (0 = any). Buyer coordinates stay client-side. */
+  radius: number;
   available: boolean;
   negotiable: boolean;
   sort: SlabSort;
@@ -42,9 +47,12 @@ export const DEFAULT_FILTERS: SearchFilters = {
   finish: [],
   thickness: [],
   brand: [],
+  room: [],
+  aesthetic: [],
   priceMin: PRICE_MIN,
   priceMax: PRICE_MAX,
   minSqft: 0,
+  radius: 0,
   available: true,
   negotiable: false,
   sort: "newest",
@@ -94,13 +102,40 @@ export const COLOR_OPTIONS: {
   },
 ];
 
+export const ROOM_OPTIONS: { value: string; label: string }[] = [
+  { value: "kitchen", label: "Kitchen countertop" },
+  { value: "bathroom", label: "Bathroom countertop" },
+  { value: "vanity", label: "Vanity top" },
+  { value: "bar", label: "Bar top" },
+  { value: "outdoor", label: "Outdoor / Exterior" },
+  { value: "flooring", label: "Flooring" },
+  { value: "wall", label: "Wall cladding" },
+  { value: "fireplace", label: "Fireplace surround" },
+  { value: "island", label: "Island" },
+];
+
+export const AESTHETIC_OPTIONS: { value: string; label: string }[] = [
+  { value: "veined", label: "Veined" },
+  { value: "subtle", label: "Subtle veining" },
+  { value: "solid", label: "Solid / uniform" },
+  { value: "sparkling", label: "Sparkling" },
+  { value: "speckled", label: "Speckled" },
+  { value: "concrete", label: "Concrete look" },
+  { value: "wood", label: "Wood look" },
+  { value: "bookmatched", label: "Bookmatched" },
+];
+
 export const SORT_OPTIONS: { value: SlabSort; label: string }[] = [
   { value: "newest", label: "Newest listings" },
+  { value: "distance", label: "Nearest first" },
   { value: "price_asc", label: "Price: low to high" },
   { value: "price_desc", label: "Price: high to low" },
   { value: "sqft_desc", label: "Largest slab first" },
   { value: "ppsf_asc", label: "Price per sq ft: low to high" },
 ];
+
+export const ROOM_VALUES = new Set(ROOM_OPTIONS.map((o) => o.value));
+export const AESTHETIC_VALUES = new Set(AESTHETIC_OPTIONS.map((o) => o.value));
 
 const SORT_VALUES = new Set<string>(SORT_OPTIONS.map((option) => option.value));
 
@@ -137,9 +172,12 @@ export function parseFilters(params: URLSearchParams): SearchFilters {
     finish: splitCsv(params.get("finish")),
     thickness: splitCsv(params.get("thickness")),
     brand: splitCsv(params.get("brand")),
+    room: splitCsv(params.get("room")),
+    aesthetic: splitCsv(params.get("aesthetic")),
     priceMin: Math.max(PRICE_MIN, toNumber(params.get("price_min"), PRICE_MIN)),
     priceMax: Math.min(PRICE_MAX, toNumber(params.get("price_max"), PRICE_MAX)),
     minSqft: Math.max(0, toNumber(params.get("min_sqft"), 0)),
+    radius: Math.max(0, toNumber(params.get("radius"), 0)),
     available: params.get("available") !== "false",
     negotiable: params.get("negotiable") === "true",
     sort: sortParam && SORT_VALUES.has(sortParam) ? (sortParam as SlabSort) : "newest",
@@ -158,6 +196,8 @@ const TYPE_LABELS = new Map(TYPE_OPTIONS.map((o) => [o.value, o.label]));
 const FINISH_LABELS = new Map(FINISH_OPTIONS.map((o) => [o.value, o.label]));
 const THICKNESS_LABELS = new Map(THICKNESS_OPTIONS.map((o) => [o.value, o.label]));
 const COLOR_LABELS = new Map(COLOR_OPTIONS.map((o) => [o.value, o.label]));
+const ROOM_LABELS = new Map(ROOM_OPTIONS.map((o) => [o.value, o.label]));
+const AESTHETIC_LABELS = new Map(AESTHETIC_OPTIONS.map((o) => [o.value, o.label]));
 
 /**
  * Builds the list of removable chips for the active filters. Labels for
@@ -197,6 +237,16 @@ export function buildActiveChips(
   for (const value of filters.brand) {
     chips.push({ key: "brand", value, label: labels.brand[value] ?? value });
   }
+  for (const value of filters.room) {
+    chips.push({ key: "room", value, label: ROOM_LABELS.get(value) ?? value });
+  }
+  for (const value of filters.aesthetic) {
+    chips.push({
+      key: "aesthetic",
+      value,
+      label: AESTHETIC_LABELS.get(value) ?? value,
+    });
+  }
   if (filters.priceMin > PRICE_MIN || filters.priceMax < PRICE_MAX) {
     chips.push({
       key: "price",
@@ -205,6 +255,9 @@ export function buildActiveChips(
   }
   if (filters.minSqft > 0) {
     chips.push({ key: "min_sqft", label: `≥ ${filters.minSqft} sq ft` });
+  }
+  if (filters.radius > 0) {
+    chips.push({ key: "radius", label: `Within ${filters.radius} mi` });
   }
   if (!filters.available) {
     chips.push({ key: "available", label: "Incl. reserved" });
@@ -229,9 +282,12 @@ export function countActiveFilters(filters: SearchFilters): number {
   count += filters.finish.length;
   count += filters.thickness.length;
   count += filters.brand.length;
+  count += filters.room.length;
+  count += filters.aesthetic.length;
   if (filters.priceMin > PRICE_MIN) count += 1;
   if (filters.priceMax < PRICE_MAX) count += 1;
   if (filters.minSqft > 0) count += 1;
+  if (filters.radius > 0) count += 1;
   if (!filters.available) count += 1;
   if (filters.negotiable) count += 1;
   return count;
