@@ -33,6 +33,37 @@ sale.
 
 Versions are listed newest first. Each entry maps to a release commit.
 
+### Inventory · Anti double-purchase, quantity, CSV import, duplicate (unreleased)
+
+Closed the most dangerous marketplace bug (selling the same physical slab
+twice) and added bulk inventory tools.
+
+- **Atomic reservation (race-condition fix).** Clicking "Buy now" now reserves
+  the slab in the database *before* a Stripe session is created, using a single
+  conditional `UPDATE ... WHERE status = 'available' AND quantity > 0`. The row
+  lock PostgreSQL takes serializes concurrent attempts, so only one buyer can
+  reserve a slab; the second sees "This slab was just reserved by another
+  buyer." (We use a guarded single-statement UPDATE instead of `SELECT FOR
+  UPDATE` because the Neon HTTP driver doesn't run interactive transactions.)
+- **Reservation lifecycle.** Reservations hold for 15 minutes (matching the
+  Stripe session `expires_at`). On payment the slab's quantity decrements
+  (closing the listing at 0, otherwise returning to `available`); on
+  `checkout.session.expired` or `payment_intent.payment_failed` the webhook
+  frees it; and a Vercel Cron job (`/api/cron/release-reservations`, every 5 min,
+  guarded by `CRON_SECRET`) sweeps any stale holds as a safety net.
+- **Reserved / sold UI.** The slab page shows "Reserved — a buyer is completing
+  checkout" or "This slab has been sold" instead of the buy button, and
+  full-slab listings show an "In stock: N" count.
+- **Quantity for full slabs.** The upload form shows a quantity field only for
+  full slabs (remnants stay quantity 1), and cards show an "N available" badge.
+- **CSV bulk import.** New `/dashboard/slabs/import` page with a downloadable
+  template, drag-and-drop upload, a validated preview (per-row errors), and bulk
+  insert via `/api/slabs/import`.
+- **Duplicate listing.** A "Duplicate" action on each inventory row copies a
+  listing (including photos) as a hidden draft and opens it for editing.
+- **Database.** Added `quantity_sold`, `reserved_until`, and `reserved_by` to
+  the `slabs` table (additive migration `0003`). Apply with `npm run db:push`.
+
 ### Orders · Notifications, privacy and navigation (unreleased)
 
 Hardened the post-purchase flow after the first real transaction and improved

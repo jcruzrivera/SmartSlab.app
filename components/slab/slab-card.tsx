@@ -46,6 +46,11 @@ export function SlabCard({
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
           {typeLabels[slab.type] ?? slab.type}
         </span>
+        {slab.type === "full_slab" && slab.quantity > 1 ? (
+          <span className="absolute right-3 top-3 rounded-full bg-[#1bb0ce] px-2.5 py-1 text-xs font-medium text-white shadow-sm">
+            {slab.quantity} available
+          </span>
+        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-4">

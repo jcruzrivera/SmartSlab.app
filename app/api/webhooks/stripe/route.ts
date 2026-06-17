@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
+import { releaseTransaction } from "@/lib/db/transactions";
 import { fulfillTransaction } from "@/lib/payments/fulfill";
 import { setVendorVerified } from "@/lib/db/users";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
@@ -50,6 +51,26 @@ export async function POST(request: Request): Promise<NextResponse> {
               ? session.payment_intent
               : undefined;
           await fulfillTransaction(transactionId, { paymentIntentId });
+        }
+        break;
+      }
+
+      case "checkout.session.expired": {
+        // Buyer didn't pay within the window — free the reserved slab.
+        const session = event.data.object as Stripe.Checkout.Session;
+        const transactionId = session.metadata?.transactionId;
+        if (transactionId) {
+          await releaseTransaction(transactionId);
+        }
+        break;
+      }
+
+      case "payment_intent.payment_failed": {
+        // Payment attempt failed — release the reservation so others can buy.
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const transactionId = intent.metadata?.transactionId;
+        if (transactionId) {
+          await releaseTransaction(transactionId);
         }
         break;
       }

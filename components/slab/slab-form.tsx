@@ -75,6 +75,9 @@ export function SlabForm({
   );
   const [widthIn, setWidthIn] = useState(initialValues?.widthCm ?? "");
   const [heightIn, setHeightIn] = useState(initialValues?.heightCm ?? "");
+  const [slabType, setSlabType] = useState<"full_slab" | "remnant">(
+    initialValues?.type ?? "full_slab",
+  );
   const [rooms, setRooms] = useState<string[]>(initialValues?.roomUse ?? []);
   const [aesthetics, setAesthetics] = useState<string[]>(
     initialValues?.aestheticTags ?? [],
@@ -133,7 +136,10 @@ export function SlabForm({
               id="type"
               name="type"
               className={inputClass}
-              defaultValue={initialValues?.type ?? "full_slab"}
+              value={slabType}
+              onChange={(event) =>
+                setSlabType(event.target.value as "full_slab" | "remnant")
+              }
               disabled={isSold}
             >
               <option value="full_slab">Full slab</option>
@@ -350,17 +356,26 @@ export function SlabForm({
               className={inputClass}
             />
           </Field>
-          <Field label="Quantity" htmlFor="quantity">
-            <input
-              id="quantity"
-              name="quantity"
-              type="number"
-              min="1"
-              defaultValue={initialValues?.quantity ?? 1}
-              disabled={isSold}
-              className={inputClass}
-            />
-          </Field>
+          {slabType === "full_slab" ? (
+            <Field label="Quantity available" htmlFor="quantity">
+              <input
+                id="quantity"
+                name="quantity"
+                type="number"
+                min="1"
+                max="999"
+                defaultValue={initialValues?.quantity ?? 1}
+                disabled={isSold}
+                className={inputClass}
+              />
+              <p className="text-xs text-slate-500">
+                Each sale reduces this by 1; the listing closes at 0.
+              </p>
+            </Field>
+          ) : (
+            // Remnants are unique — always quantity 1.
+            <input type="hidden" name="quantity" value={1} />
+          )}
           <Field label="Brand / supplier" htmlFor="brandSupplier">
             <input
               id="brandSupplier"

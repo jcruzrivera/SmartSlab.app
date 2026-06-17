@@ -137,6 +137,11 @@ export const slabs = pgTable("slabs", {
   price: numeric("price", { precision: 12, scale: 2 }).notNull().default("0"),
   pricePerSqft: numeric("price_per_sqft", { precision: 12, scale: 2 }),
   quantity: integer("quantity").notNull().default(1),
+  quantitySold: integer("quantity_sold").notNull().default(0),
+  reservedUntil: timestamp("reserved_until", { withTimezone: true }),
+  reservedBy: uuid("reserved_by").references(() => users.id, {
+    onDelete: "set null",
+  }),
   notes: text("notes"),
   isNegotiable: boolean("is_negotiable").notNull().default(false),
   aiExtracted: boolean("ai_extracted").notNull().default(false),

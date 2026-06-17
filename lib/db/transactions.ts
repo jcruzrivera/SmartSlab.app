@@ -74,12 +74,64 @@ export async function markTransactionPaid(
     .set({ status: "paid", updatedAt: new Date() })
     .where(eq(transactions.id, transactionId));
 
+  // Decrement the slab's available quantity. Multi-quantity full slabs return
+  // to "available" with one fewer unit; the listing closes ("sold") only when
+  // the last unit is gone. Clear the checkout reservation either way.
+  const slab = await db.query.slabs.findFirst({
+    where: eq(slabs.id, tx.slabId),
+    columns: { quantity: true, quantitySold: true },
+  });
+
+  const remaining = Math.max(0, (slab?.quantity ?? 1) - 1);
+
   await db
     .update(slabs)
-    .set({ status: "sold", updatedAt: new Date() })
+    .set({
+      quantity: remaining,
+      quantitySold: (slab?.quantitySold ?? 0) + 1,
+      status: remaining === 0 ? "sold" : "available",
+      reservedBy: null,
+      reservedUntil: null,
+      updatedAt: new Date(),
+    })
     .where(eq(slabs.id, tx.slabId));
 
   return true;
+}
+
+/**
+ * Cancels a still-pending transaction and frees its reserved slab. Used when a
+ * checkout session expires, the payment fails, or session creation errors out.
+ * No-op once the transaction has already been paid.
+ */
+export async function releaseTransaction(transactionId: string): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  const tx = await db.query.transactions.findFirst({
+    where: eq(transactions.id, transactionId),
+  });
+
+  if (!tx || tx.status !== "pending") {
+    return;
+  }
+
+  await db
+    .update(transactions)
+    .set({ status: "cancelled", updatedAt: new Date() })
+    .where(eq(transactions.id, transactionId));
+
+  await db
+    .update(slabs)
+    .set({
+      status: "available",
+      reservedBy: null,
+      reservedUntil: null,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(slabs.id, tx.slabId), eq(slabs.status, "reserved")));
 }
 
 export type TransactionEmailData = {

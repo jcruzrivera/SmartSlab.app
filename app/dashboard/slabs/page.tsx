@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
+import { DuplicateButton } from "@/components/slab/duplicate-button";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
@@ -48,12 +49,20 @@ export default async function DashboardSlabsPage() {
             {slabs.length} listing{slabs.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
-          href="/dashboard/slabs/new"
-          className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
-        >
-          + List a slab
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/dashboard/slabs/import"
+            className="inline-flex h-10 items-center rounded-lg border border-[#1bb0ce] px-4 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce] hover:text-white"
+          >
+            Bulk import CSV
+          </Link>
+          <Link
+            href="/dashboard/slabs/new"
+            className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          >
+            + List a slab
+          </Link>
+        </div>
       </div>
 
       {slabs.length === 0 ? (
@@ -110,12 +119,15 @@ export default async function DashboardSlabsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/dashboard/slabs/${slab.id}/edit`}
-                      className="text-sm font-medium text-[#0d8fa8] hover:underline"
-                    >
-                      Edit
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <DuplicateButton slabId={slab.id} />
+                      <Link
+                        href={`/dashboard/slabs/${slab.id}/edit`}
+                        className="text-sm font-medium text-[#0d8fa8] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

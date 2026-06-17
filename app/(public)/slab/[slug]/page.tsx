@@ -161,6 +161,11 @@ export default async function SlabDetailPage({
             {slab.brandSupplier ? (
               <Detail label="Brand / supplier">{slab.brandSupplier}</Detail>
             ) : null}
+            {slab.type === "full_slab" && slab.status === "available" ? (
+              <Detail label="In stock">
+                {slab.quantity} slab{slab.quantity === 1 ? "" : "s"}
+              </Detail>
+            ) : null}
           </dl>
 
           {slab.notes ? (
@@ -232,6 +237,15 @@ export default async function SlabDetailPage({
                 Checkout coming soon
               </button>
             )
+          ) : slab.status === "reserved" ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+              ⏳ Reserved — a buyer is completing checkout. Check back in a few
+              minutes if it falls through.
+            </div>
+          ) : slab.status === "sold" ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+              🚫 This slab has been sold
+            </div>
           ) : (
             <span className="inline-flex h-11 w-fit items-center rounded-lg bg-slate-200 px-5 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               No longer available

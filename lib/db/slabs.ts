@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
 
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { ensureMaterials } from "@/lib/db/materials";
@@ -398,4 +398,93 @@ export async function setSlabStatus(
     .update(slabs)
     .set({ status, updatedAt: new Date() })
     .where(and(eq(slabs.id, slabId), eq(slabs.vendorId, vendorId)));
+}
+
+// Minutes a checkout reservation holds a slab before it auto-expires.
+export const RESERVATION_MINUTES = 15;
+
+/**
+ * Atomically reserves a slab for a buyer to prevent two people buying the same
+ * physical slab at once (the double-purchase race condition).
+ *
+ * This is a SINGLE conditional UPDATE — the row lock PostgreSQL takes for the
+ * UPDATE serializes concurrent attempts, so exactly one caller can flip an
+ * `available` slab to `reserved`. (The Neon HTTP driver does not support
+ * interactive `SELECT ... FOR UPDATE` transactions, so a guarded UPDATE is both
+ * correct and simpler here.) The same buyer may re-reserve their own in-flight
+ * reservation (e.g. clicking "Buy now" twice).
+ *
+ * @returns true when the reservation was acquired, false when the slab is no
+ *          longer available (already reserved by someone else or sold out).
+ */
+export async function reserveSlabForCheckout(
+  slabId: string,
+  buyerId: string,
+): Promise<boolean> {
+  const db = getDb();
+  const reserved = await db
+    .update(slabs)
+    .set({
+      status: "reserved",
+      reservedBy: buyerId,
+      reservedUntil: sql`now() + interval '${sql.raw(String(RESERVATION_MINUTES))} minutes'`,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(slabs.id, slabId),
+        gt(slabs.quantity, 0),
+        or(
+          eq(slabs.status, "available"),
+          and(eq(slabs.status, "reserved"), eq(slabs.reservedBy, buyerId)),
+        ),
+      ),
+    )
+    .returning({ id: slabs.id });
+
+  return reserved.length > 0;
+}
+
+/**
+ * Releases a single slab's reservation back to `available` (used when checkout
+ * creation fails, a payment fails, or a Stripe session expires). No-op unless
+ * the slab is currently `reserved`.
+ */
+export async function releaseSlabReservation(slabId: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(slabs)
+    .set({
+      status: "available",
+      reservedBy: null,
+      reservedUntil: null,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(slabs.id, slabId), eq(slabs.status, "reserved")));
+}
+
+/**
+ * Safety net for the cron job: frees every reservation whose hold has expired.
+ * Returns the number of slabs released.
+ */
+export async function releaseExpiredReservations(): Promise<number> {
+  if (!isDbConfigured()) {
+    return 0;
+  }
+
+  const db = getDb();
+  const released = await db
+    .update(slabs)
+    .set({
+      status: "available",
+      reservedBy: null,
+      reservedUntil: null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(eq(slabs.status, "reserved"), lt(slabs.reservedUntil, new Date())),
+    )
+    .returning({ id: slabs.id });
+
+  return released.length;
 }

@@ -3,8 +3,12 @@
 import { redirect } from "next/navigation";
 
 import { isDbConfigured } from "@/lib/db/client";
-import { getSlabById } from "@/lib/db/slabs";
-import { createTransaction } from "@/lib/db/transactions";
+import {
+  getSlabById,
+  RESERVATION_MINUTES,
+  reserveSlabForCheckout,
+} from "@/lib/db/slabs";
+import { createTransaction, releaseTransaction } from "@/lib/db/transactions";
 import { getDbUserById, getOrCreateCurrentDbUser } from "@/lib/db/users";
 import {
   computeFees,
@@ -70,6 +74,18 @@ export async function startCheckout(
     return { error: "This listing has an invalid price." };
   }
 
+  // Atomically reserve the slab BEFORE creating a Stripe session. If another
+  // buyer already holds it, stop here — no checkout session is created. This is
+  // the database-level guard against double-purchasing the same physical slab.
+  const reserved = await reserveSlabForCheckout(slab.id, buyer.id);
+
+  if (!reserved) {
+    return {
+      error:
+        "This slab was just reserved by another buyer. Please browse other listings.",
+    };
+  }
+
   const fees = computeFees(subtotal);
 
   const transactionId = await createTransaction({
@@ -85,34 +101,48 @@ export async function startCheckout(
   const origin = await getOrigin();
   const stripe = getStripe();
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "usd",
-          unit_amount: toCents(fees.total),
-          product_data: {
-            name: slab.name,
-            description: slab.material?.name ?? undefined,
+  let checkoutUrl: string | null = null;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: toCents(fees.total),
+            product_data: {
+              name: slab.name,
+              description: slab.material?.name ?? undefined,
+            },
           },
         },
+      ],
+      payment_intent_data: {
+        application_fee_amount: toCents(fees.platformFee),
+        transfer_data: { destination: vendor.stripeAccountId },
+        metadata: { transactionId, slabId: slab.id, buyerId: buyer.id },
       },
-    ],
-    payment_intent_data: {
-      application_fee_amount: toCents(fees.platformFee),
-      transfer_data: { destination: vendor.stripeAccountId },
       metadata: { transactionId, slabId: slab.id, buyerId: buyer.id },
-    },
-    metadata: { transactionId, slabId: slab.id, buyerId: buyer.id },
-    success_url: `${origin}/slab/${slab.id}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/slab/${slab.id}?canceled=1`,
-  });
-
-  if (!session.url) {
+      // Expire the Stripe session at the same time the reservation lapses so the
+      // two stay in sync.
+      expires_at: Math.floor(Date.now() / 1000) + RESERVATION_MINUTES * 60,
+      success_url: `${origin}/slab/${slab.id}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/slab/${slab.id}?canceled=1`,
+    });
+    checkoutUrl = session.url;
+  } catch {
+    // Roll back the reservation + pending transaction so the slab is buyable
+    // again right away.
+    await releaseTransaction(transactionId);
     return { error: "Could not start checkout. Please try again." };
   }
 
-  redirect(session.url);
+  if (!checkoutUrl) {
+    await releaseTransaction(transactionId);
+    return { error: "Could not start checkout. Please try again." };
+  }
+
+  redirect(checkoutUrl);
 }

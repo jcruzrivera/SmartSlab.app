@@ -22,6 +22,13 @@
       "when": 1781595289428,
       "tag": "0002_tearful_northstar",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781659821483,
+      "tag": "0003_great_killmonger",
+      "breakpoints": true
     }
   ]
 }
