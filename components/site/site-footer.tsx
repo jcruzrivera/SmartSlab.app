@@ -11,7 +11,7 @@ const categories = [
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <Link href="/" className="flex items-center gap-2">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#1bb0ce] text-sm font-bold text-white">
@@ -46,6 +46,15 @@ export function SiteFooter() {
           <FooterLink href="/sign-in">Sign in</FooterLink>
           <FooterLink href="/sign-up">Create account</FooterLink>
           <FooterLink href="/account">My account</FooterLink>
+        </FooterColumn>
+
+        <FooterColumn title="Legal">
+          <FooterLink href="/legal/terms">Terms of Service</FooterLink>
+          <FooterLink href="/legal/privacy">Privacy Policy</FooterLink>
+          <FooterLink href="/legal/shipping">Shipping Policy</FooterLink>
+          <FooterLink href="/legal/refunds">Refund Policy</FooterLink>
+          <FooterLink href="/legal/safety">Safety &amp; Compliance</FooterLink>
+          <FooterLink href="/faq">FAQ</FooterLink>
         </FooterColumn>
       </div>
 
