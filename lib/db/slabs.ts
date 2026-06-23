@@ -437,6 +437,12 @@ export async function reserveSlabForCheckout(
         or(
           eq(slabs.status, "available"),
           and(eq(slabs.status, "reserved"), eq(slabs.reservedBy, buyerId)),
+          // Expired holds (buyer abandoned checkout) become available again
+          // immediately — we don't rely on the cron for this.
+          and(
+            eq(slabs.status, "reserved"),
+            lt(slabs.reservedUntil, new Date()),
+          ),
         ),
       ),
     )

@@ -6,9 +6,9 @@ import { releaseExpiredReservations } from "@/lib/db/slabs";
 export const dynamic = "force-dynamic";
 
 /**
- * Safety net for checkout reservations. Vercel Cron hits this every few minutes
- * (see vercel.json) and frees any slab whose 15-minute hold has lapsed but
- * whose Stripe webhook never arrived (network blips, etc.).
+ * Safety net for checkout reservations. Vercel Cron hits this on Hobby once
+ * per day (see vercel.json). Stripe webhooks and checkout reservation logic
+ * release expired holds sooner; this sweeps any stragglers.
  *
  * Protected by CRON_SECRET: Vercel Cron sends it as a Bearer token automatically
  * when the env var is configured.
