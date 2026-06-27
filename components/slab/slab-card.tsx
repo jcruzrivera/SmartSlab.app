@@ -41,7 +41,6 @@ export function SlabCard({
         {cardImageUrl ? (
           <SlabPhoto
             src={cardImageUrl}
-            fallbackSrc={primaryImage ?? undefined}
             alt={slab.name}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />

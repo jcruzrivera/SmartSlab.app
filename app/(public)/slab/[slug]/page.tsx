@@ -171,7 +171,6 @@ export default async function SlabDetailPage({
             {primaryImageUrl ? (
               <SlabPhoto
                 src={primaryImageUrl}
-                fallbackSrc={primaryImage ?? undefined}
                 alt={slab.name}
                 loading="eager"
                 className="h-full w-full object-cover"
@@ -196,7 +195,6 @@ export default async function SlabDetailPage({
                   <SlabPhoto
                     key={image.id}
                     src={thumbUrl}
-                    fallbackSrc={image.url}
                     alt={slab.name}
                     className="aspect-square w-full rounded-lg object-cover"
                   />

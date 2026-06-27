@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
-import { AuthSlotLoader } from "@/components/site/auth-slot-loader";
+import { ClerkAuthSlot } from "@/components/site/clerk-auth-slot";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { hasValidClerkConfig } from "@/lib/auth/config";
@@ -68,7 +68,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
         <ClerkProvider>
-          <SiteHeader authSlot={<AuthSlotLoader />} />
+          <SiteHeader authSlot={<ClerkAuthSlot />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
         </ClerkProvider>
