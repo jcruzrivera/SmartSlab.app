@@ -28,12 +28,9 @@ export function SiteFooter() {
 
         <FooterColumn title="Marketplace">
           <FooterLink href="/browse">Browse all</FooterLink>
+          <FooterLink href="/how-it-works">How it works</FooterLink>
           <FooterLink href="/dashboard/slabs/new">Sell a slab</FooterLink>
-          <FooterLink href="/dashboard">Vendor dashboard</FooterLink>
-          <FooterLink href="/dashboard/leads">Quote leads</FooterLink>
-          <FooterLink href="/dashboard/messages">Messages</FooterLink>
-          <FooterLink href="/dashboard/sales">Sales &amp; orders</FooterLink>
-          <FooterLink href="/dashboard/payments">Payments</FooterLink>
+          <FooterLink href="/dashboard">Dashboard</FooterLink>
         </FooterColumn>
 
         <FooterColumn title="Categories">

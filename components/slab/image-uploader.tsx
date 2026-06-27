@@ -3,21 +3,76 @@
 import { upload } from "@vercel/blob/client";
 import { useRef, useState } from "react";
 
+import type { SlabImageAnalysis } from "@/lib/ai/slab-analysis";
+
 const MAX_IMAGES = 6;
 
 type ImageUploaderProps = {
   initialUrls?: string[];
+  enableAnalysis?: boolean;
+  onAnalysis?: (analysis: SlabImageAnalysis) => void;
 };
 
-export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
+export function ImageUploader({
+  initialUrls = [],
+  enableAnalysis = false,
+  onAnalysis,
+}: ImageUploaderProps) {
   const [urls, setUrls] = useState<string[]>(initialUrls);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisNote, setAnalysisNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [manualUrl, setManualUrl] = useState("");
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const analyzedUrlRef = useRef<string | null>(null);
 
   const remaining = MAX_IMAGES - urls.length;
+
+  async function analyzeImage(imageUrl: string) {
+    if (!enableAnalysis || !onAnalysis || analyzedUrlRef.current === imageUrl) {
+      return;
+    }
+
+    analyzedUrlRef.current = imageUrl;
+    setIsAnalyzing(true);
+    setAnalysisNote(null);
+
+    try {
+      const response = await fetch("/api/slabs/analyze-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      const data = (await response.json()) as {
+        analysis?: SlabImageAnalysis;
+        configured?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        if (response.status === 503) {
+          setAnalysisNote("Add OPENAI_API_KEY or ANTHROPIC_API_KEY to auto-fill details.");
+          return;
+        }
+        throw new Error(data.error ?? "Analysis failed.");
+      }
+
+      if (data.analysis && Object.keys(data.analysis).length > 0) {
+        onAnalysis(data.analysis);
+        setAnalysisNote("Details suggested from your photo — review before publishing.");
+      }
+    } catch (analysisError) {
+      setAnalysisNote(
+        analysisError instanceof Error
+          ? analysisError.message
+          : "Could not analyze photo.",
+      );
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) {
@@ -37,20 +92,27 @@ export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
         });
         uploaded.push(result.url);
       }
-      setUrls((prev) => [...prev, ...uploaded]);
+
+      setUrls((prev) => {
+        const next = [...prev, ...uploaded];
+        if (enableAnalysis && prev.length === 0 && uploaded[0]) {
+          void analyzeImage(uploaded[0]);
+        }
+        return next;
+      });
     } catch (uploadError) {
       const message =
         uploadError instanceof Error ? uploadError.message : String(uploadError);
       const isTokenError = /token/i.test(message);
       setError(
         isTokenError
-          ? "Photo storage isn't set up yet (Vercel Blob). Paste an image URL below to add photos for now."
-          : message || "Could not upload image. You can paste an image URL instead.",
+          ? "Photo storage is not configured yet. Paste an image URL below instead."
+          : message || "Could not upload image.",
       );
     } finally {
       setIsUploading(false);
-      if (galleryInputRef.current) {
-        galleryInputRef.current.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
       if (cameraInputRef.current) {
         cameraInputRef.current.value = "";
@@ -76,12 +138,21 @@ export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
     }
 
     setError(null);
-    setUrls((prev) => [...prev, value]);
+    setUrls((prev) => {
+      const next = [...prev, value];
+      if (enableAnalysis && prev.length === 0) {
+        void analyzeImage(value);
+      }
+      return next;
+    });
     setManualUrl("");
   }
 
   function removeUrl(target: string) {
     setUrls((prev) => prev.filter((url) => url !== target));
+    if (analyzedUrlRef.current === target) {
+      analyzedUrlRef.current = null;
+    }
   }
 
   return (
@@ -95,7 +166,7 @@ export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
           {urls.map((url, index) => (
             <div
               key={url}
-              className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="Slab" className="h-full w-full object-cover" />
@@ -107,7 +178,7 @@ export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
               <button
                 type="button"
                 onClick={() => removeUrl(url)}
-                className="absolute right-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100"
+                className="absolute right-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
               >
                 Remove
               </button>
@@ -117,75 +188,109 @@ export function ImageUploader({ initialUrls = [] }: ImageUploaderProps) {
       ) : null}
 
       {remaining > 0 ? (
-        <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-2">
-            <label
-              className={`flex h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-sm text-slate-500 transition hover:border-[#1bb0ce] dark:border-slate-700 ${
-                isUploading ? "pointer-events-none opacity-60" : ""
-              }`}
-            >
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(event) => handleFiles(event.target.files)}
-              />
-              <span className="font-medium text-slate-700 dark:text-slate-200">
-                Gallery / files
-              </span>
-              <span className="mt-0.5 text-xs">JPG · PNG · WEBP · 10MB</span>
-            </label>
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(event) => {
+              event.preventDefault();
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              void handleFiles(event.dataTransfer.files);
+            }}
+            className="flex min-h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900/50"
+          >
+            <span className="text-3xl" aria-hidden>
+              📷
+            </span>
+            <span className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-100">
+              {isUploading ? "Uploading…" : "Add photos"}
+            </span>
+            <span className="mt-1 text-sm text-slate-500">
+              Tap, drag &amp; drop, or choose from gallery · up to {MAX_IMAGES}
+            </span>
+          </button>
 
-            <label
-              className={`flex h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-sm text-slate-500 transition hover:border-[#1bb0ce] dark:border-slate-700 ${
-                isUploading ? "pointer-events-none opacity-60" : ""
-              }`}
-            >
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(event) => handleFiles(event.target.files)}
-              />
-              <span className="font-medium text-slate-700 dark:text-slate-200">
-                Take photo
-              </span>
-              <span className="mt-0.5 text-xs">Use device camera</span>
-            </label>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(event) => void handleFiles(event.target.files)}
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(event) => void handleFiles(event.target.files)}
+          />
 
-          {isUploading ? (
-            <p className="text-xs text-slate-500">Uploading… please wait.</p>
-          ) : (
-            <p className="text-xs text-slate-500">{remaining} photo(s) left</p>
-          )}
-
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={manualUrl}
-              onChange={(event) => setManualUrl(event.target.value)}
-              placeholder="…or paste an image URL"
-              className="h-9 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#1bb0ce] dark:border-slate-700 dark:bg-slate-900"
-            />
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={addManualUrl}
-              className="h-9 rounded-lg border border-slate-300 px-3 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              disabled={isUploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition hover:bg-slate-100 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
             >
-              Add
+              Gallery
             </button>
+            <button
+              type="button"
+              disabled={isUploading}
+              onClick={() => cameraInputRef.current?.click()}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition hover:bg-slate-100 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
+            >
+              Camera
+            </button>
+            <span className="self-center text-xs text-slate-500">
+              {remaining} photo{remaining === 1 ? "" : "s"} left
+            </span>
           </div>
+
+          <details className="rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-800">
+            <summary className="cursor-pointer text-sm text-slate-600 dark:text-slate-300">
+              Paste image URL instead
+            </summary>
+            <div className="mt-2 flex gap-2">
+              <input
+                type="url"
+                value={manualUrl}
+                onChange={(event) => setManualUrl(event.target.value)}
+                placeholder="https://…"
+                className="h-9 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#1bb0ce] dark:border-slate-700 dark:bg-slate-900"
+              />
+              <button
+                type="button"
+                onClick={addManualUrl}
+                className="h-9 rounded-lg border border-slate-300 px-3 text-sm font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              >
+                Add
+              </button>
+            </div>
+          </details>
         </div>
       ) : (
         <p className="text-xs text-slate-500">
           Maximum of {MAX_IMAGES} photos reached.
         </p>
       )}
+
+      {isAnalyzing ? (
+        <p className="rounded-lg bg-[#1bb0ce]/10 px-3 py-2 text-sm text-[#0d8fa8]">
+          Analyzing photo for listing details…
+        </p>
+      ) : null}
+
+      {analysisNote ? (
+        <p className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          {analysisNote}
+        </p>
+      ) : null}
 
       {error ? (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950/40">

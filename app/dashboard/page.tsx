@@ -1,10 +1,6 @@
 import Link from "next/link";
 
-import { EngagementMetrics } from "@/components/dashboard/engagement-metrics";
 import { GettingStarted } from "@/components/dashboard/getting-started";
-import { MarketplacePerformance } from "@/components/dashboard/marketplace-performance";
-import { VerificationBadge } from "@/components/dashboard/verification-badge";
-import { WalletPreview } from "@/components/dashboard/wallet-preview";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
@@ -28,6 +24,7 @@ export default async function DashboardHomePage() {
     .reduce((sum, slab) => sum + Number(slab.price ?? 0), 0);
 
   const insights = buildVendorInsights({ user, slabs, sales });
+  const onboardingComplete = insights.onboarding.every((step) => step.complete);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -36,7 +33,7 @@ export default async function DashboardHomePage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
           <p className="mt-1 text-slate-600 dark:text-slate-300">
-            {user?.companyName ?? user?.contactName ?? "Vendor overview"}
+            {user?.companyName ?? user?.contactName ?? "Your vendor workspace"}
           </p>
         </div>
         <Link
@@ -53,86 +50,24 @@ export default async function DashboardHomePage() {
         <Metric label="Sold" value={soldCount.toString()} />
       </div>
 
-      <EngagementMetrics engagement={insights.engagement} />
-
-      <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <Link
-          href="/dashboard/slabs"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">Manage inventory</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            View, publish, and update your slab listings.
-          </p>
-        </Link>
-        <Link
-          href="/dashboard/sales"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">Sales &amp; orders</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Track orders and earnings from your listings.
-          </p>
-        </Link>
-        <Link
-          href="/dashboard/leads"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">Quote leads</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Review buyer quote requests and mark follow-up status.
-          </p>
-        </Link>
-        <Link
-          href="/dashboard/messages"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">Messages</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Reply to buyers and keep quote conversations organized.
-          </p>
-        </Link>
-        <Link
-          href="/account#purchases"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">My purchases</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            See the slabs you&apos;ve bought and unlock vendor contacts.
-          </p>
-        </Link>
-        <Link
-          href="/dashboard/payments"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">Payments &amp; payouts</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Connect Stripe to receive payments for your slabs.
-          </p>
-        </Link>
-        <Link
-          href="/browse"
-          className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <p className="font-medium">View marketplace</p>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            See how buyers discover slabs across SmartSlab.
-          </p>
-        </Link>
-      </div>
-
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <GettingStarted steps={insights.onboarding} />
-        <VerificationBadge status={insights.verification} />
-      </div>
-
-      <div className="mt-8">
-        <MarketplacePerformance performance={insights.performance} />
-      </div>
-
-      <div className="mt-8">
-        <WalletPreview wallet={insights.wallet} />
-      </div>
+      {!onboardingComplete ? (
+        <div className="mt-8">
+          <GettingStarted steps={insights.onboarding} />
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <QuickLink
+            href="/dashboard/slabs"
+            title="Manage inventory"
+            description="Update photos, pricing, and availability."
+          />
+          <QuickLink
+            href="/dashboard/sales"
+            title="View sales"
+            description="Track orders and fulfillment status."
+          />
+        </div>
+      )}
     </main>
   );
 }
@@ -143,5 +78,25 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
     </div>
+  );
+}
+
+function QuickLink({
+  href,
+  title,
+  description,
+}: {
+  href: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
+    >
+      <p className="font-medium">{title}</p>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{description}</p>
+    </Link>
   );
 }

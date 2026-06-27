@@ -14,6 +14,10 @@ import {
 import { createSlabAction } from "@/app/dashboard/slabs/new/actions";
 import { ImageUploader } from "@/components/slab/image-uploader";
 import { SlabEditActions } from "@/components/slab/slab-edit-actions";
+import {
+  matchMaterialId,
+  type SlabImageAnalysis,
+} from "@/lib/ai/slab-analysis";
 import { AESTHETIC_OPTIONS, ROOM_OPTIONS } from "@/lib/search/filters";
 
 type MaterialOption = { id: string; name: string };
@@ -44,6 +48,15 @@ export type SlabFormInitialValues = {
 const inputClass =
   "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-900";
 const labelClass = "text-sm font-medium text-slate-700 dark:text-slate-200";
+
+const VALID_FINISHES = new Set([
+  "polished",
+  "honed",
+  "leathered",
+  "brushed",
+  "sandblasted",
+  "other",
+]);
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -89,9 +102,62 @@ export function SlabForm({
   const [slabType, setSlabType] = useState<"full_slab" | "remnant">(
     initialValues?.type ?? "full_slab",
   );
+  const [name, setName] = useState(initialValues?.name ?? "");
+  const [materialId, setMaterialId] = useState(initialValues?.materialId ?? "");
+  const [finish, setFinish] = useState(initialValues?.finish ?? "polished");
+  const [colorFamily, setColorFamily] = useState(initialValues?.colorFamily ?? "");
+  const [notes, setNotes] = useState(initialValues?.notes ?? "");
   const [rooms, setRooms] = useState<string[]>(initialValues?.roomUse ?? []);
   const [aesthetics, setAesthetics] = useState<string[]>(
     initialValues?.aestheticTags ?? [],
+  );
+
+  const isCreate = mode === "create";
+  const isSold = initialValues?.status === "sold";
+
+  function applyAnalysis(analysis: SlabImageAnalysis) {
+    if (analysis.name) {
+      setName(analysis.name);
+    }
+    if (analysis.type) {
+      setSlabType(analysis.type);
+    }
+    const matchedMaterial = matchMaterialId(analysis.material, materials);
+    if (matchedMaterial) {
+      setMaterialId(matchedMaterial);
+    }
+    if (analysis.finish && VALID_FINISHES.has(analysis.finish)) {
+      setFinish(analysis.finish);
+    }
+    if (analysis.colorFamily) {
+      setColorFamily(analysis.colorFamily);
+    }
+    if (analysis.notes) {
+      setNotes(analysis.notes);
+    }
+  }
+
+  const photoSection = (
+    <div className="flex flex-col gap-1.5">
+      <span className={labelClass}>Photos</span>
+      {isCreate ? (
+        <p className="text-xs text-slate-500">
+          Start with a photo from your gallery or camera. SmartSlab can suggest
+          listing details automatically.
+        </p>
+      ) : null}
+      {!isSold ? (
+        <ImageUploader
+          initialUrls={initialValues?.imageUrls ?? []}
+          enableAnalysis={isCreate}
+          onAnalysis={isCreate ? applyAnalysis : undefined}
+        />
+      ) : (
+        <p className="text-sm text-slate-500">
+          Photos cannot be changed on sold listings.
+        </p>
+      )}
+    </div>
   );
 
   function toggleValue(
@@ -113,8 +179,6 @@ export function SlabForm({
       ? (w * h) / 144
       : null;
 
-  const isSold = initialValues?.status === "sold";
-
   return (
     <div className="flex flex-col gap-6">
       {mode === "edit" && initialValues?.status === "hidden" ? (
@@ -129,12 +193,16 @@ export function SlabForm({
           <input type="hidden" name="slabId" value={slabId} />
         ) : null}
 
+        {isCreate ? photoSection : null}
+
         <Field label="Listing name" htmlFor="name">
           <input
             id="name"
             name="name"
             required
-            defaultValue={initialValues?.name}
+            value={isCreate ? name : undefined}
+            defaultValue={isCreate ? undefined : initialValues?.name}
+            onChange={isCreate ? (event) => setName(event.target.value) : undefined}
             disabled={isSold}
             placeholder="e.g. Calacatta Gold Quartz Remnant"
             className={inputClass}
@@ -163,7 +231,11 @@ export function SlabForm({
               id="materialId"
               name="materialId"
               className={inputClass}
-              defaultValue={initialValues?.materialId ?? ""}
+              value={isCreate ? materialId : undefined}
+              defaultValue={isCreate ? undefined : initialValues?.materialId ?? ""}
+              onChange={
+                isCreate ? (event) => setMaterialId(event.target.value) : undefined
+              }
               disabled={isSold}
             >
               <option value="">Select material</option>
@@ -180,7 +252,11 @@ export function SlabForm({
               id="finish"
               name="finish"
               className={inputClass}
-              defaultValue={initialValues?.finish ?? "polished"}
+              value={isCreate ? finish : undefined}
+              defaultValue={isCreate ? undefined : initialValues?.finish ?? "polished"}
+              onChange={
+                isCreate ? (event) => setFinish(event.target.value) : undefined
+              }
               disabled={isSold}
             >
               <option value="polished">Polished</option>
@@ -196,7 +272,13 @@ export function SlabForm({
             <input
               id="colorFamily"
               name="colorFamily"
-              defaultValue={initialValues?.colorFamily ?? ""}
+              value={isCreate ? colorFamily : undefined}
+              defaultValue={isCreate ? undefined : initialValues?.colorFamily ?? ""}
+              onChange={
+                isCreate
+                  ? (event) => setColorFamily(event.target.value)
+                  : undefined
+              }
               disabled={isSold}
               placeholder="e.g. white, black, beige"
               className={inputClass}
@@ -397,23 +479,16 @@ export function SlabForm({
           </Field>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <span className={labelClass}>Photos</span>
-          {!isSold ? (
-            <ImageUploader initialUrls={initialValues?.imageUrls ?? []} />
-          ) : (
-            <p className="text-sm text-slate-500">
-              Photos cannot be changed on sold listings.
-            </p>
-          )}
-        </div>
+        {!isCreate ? photoSection : null}
 
         <Field label="Notes" htmlFor="notes">
           <textarea
             id="notes"
             name="notes"
             rows={3}
-            defaultValue={initialValues?.notes ?? ""}
+            value={isCreate ? notes : undefined}
+            defaultValue={isCreate ? undefined : initialValues?.notes ?? ""}
+            onChange={isCreate ? (event) => setNotes(event.target.value) : undefined}
             disabled={isSold}
             placeholder="Veining, edges, condition, pickup details..."
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-900"
