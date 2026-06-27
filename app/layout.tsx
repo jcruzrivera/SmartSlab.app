@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import {
   ClerkProvider,
   Show,
@@ -81,6 +82,7 @@ export default function RootLayout({
           <SiteHeader authSlot={<GuestAuthSlot />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
+          <Analytics />
         </body>
       </html>
     );
@@ -97,6 +99,7 @@ export default function RootLayout({
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
