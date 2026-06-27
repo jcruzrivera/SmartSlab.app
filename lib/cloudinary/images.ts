@@ -1,4 +1,4 @@
-import { getCloudinaryCloudName, isCloudinaryConfigured } from "@/lib/cloudinary/config";
+import { getPublicCloudinaryCloudName } from "@/lib/cloudinary/config";
 
 export type ImageTransformOptions = {
   width?: number;
@@ -43,6 +43,10 @@ function injectCloudinaryTransform(url: string, transform: string): string {
   return `${prefix}${transform}/${suffix}`;
 }
 
+/**
+ * Builds a delivery URL safe for both SSR and the browser bundle.
+ * Uses only NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to avoid hydration mismatches.
+ */
 export function getOptimizedImageUrl(
   src: string | null | undefined,
   options: ImageTransformOptions = {},
@@ -51,16 +55,15 @@ export function getOptimizedImageUrl(
     return undefined;
   }
 
-  const cloud = getCloudinaryCloudName();
-
-  if (!cloud || !isCloudinaryConfigured()) {
-    return src;
-  }
-
   const transform = buildTransformSegment(options);
 
   if (src.includes("res.cloudinary.com")) {
     return injectCloudinaryTransform(src, transform);
+  }
+
+  const cloud = getPublicCloudinaryCloudName();
+  if (!cloud) {
+    return src;
   }
 
   return `https://res.cloudinary.com/${cloud}/image/fetch/${transform}/${encodeURIComponent(src)}`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
 
@@ -25,10 +25,19 @@ export function SlabImage({
   loading = "lazy",
   fallback,
 }: SlabImageProps) {
+  const optimized = useMemo(
+    () => getOptimizedImageUrl(src, { width, height, crop }),
+    [src, width, height, crop],
+  );
+  const [displaySrc, setDisplaySrc] = useState<string | undefined>(optimized);
   const [failed, setFailed] = useState(false);
-  const optimized = getOptimizedImageUrl(src, { width, height, crop });
 
-  if (!optimized || failed) {
+  useEffect(() => {
+    setDisplaySrc(optimized);
+    setFailed(false);
+  }, [optimized]);
+
+  if (!src || failed) {
     return (
       fallback ?? (
         <div
@@ -43,12 +52,18 @@ export function SlabImage({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={optimized}
+      src={displaySrc ?? src}
       alt={alt}
       loading={loading}
       decoding="async"
       className={className}
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (displaySrc && displaySrc !== src) {
+          setDisplaySrc(src);
+          return;
+        }
+        setFailed(true);
+      }}
     />
   );
 }
