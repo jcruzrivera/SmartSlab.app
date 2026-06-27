@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "smartslab.compare";
 const COMPARE_CHANGE_EVENT = "smartslab-compare-change";
@@ -19,21 +19,28 @@ function readIds(): string[] {
   }
 }
 
-function subscribe(onStoreChange: () => void): () => void {
-  window.addEventListener(COMPARE_CHANGE_EVENT, onStoreChange);
-  window.addEventListener("storage", onStoreChange);
-  return () => {
-    window.removeEventListener(COMPARE_CHANGE_EVENT, onStoreChange);
-    window.removeEventListener("storage", onStoreChange);
-  };
-}
-
 function notifyCompareChange(): void {
   window.dispatchEvent(new Event(COMPARE_CHANGE_EVENT));
 }
 
 export function CompareButton({ slabId }: { slabId: string }) {
-  const ids = useSyncExternalStore(subscribe, readIds, () => []);
+  // Start empty so the first client render matches SSR, then sync localStorage.
+  const [ids, setIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setIds(readIds());
+
+    function onStoreChange() {
+      setIds(readIds());
+    }
+
+    window.addEventListener(COMPARE_CHANGE_EVENT, onStoreChange);
+    window.addEventListener("storage", onStoreChange);
+    return () => {
+      window.removeEventListener(COMPARE_CHANGE_EVENT, onStoreChange);
+      window.removeEventListener("storage", onStoreChange);
+    };
+  }, []);
 
   const included = ids.includes(slabId);
 
@@ -42,6 +49,7 @@ export function CompareButton({ slabId }: { slabId: string }) {
       ? ids.filter((id) => id !== slabId)
       : [slabId, ...ids.filter((id) => id !== slabId)].slice(0, MAX_COMPARE);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    setIds(next);
     notifyCompareChange();
   }
 

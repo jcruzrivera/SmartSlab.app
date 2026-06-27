@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { UserButton, useAuth } from "@clerk/nextjs";
 
 export function ClerkAuthSlot() {
+  const [mounted, setMounted] = useState(false);
   const { isLoaded, isSignedIn } = useAuth();
 
-  if (!isLoaded) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !isLoaded) {
     return <span className="inline-block h-9 w-24" aria-hidden />;
   }
 
