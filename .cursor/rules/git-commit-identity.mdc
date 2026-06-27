@@ -1,0 +1,22 @@
+---
+description: Git author identity for commits and pushes in this repo
+alwaysApply: true
+---
+
+# Git commit identity (SmartSlab)
+
+Do **not** run `git config --global` or `git config` to change identity.
+
+For every `git commit` in this repository, pass author via per-command flags:
+
+```bash
+git -c user.name="Juan Cruz" -c user.email="juansiestadisponible@gmail.com" commit -m "..."
+```
+
+- **Name:** Juan Cruz
+- **Email:** juansiestadisponible@gmail.com
+- **Remote:** https://github.com/jcruzrivera/SmartSlab.app
+
+On PowerShell (no heredoc), use multiple `-m` flags or a here-string for the message body.
+
+Never use placeholder identities such as `dev@smartslab.local` or `SmartSlab Dev`.
