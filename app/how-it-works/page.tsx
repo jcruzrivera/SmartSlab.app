@@ -10,7 +10,7 @@ export const metadata = buildLegalMetadata({
 
 export default function HowItWorksPage() {
   return (
-    <main className="min-h-screen bg-[#0b1120]">
+    <main className="min-h-screen">
       <HowItWorksContent />
     </main>
   );

@@ -78,7 +78,7 @@ export default function RootLayout({
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+        <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
           <SiteHeader authSlot={<GuestAuthSlot />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
@@ -93,7 +93,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+      <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
         <ClerkProvider>
           <SiteHeader authSlot={<ClerkAuthSlot />} />
           <AppProviders>{children}</AppProviders>

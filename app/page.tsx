@@ -21,7 +21,7 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="border-b border-slate-200 bg-gradient-to-b from-[#1bb0ce]/10 to-transparent dark:border-slate-800">
+      <section className="border-b border-slate-200/60 dark:border-slate-800/50">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-8 pt-10 md:gap-6 md:py-16">
           <p className="inline-flex w-fit rounded-full bg-[#1bb0ce]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0d8fa8]">
             Slab & remnant marketplace
