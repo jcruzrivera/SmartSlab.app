@@ -1,6 +1,8 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+import { getClerkUserId } from "@/lib/auth/session";
 
 import { parseAppRole } from "@/lib/auth/roles";
 
@@ -10,7 +12,7 @@ const roleSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
+    const userId = await getClerkUserId();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

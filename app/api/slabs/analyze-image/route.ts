@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getClerkUserId } from "@/lib/auth/session";
 import { NextResponse } from "next/server";
 
 import {
@@ -7,7 +7,7 @@ import {
 } from "@/lib/ai/slab-analysis";
 
 export async function GET(): Promise<NextResponse> {
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
   return NextResponse.json({
     configured: isVisionConfigured(),
     signedIn: Boolean(userId),
@@ -19,7 +19,7 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
   if (!userId) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   }

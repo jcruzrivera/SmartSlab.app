@@ -47,9 +47,28 @@ export default async function AccountPage() {
   }
 
   const user = await getOrCreateCurrentDbUser();
-  const purchases = user ? await listPurchasesByBuyer(user.id) : [];
-  const favorites = user ? await listFavoritesByUser(user.id) : [];
-  const quoteRequests = user ? await listQuoteRequestsByBuyer(user.id) : [];
+
+  if (!user) {
+    return (
+      <main className="mx-auto w-full max-w-3xl px-6 py-10">
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "My account" }]} />
+        <h1 className="text-3xl font-semibold tracking-tight">Account settings</h1>
+        <p className="mt-3 text-slate-600 dark:text-slate-300">
+          Sign in to manage your profile, favorites, and purchase history.
+        </p>
+        <Link
+          href="/sign-in"
+          className="mt-6 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+        >
+          Sign in
+        </Link>
+      </main>
+    );
+  }
+
+  const purchases = await listPurchasesByBuyer(user.id);
+  const favorites = await listFavoritesByUser(user.id);
+  const quoteRequests = await listQuoteRequestsByBuyer(user.id);
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">

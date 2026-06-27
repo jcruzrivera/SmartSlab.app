@@ -17,11 +17,14 @@ documented here.
 
 ### External services
 The app talks to **Neon Postgres (with the `pgvector` extension)**, **Clerk** (auth),
-**Stripe Connect** (payments), and **Vercel Blob** (image uploads). It is built to
+**Stripe Connect** (payments), **Cloudinary** (image upload + delivery), and optionally
+**Vercel Blob** (legacy upload fallback). It is built to
 degrade gracefully: the public homepage (`/`) and `/browse` render without any of
 these configured, but everything else needs real credentials. Provide them as
 secrets (`DATABASE_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
-`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `BLOB_READ_WRITE_TOKEN`, …) for full E2E.
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLOUDINARY_CLOUD_NAME`,
+`CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`,
+`BLOB_READ_WRITE_TOKEN`, …) for full E2E.
 
 ### Non-obvious gotchas
 - **Runtime DB driver is `@neondatabase/serverless` over HTTP**, not TCP. It derives

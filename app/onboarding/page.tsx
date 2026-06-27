@@ -1,8 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { RoleOnboardingForm } from "@/components/auth/role-onboarding-form";
 import { hasValidClerkConfig } from "@/lib/auth/config";
+import { getClerkUserId } from "@/lib/auth/session";
 import { FALLBACK_ROUTES } from "@/lib/auth/roles";
 import { getCurrentDbUser } from "@/lib/db/users";
 
@@ -13,13 +13,12 @@ export default async function OnboardingPage() {
     redirect("/");
   }
 
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
-  // If the user already completed onboarding, send them to their workspace.
   const existing = await getCurrentDbUser();
   if (existing?.role) {
     redirect(FALLBACK_ROUTES[existing.role]);

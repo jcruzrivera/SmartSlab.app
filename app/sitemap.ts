@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { listPublicSlabs } from "@/lib/db/slabs";
+import { LEGAL_NAV } from "@/lib/legal/nav";
 
 function baseUrl(): string {
   return (
@@ -22,6 +23,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.9,
     },
+    {
+      url: `${origin}/how-it-works`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${origin}/legal`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    ...LEGAL_NAV.filter((item) => item.href.startsWith("/legal/")).map((item) => ({
+      url: `${origin}${item.href}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.4,
+    })),
     {
       url: `${origin}/compare`,
       lastModified: now,

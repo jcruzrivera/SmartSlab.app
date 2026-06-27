@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SlabImage } from "@/components/media/slab-image";
 import type { SlabWithRelations } from "@/lib/db/slabs";
 import { formatLocation, formatPrice, formatSqft } from "@/lib/format";
 import { formatDistance } from "@/lib/search/geo";
@@ -30,11 +31,12 @@ export function SlabCard({
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
         {primaryImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <SlabImage
             src={primaryImage}
             alt={slab.name}
-            loading="lazy"
+            width={640}
+            height={480}
+            crop="fill"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (

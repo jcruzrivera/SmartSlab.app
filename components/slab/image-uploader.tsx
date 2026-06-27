@@ -1,8 +1,8 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { useRef, useState } from "react";
 
+import { SlabImage } from "@/components/media/slab-image";
 import type { SlabImageAnalysis } from "@/lib/ai/slab-analysis";
 
 const MAX_IMAGES = 6;
@@ -74,6 +74,24 @@ export function ImageUploader({
     }
   }
 
+  async function uploadFile(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = (await response.json()) as { url?: string; error?: string };
+
+    if (!response.ok || !data.url) {
+      throw new Error(data.error ?? "Could not upload image.");
+    }
+
+    return data.url;
+  }
+
   async function handleFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) {
       return;
@@ -86,11 +104,7 @@ export function ImageUploader({
     try {
       const uploaded: string[] = [];
       for (const file of files) {
-        const result = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        });
-        uploaded.push(result.url);
+        uploaded.push(await uploadFile(file));
       }
 
       setUrls((prev) => {
@@ -168,8 +182,13 @@ export function ImageUploader({
               key={url}
               className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="Slab" className="h-full w-full object-cover" />
+              <SlabImage
+                src={url}
+                alt="Slab"
+                width={400}
+                crop="fill"
+                className="h-full w-full object-cover"
+              />
               {index === 0 ? (
                 <span className="absolute left-1 top-1 rounded bg-[#1bb0ce] px-1.5 py-0.5 text-[10px] font-medium text-white">
                   Cover

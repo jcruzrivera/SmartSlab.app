@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { SlabImage } from "@/components/media/slab-image";
 import { formatDimensions, formatLocation, formatPrice, formatSqft } from "@/lib/format";
 
 type CompareSlab = {
@@ -26,6 +27,7 @@ const STORAGE_KEY = "smartslab.compare";
 export function CompareTable() {
   const [slabs, setSlabs] = useState<CompareSlab[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,9 +51,24 @@ export function CompareTable() {
         const response = await fetch(
           `/api/slabs/compare?ids=${ids.slice(0, 4).join(",")}`,
         );
-        const data = await response.json();
+        const data = (await response.json()) as { slabs?: CompareSlab[]; error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error ?? "Could not load comparison.");
+        }
+
         if (!cancelled) {
           setSlabs(data.slabs ?? []);
+          setError(null);
+        }
+      } catch (fetchError) {
+        if (!cancelled) {
+          setSlabs([]);
+          setError(
+            fetchError instanceof Error
+              ? fetchError.message
+              : "Could not load comparison.",
+          );
         }
       } finally {
         if (!cancelled) {
@@ -70,10 +87,25 @@ export function CompareTable() {
   function clear() {
     window.localStorage.removeItem(STORAGE_KEY);
     setSlabs([]);
+    setError(null);
   }
 
   if (loading) {
     return <p className="text-sm text-slate-500">Loading comparison...</p>;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-10 text-center dark:border-red-900/50 dark:bg-red-950/40">
+        <p className="font-medium text-red-700 dark:text-red-300">{error}</p>
+        <Link
+          href="/browse"
+          className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+        >
+          Browse slabs
+        </Link>
+      </div>
+    );
   }
 
   if (slabs.length === 0) {
@@ -129,10 +161,12 @@ export function CompareTable() {
                 return (
                   <td key={slab.id} className="px-4 py-3">
                     {image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <SlabImage
                         src={image}
                         alt={slab.name}
+                        width={320}
+                        height={240}
+                        crop="fill"
                         className="aspect-[4/3] w-40 rounded-lg object-cover"
                       />
                     ) : (

@@ -6,10 +6,13 @@ import { MobileNav, type NavItem } from "@/components/site/mobile-nav";
 const mobileNavItems: NavItem[] = [
   { href: "/browse", label: "Browse" },
   { href: "/how-it-works", label: "How it works" },
+  { href: "/compare", label: "Compare" },
   { href: "/dashboard/slabs/new", label: "Sell a slab" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/slabs", label: "Inventory" },
   { href: "/dashboard/sales", label: "Sales" },
+  { href: "/dashboard/leads", label: "Leads" },
+  { href: "/dashboard/messages", label: "Messages" },
   { href: "/dashboard/payments", label: "Payments" },
   { href: "/account", label: "Account" },
 ];
@@ -31,6 +34,12 @@ export function SiteHeader({ authSlot }: { authSlot?: ReactNode }) {
         </div>
 
         <nav className="hidden items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 sm:flex">
+          <Link
+            href="/how-it-works"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+          >
+            How it works
+          </Link>
           <Link
             href="/browse"
             className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"

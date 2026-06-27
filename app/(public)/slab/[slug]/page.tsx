@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BuyButton } from "@/components/payments/buy-button";
+import { SlabImage } from "@/components/media/slab-image";
 import { CompareButton } from "@/components/slab/compare-button";
 import { FavoriteButton } from "@/components/slab/favorite-button";
 import { QuoteRequestForm } from "@/components/slab/quote-request-form";
@@ -20,6 +21,7 @@ import {
 import { fulfillCheckoutSession } from "@/lib/payments/fulfill";
 import { isStripeConfigured } from "@/lib/stripe";
 import { getOrigin } from "@/lib/url";
+import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +65,7 @@ export async function generateMetadata({
     .join(" - ");
   const image =
     slab.images.find((item) => item.isPrimary)?.url ?? slab.images[0]?.url;
+  const ogImage = getOptimizedImageUrl(image, { width: 1200, crop: "limit" });
 
   return {
     title,
@@ -70,7 +73,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      images: image ? [{ url: image }] : undefined,
+      images: ogImage ? [{ url: ogImage }] : undefined,
       type: "website",
     },
   };
@@ -84,7 +87,30 @@ export default async function SlabDetailPage({
   const { paid, canceled, session_id: sessionId } = await searchParams;
 
   if (!isDbConfigured()) {
-    notFound();
+    return (
+      <main className="mx-auto w-full max-w-3xl px-6 py-10">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Browse", href: "/browse" },
+            { label: "Listing" },
+          ]}
+        />
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+          Listing unavailable
+        </h1>
+        <p className="mt-3 text-slate-600 dark:text-slate-300">
+          The marketplace database is not connected yet, so this listing cannot
+          be loaded.
+        </p>
+        <Link
+          href="/browse"
+          className="mt-6 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+        >
+          Back to browse
+        </Link>
+      </main>
+    );
   }
 
   if (paid && sessionId) {
@@ -106,13 +132,20 @@ export default async function SlabDetailPage({
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
   const gallery = slab.images.filter((image) => image.url !== primaryImage);
   const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
-  const viewer = await getCurrentDbUser();
-  const vendorContact = await getVendorContactForSlab(
-    slab.id,
-    viewer?.id ?? null,
-  );
+
+  let viewer = null;
+  let vendorContact = null;
+  let favorite = false;
+
+  try {
+    viewer = await getCurrentDbUser();
+    vendorContact = await getVendorContactForSlab(slab.id, viewer?.id ?? null);
+    favorite = viewer ? await isFavoriteSlab(viewer.id, slab.id) : false;
+  } catch {
+    // Keep the listing usable if auth or account lookups fail transiently.
+  }
+
   const isOwner = viewer?.id === slab.vendorId;
-  const favorite = await isFavoriteSlab(viewer?.id, slab.id);
   const viewerName = viewer?.companyName ?? viewer?.contactName ?? null;
 
   return (
@@ -129,10 +162,13 @@ export default async function SlabDetailPage({
         <div className="flex flex-col gap-3">
           <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
             {primaryImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SlabImage
                 src={primaryImage}
                 alt={slab.name}
+                width={1200}
+                height={900}
+                crop="fill"
+                loading="eager"
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -144,11 +180,13 @@ export default async function SlabDetailPage({
           {gallery.length > 0 ? (
             <div className="grid grid-cols-4 gap-2">
               {gallery.slice(0, 4).map((image) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <SlabImage
                   key={image.id}
                   src={image.url}
                   alt={slab.name}
+                  width={240}
+                  height={240}
+                  crop="fill"
                   className="aspect-square w-full rounded-lg object-cover"
                 />
               ))}

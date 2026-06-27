@@ -2,19 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type NavItem = { href: string; label: string };
 
 export function MobileNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [lastPathname, setLastPathname] = useState(pathname);
 
-  if (pathname !== lastPathname) {
-    setLastPathname(pathname);
+  useEffect(() => {
     setOpen(false);
-  }
+  }, [pathname]);
 
   return (
     <div className="sm:hidden">

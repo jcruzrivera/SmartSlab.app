@@ -7,6 +7,8 @@ const LINKS: Array<{ href: string; label: string; exact?: boolean }> = [
   { href: "/dashboard", label: "Overview", exact: true },
   { href: "/dashboard/slabs", label: "Inventory" },
   { href: "/dashboard/sales", label: "Sales" },
+  { href: "/dashboard/leads", label: "Leads" },
+  { href: "/dashboard/messages", label: "Messages" },
   { href: "/dashboard/payments", label: "Payments" },
 ];
 

@@ -1,60 +1,102 @@
-import { auth } from "@clerk/nextjs/server";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 
-// Health-check: lets you verify (in the browser) whether the running server
-// actually has the Blob token loaded and the session is recognized. Does NOT
-// expose the token value.
+import { getClerkUserId } from "@/lib/auth/session";
+import { isCloudinaryConfigured } from "@/lib/cloudinary/config";
+import { uploadImageToCloudinary } from "@/lib/cloudinary/upload";
+
+const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
 export async function GET(): Promise<NextResponse> {
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
+
   return NextResponse.json({
+    cloudinaryConfigured: isCloudinaryConfigured(),
     blobConfigured: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
     signedIn: Boolean(userId),
   });
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  const userId = await getClerkUserId();
+
+  if (!userId) {
     return NextResponse.json(
-      { error: "Image storage is not configured (missing BLOB_READ_WRITE_TOKEN)." },
+      { error: "You must be signed in to upload images." },
+      { status: 401 },
+    );
+  }
+
+  if (!isCloudinaryConfigured() && !process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      {
+        error:
+          "Image storage is not configured. Add Cloudinary or BLOB_READ_WRITE_TOKEN.",
+      },
       { status: 503 },
     );
   }
 
-  const body = (await request.json()) as HandleUploadBody;
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json({ error: "Invalid upload payload." }, { status: 400 });
+  }
+
+  const file = formData.get("file");
+
+  if (!(file instanceof File)) {
+    return NextResponse.json({ error: "A file is required." }, { status: 400 });
+  }
+
+  if (!ALLOWED_TYPES.has(file.type)) {
+    return NextResponse.json(
+      { error: "Only JPG, PNG, WEBP, and GIF images are allowed." },
+      { status: 400 },
+    );
+  }
+
+  if (file.size > MAX_BYTES) {
+    return NextResponse.json(
+      { error: "Image must be 10MB or smaller." },
+      { status: 400 },
+    );
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async () => {
-        const { userId } = await auth();
+    if (isCloudinaryConfigured()) {
+      const uploaded = await uploadImageToCloudinary(buffer, file.name);
+      return NextResponse.json({
+        url: uploaded.url,
+        provider: "cloudinary",
+      });
+    }
 
-        if (!userId) {
-          throw new Error("You must be signed in to upload images.");
-        }
-
-        return {
-          allowedContentTypes: [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "image/gif",
-          ],
-          maximumSizeInBytes: 10 * 1024 * 1024,
-          addRandomSuffix: true,
-          tokenPayload: JSON.stringify({ userId }),
-        };
-      },
-      onUploadCompleted: async () => {
-        // No-op: the slab record is created with the returned URLs on submit.
-      },
+    const blob = await put(file.name, buffer, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: file.type,
     });
 
-    return NextResponse.json(jsonResponse);
+    return NextResponse.json({
+      url: blob.url,
+      provider: "vercel-blob",
+    });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Upload failed." },
+      {
+        error:
+          error instanceof Error ? error.message : "Could not upload image.",
+      },
       { status: 400 },
     );
   }

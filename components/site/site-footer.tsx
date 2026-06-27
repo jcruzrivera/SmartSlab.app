@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { hasValidClerkConfig } from "@/lib/auth/config";
+
 const categories = [
   { slug: "granite", name: "Granite" },
   { slug: "quartz", name: "Quartz" },
@@ -9,6 +11,8 @@ const categories = [
 ];
 
 export function SiteFooter() {
+  const clerkEnabled = hasValidClerkConfig();
+
   return (
     <footer className="mt-auto border-t border-slate-200/70 bg-white/60 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/50">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
@@ -45,8 +49,12 @@ export function SiteFooter() {
         </FooterColumn>
 
         <FooterColumn title="Account">
-          <FooterLink href="/sign-in">Sign in</FooterLink>
-          <FooterLink href="/sign-up">Create account</FooterLink>
+          {clerkEnabled ? (
+            <>
+              <FooterLink href="/sign-in">Sign in</FooterLink>
+              <FooterLink href="/sign-up">Create account</FooterLink>
+            </>
+          ) : null}
           <FooterLink href="/account">My account</FooterLink>
           <FooterLink href="/account#favorites">Saved slabs</FooterLink>
           <FooterLink href="/compare">Compare slabs</FooterLink>

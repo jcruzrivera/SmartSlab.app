@@ -66,6 +66,16 @@ export default async function DashboardHomePage() {
             title="View sales"
             description="Track orders and fulfillment status."
           />
+          <QuickLink
+            href="/dashboard/leads"
+            title="Quote leads"
+            description="Review buyer quote requests."
+          />
+          <QuickLink
+            href="/dashboard/messages"
+            title="Messages"
+            description="Reply to buyers and vendors."
+          />
         </div>
       )}
     </main>

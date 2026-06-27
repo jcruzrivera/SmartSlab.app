@@ -61,9 +61,15 @@ export default async function MessagesPage() {
         </div>
       ) : (
         <div className="mt-6 grid gap-4">
-          {messages.map((message) => (
-            <MessageCard key={message.id} message={message} currentUserId={user!.id} />
-          ))}
+          {messages.map((message) =>
+            user ? (
+              <MessageCard
+                key={message.id}
+                message={message}
+                currentUserId={user.id}
+              />
+            ) : null,
+          )}
         </div>
       )}
     </main>

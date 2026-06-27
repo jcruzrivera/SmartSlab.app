@@ -1,6 +1,6 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 
+import { getClerkUser, getClerkUserId } from "@/lib/auth/session";
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import { parseAppRole, type AppRole } from "@/lib/auth/roles";
@@ -53,7 +53,7 @@ export async function getOrCreateCurrentDbUser(): Promise<DbUser | null> {
     return null;
   }
 
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
 
   if (!userId) {
     return null;
@@ -68,7 +68,7 @@ export async function getOrCreateCurrentDbUser(): Promise<DbUser | null> {
     return existing;
   }
 
-  const clerkUser = await currentUser();
+  const clerkUser = await getClerkUser();
 
   if (!clerkUser) {
     return null;
@@ -178,7 +178,7 @@ export async function getCurrentDbUser(): Promise<DbUser | null> {
     return null;
   }
 
-  const { userId } = await auth();
+  const userId = await getClerkUserId();
 
   if (!userId) {
     return null;
