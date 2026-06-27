@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 
-import { SlabImage } from "@/components/media/slab-image";
 import type { SlabImageAnalysis } from "@/lib/ai/slab-analysis";
 
 const MAX_IMAGES = 6;
@@ -182,11 +181,10 @@ export function ImageUploader({
               key={url}
               className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700"
             >
-              <SlabImage
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={url}
                 alt="Slab"
-                width={400}
-                crop="fill"
                 className="h-full w-full object-cover"
               />
               {index === 0 ? (

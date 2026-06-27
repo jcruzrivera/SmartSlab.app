@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import { SlabImage } from "@/components/media/slab-image";
+import { SlabPhoto } from "@/components/media/slab-photo";
 import type { SlabWithRelations } from "@/lib/db/slabs";
+import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
 import { formatLocation, formatPrice, formatSqft } from "@/lib/format";
 import { formatDistance } from "@/lib/search/geo";
 
@@ -19,6 +20,13 @@ export function SlabCard({
 }) {
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
+  const cardImageUrl = primaryImage
+    ? getOptimizedImageUrl(primaryImage, {
+        width: 640,
+        height: 480,
+        crop: "fill",
+      }) ?? primaryImage
+    : null;
   const location = formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
   const sqft = formatSqft(slab.widthCm, slab.heightCm);
   const locationOrDistance =
@@ -30,13 +38,11 @@ export function SlabCard({
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-        {primaryImage ? (
-          <SlabImage
-            src={primaryImage}
+        {cardImageUrl ? (
+          <SlabPhoto
+            src={cardImageUrl}
+            fallbackSrc={primaryImage ?? undefined}
             alt={slab.name}
-            width={640}
-            height={480}
-            crop="fill"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (

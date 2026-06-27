@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BuyButton } from "@/components/payments/buy-button";
-import { SlabImage } from "@/components/media/slab-image";
+import { SlabPhoto } from "@/components/media/slab-photo";
 import { CompareButton } from "@/components/slab/compare-button";
 import { FavoriteButton } from "@/components/slab/favorite-button";
 import { QuoteRequestForm } from "@/components/slab/quote-request-form";
@@ -130,6 +130,13 @@ export default async function SlabDetailPage({
 
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
+  const primaryImageUrl = primaryImage
+    ? getOptimizedImageUrl(primaryImage, {
+        width: 1200,
+        height: 900,
+        crop: "fill",
+      }) ?? primaryImage
+    : null;
   const gallery = slab.images.filter((image) => image.url !== primaryImage);
   const vendorName = slab.vendor?.companyName ?? "SmartSlab vendor";
 
@@ -161,13 +168,11 @@ export default async function SlabDetailPage({
       <div className="mt-4 grid gap-8 lg:grid-cols-2">
         <div className="flex flex-col gap-3">
           <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
-            {primaryImage ? (
-              <SlabImage
-                src={primaryImage}
+            {primaryImageUrl ? (
+              <SlabPhoto
+                src={primaryImageUrl}
+                fallbackSrc={primaryImage ?? undefined}
                 alt={slab.name}
-                width={1200}
-                height={900}
-                crop="fill"
                 loading="eager"
                 className="h-full w-full object-cover"
               />
@@ -179,17 +184,24 @@ export default async function SlabDetailPage({
           </div>
           {gallery.length > 0 ? (
             <div className="grid grid-cols-4 gap-2">
-              {gallery.slice(0, 4).map((image) => (
-                <SlabImage
-                  key={image.id}
-                  src={image.url}
-                  alt={slab.name}
-                  width={240}
-                  height={240}
-                  crop="fill"
-                  className="aspect-square w-full rounded-lg object-cover"
-                />
-              ))}
+              {gallery.slice(0, 4).map((image) => {
+                const thumbUrl =
+                  getOptimizedImageUrl(image.url, {
+                    width: 240,
+                    height: 240,
+                    crop: "fill",
+                  }) ?? image.url;
+
+                return (
+                  <SlabPhoto
+                    key={image.id}
+                    src={thumbUrl}
+                    fallbackSrc={image.url}
+                    alt={slab.name}
+                    className="aspect-square w-full rounded-lg object-cover"
+                  />
+                );
+              })}
             </div>
           ) : null}
         </div>

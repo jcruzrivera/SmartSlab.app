@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { SlabImage } from "@/components/media/slab-image";
+import { SlabPhoto } from "@/components/media/slab-photo";
 import { formatDimensions, formatLocation, formatPrice, formatSqft } from "@/lib/format";
 
 type CompareSlab = {
@@ -161,12 +161,9 @@ export function CompareTable() {
                 return (
                   <td key={slab.id} className="px-4 py-3">
                     {image ? (
-                      <SlabImage
+                      <SlabPhoto
                         src={image}
                         alt={slab.name}
-                        width={320}
-                        height={240}
-                        crop="fill"
                         className="aspect-[4/3] w-40 rounded-lg object-cover"
                       />
                     ) : (
