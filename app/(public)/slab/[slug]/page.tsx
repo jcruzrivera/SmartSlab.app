@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { BuyButton } from "@/components/payments/buy-button";
+import { SlabDetailActionsLoader } from "@/components/slab/slab-detail-actions-loader";
 import { SlabPhoto } from "@/components/media/slab-photo";
-import { CompareButton } from "@/components/slab/compare-button";
-import { FavoriteButton } from "@/components/slab/favorite-button";
-import { QuoteRequestForm } from "@/components/slab/quote-request-form";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
 import { isFavoriteSlab } from "@/lib/db/favorites";
@@ -329,28 +326,14 @@ export default async function SlabDetailPage({
               </Link>
             </div>
           ) : slab.status === "available" ? (
-            <>
-              <div className="flex flex-wrap gap-3">
-                {isStripeConfigured() ? (
-                  <BuyButton slabId={slab.id} />
-                ) : (
-                  <button
-                    disabled
-                    className="inline-flex h-11 w-fit cursor-not-allowed items-center rounded-lg bg-slate-300 px-5 text-sm font-medium text-white"
-                  >
-                    Checkout coming soon
-                  </button>
-                )}
-                <FavoriteButton slabId={slab.id} isFavorite={favorite} />
-                <CompareButton slabId={slab.id} />
-              </div>
-              <QuoteRequestForm
-                slabId={slab.id}
-                defaultName={viewerName}
-                defaultEmail={viewer?.email}
-                defaultPhone={viewer?.phone}
-              />
-            </>
+            <SlabDetailActionsLoader
+              slabId={slab.id}
+              isFavorite={favorite}
+              checkoutEnabled={isStripeConfigured()}
+              defaultName={viewerName}
+              defaultEmail={viewer?.email}
+              defaultPhone={viewer?.phone}
+            />
           ) : slab.status === "reserved" ? (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
               Reserved. A buyer is completing checkout. Check back in a few
