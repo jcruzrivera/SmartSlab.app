@@ -14,13 +14,15 @@ const hasClerkConfig = hasValidClerkConfig();
 
 const withClerkMiddleware = hasClerkConfig
   ? clerkMiddleware(async (auth, req) => {
-      const { userId, redirectToSignIn } = await auth();
+      const { userId } = await auth();
 
       // Only gate on authentication here. Fine-grained role enforcement is
       // handled in the server pages using the database, which avoids depending
       // on a customized Clerk session token (a common cause of redirect loops).
       if (!userId && isProtectedRoute(req)) {
-        return redirectToSignIn({ returnBackUrl: req.url });
+        const signIn = new URL("/sign-in", req.url);
+        signIn.searchParams.set("redirect_url", req.url);
+        return NextResponse.redirect(signIn);
       }
 
       return NextResponse.next();

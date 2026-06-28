@@ -8,7 +8,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { hasValidClerkConfig } from "@/lib/auth/config";
+import { getClerkPublishableKey, hasValidClerkConfig } from "@/lib/auth/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -67,7 +67,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
-        <ClerkProvider>
+        <ClerkProvider
+          publishableKey={getClerkPublishableKey()}
+          signInUrl="/sign-in"
+          signUpUrl="/sign-up"
+          signInFallbackRedirectUrl="/onboarding"
+          signUpFallbackRedirectUrl="/onboarding"
+        >
           <SiteHeader authSlot={<ClerkAuthSlotLoader />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />

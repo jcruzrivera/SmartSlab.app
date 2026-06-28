@@ -21,7 +21,7 @@ The app talks to **Neon Postgres (with the `pgvector` extension)**, **Clerk** (a
 **Vercel Blob** (legacy upload fallback). It is built to
 degrade gracefully: the public homepage (`/`) and `/browse` render without any of
 these configured, but everything else needs real credentials. Provide them as
-secrets (`DATABASE_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
+secrets (`DATABASE_URL`, `NEXT_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
 `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLOUDINARY_CLOUD_NAME`,
 `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` (required for optimized images in the browser),
 `BLOB_READ_WRITE_TOKEN`, …) for full E2E.

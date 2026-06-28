@@ -141,8 +141,16 @@ Copy-Item .env.example .env.local
 3. Configure required variables for the full app:
 
 - `DATABASE_URL`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `NEXT_CLERK_PUBLISHABLE_KEY` (server-only; passed to Clerk in `app/layout.tsx`)
 - `CLERK_SECRET_KEY`
+
+For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). Development instances (`*.accounts.dev`) block cross-origin requests from your live domain and cause CORS errors in the browser console. In the Clerk dashboard, add `https://smart-slab-app.vercel.app` (and your custom domain) under **Configure → Domains**.
+
+Optional (SmartSlab also sets these in code):
+
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
+
 - `STRIPE_SECRET_KEY`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_WEBHOOK_SECRET`
