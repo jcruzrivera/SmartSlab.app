@@ -158,7 +158,7 @@ For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_li
 | `clk2._domainkey` | `dkim2.zov7sumhsqh0.clerk.services` |
 | `clkmail` | `mail.zov7sumhsqh0.clerk.services` |
 
-Then verify the domain in Clerk. Do **not** set `NEXT_PUBLIC_CLERK_PROXY_URL` unless you intentionally use same-origin proxy; the app no longer auto-enables proxy from `VERCEL_URL`.
+Then verify the domain in Clerk. Do **not** set `NEXT_PUBLIC_CLERK_PROXY_URL` — the app does not use same-origin Clerk proxy (that path caused `/__clerk/handshake` redirect loops).
 
 Set in Vercel:
 

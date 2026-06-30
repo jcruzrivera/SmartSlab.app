@@ -7,17 +7,6 @@ export function getClerkPublishableKey(): string {
   );
 }
 
-/**
- * Optional Clerk proxy override. Not enabled automatically — with custom DNS
- * (`clerk.smartslab.store`) Clerk loads from Clerk's subdomain once verified.
- * Set only when explicitly using same-origin proxy, e.g.
- * `NEXT_PUBLIC_CLERK_PROXY_URL=https://smartslab.store/__clerk`.
- */
-export function getClerkProxyUrl(): string | undefined {
-  const explicit = process.env.NEXT_PUBLIC_CLERK_PROXY_URL?.trim();
-  return explicit ? explicit.replace(/\/$/, "") : undefined;
-}
-
 export function hasValidClerkConfig(): boolean {
   const publishableKey = getClerkPublishableKey();
   const secretKey = process.env.CLERK_SECRET_KEY ?? "";

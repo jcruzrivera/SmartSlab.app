@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
 import { hasValidClerkConfig } from "@/lib/auth/config";
+import { CANONICAL_APP_HOST, normalizeAppHost } from "@/lib/url";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
@@ -34,7 +35,26 @@ const withClerkMiddleware = hasClerkConfig
     })
   : null;
 
+function canonicalHostRedirect(request: NextRequest): NextResponse | null {
+  const host = request.headers.get("host");
+  const normalized = normalizeAppHost(host);
+
+  if (!normalized || normalized === host?.split(":")[0]?.toLowerCase()) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  url.protocol = "https:";
+  url.host = CANONICAL_APP_HOST;
+  return NextResponse.redirect(url, 308);
+}
+
 export default function proxy(request: NextRequest, event: NextFetchEvent) {
+  const hostRedirect = canonicalHostRedirect(request);
+  if (hostRedirect) {
+    return hostRedirect;
+  }
+
   if (!withClerkMiddleware) {
     return NextResponse.next();
   }
@@ -51,6 +71,5 @@ export const config = {
   matcher: [
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
-    "/__clerk/(.*)",
   ],
 };
