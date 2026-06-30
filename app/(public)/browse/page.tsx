@@ -135,7 +135,11 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
             <FilterChips chips={chips} />
 
-            <GeoSlabGrid slabs={result.slabs} favoriteSlabIds={favoriteSlabIds} />
+            <GeoSlabGrid
+              slabs={result.slabs}
+              favoriteSlabIds={favoriteSlabIds}
+              canSyncFavorites={Boolean(viewer)}
+            />
           </section>
         </div>
       </main>

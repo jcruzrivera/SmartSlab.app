@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { SlabPhoto } from "@/components/media/slab-photo";
-import { SlabCardActions } from "@/components/slab/slab-card-actions";
+import { SlabCardActionsLoader } from "@/components/slab/slab-card-actions-loader";
 import type { SlabWithRelations } from "@/lib/db/slabs";
 import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
 import { formatLocation, formatPrice, formatSqft } from "@/lib/format";
@@ -16,10 +16,12 @@ export function SlabCard({
   slab,
   distanceMiles,
   isFavorite = false,
+  persistFavorites = false,
 }: {
   slab: SlabWithRelations;
   distanceMiles?: number;
   isFavorite?: boolean;
+  persistFavorites?: boolean;
 }) {
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
@@ -99,7 +101,11 @@ export function SlabCard({
         </div>
       </div>
       </Link>
-      <SlabCardActions slabId={slab.id} initialIsFavorite={isFavorite} />
+      <SlabCardActionsLoader
+        slabId={slab.id}
+        initialIsFavorite={isFavorite}
+        persistFavorites={persistFavorites}
+      />
     </article>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
-import { useState, useSyncExternalStore } from "react";
-import { useFormStatus } from "react-dom";
+import { useRef } from "react";
+import { useSyncExternalStore } from "react";
 
 import { toggleFavoriteAction } from "@/app/actions/marketplace";
 import {
@@ -28,29 +27,16 @@ function readGuestFavorite(slabId: string): boolean {
   return readFavoriteIds().includes(slabId);
 }
 
-function SaveSubmit({ isFavorite }: { isFavorite: boolean }) {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
-    >
-      {isFavorite ? "Saved" : "Save"}
-    </button>
-  );
-}
-
 export function SlabCardActions({
   slabId,
   initialIsFavorite = false,
+  persistFavorites = false,
 }: {
   slabId: string;
   initialIsFavorite?: boolean;
+  persistFavorites?: boolean;
 }) {
-  const { isSignedIn, isLoaded } = useAuth();
-  const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const compareIds = useSyncExternalStore(
     subscribeCompare,
     readCompareIds,
@@ -63,9 +49,7 @@ export function SlabCardActions({
   );
 
   const inCompare = compareIds.includes(slabId);
-  const isFavorite = isSignedIn
-    ? (favoriteOverride ?? initialIsFavorite)
-    : guestFavorite;
+  const isFavorite = guestFavorite || initialIsFavorite;
 
   function toggleCompare(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -73,42 +57,30 @@ export function SlabCardActions({
     toggleGuestCompare(slabId);
   }
 
-  function toggleGuestSave(event: React.MouseEvent<HTMLButtonElement>) {
+  function toggleSave(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     event.stopPropagation();
     toggleGuestFavorite(slabId);
-  }
 
-  async function toggleSignedInSave(formData: FormData) {
-    setFavoriteOverride(!(favoriteOverride ?? initialIsFavorite));
-    await toggleFavoriteAction(formData);
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center gap-2 px-4 pb-4">
-        <span className="inline-block h-8 w-14" aria-hidden />
-        <span className="inline-block h-8 w-20" aria-hidden />
-      </div>
-    );
+    if (persistFavorites) {
+      formRef.current?.requestSubmit();
+    }
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 pb-4">
-      {isSignedIn ? (
-        <form action={toggleSignedInSave}>
+      {persistFavorites ? (
+        <form ref={formRef} action={toggleFavoriteAction} className="contents">
           <input type="hidden" name="slabId" value={slabId} />
-          <SaveSubmit isFavorite={isFavorite} />
         </form>
-      ) : (
-        <button
-          type="button"
-          onClick={toggleGuestSave}
-          className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
-        >
-          {isFavorite ? "Saved" : "Save"}
-        </button>
-      )}
+      ) : null}
+      <button
+        type="button"
+        onClick={toggleSave}
+        className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+      >
+        {isFavorite ? "Saved" : "Save"}
+      </button>
       <button
         type="button"
         onClick={toggleCompare}

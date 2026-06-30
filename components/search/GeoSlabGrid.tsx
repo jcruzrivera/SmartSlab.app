@@ -17,9 +17,11 @@ import { haversineMiles } from "@/lib/search/geo";
 export function GeoSlabGrid({
   slabs,
   favoriteSlabIds = [],
+  canSyncFavorites = false,
 }: {
   slabs: SlabWithRelations[];
   favoriteSlabIds?: string[];
+  canSyncFavorites?: boolean;
 }) {
   const { geo } = useBuyerGeo();
   const searchParams = useSearchParams();
@@ -88,6 +90,7 @@ export function GeoSlabGrid({
             slab={slab}
             distanceMiles={distance ?? undefined}
             isFavorite={favoriteSlabIdSet.has(slab.id)}
+            persistFavorites={canSyncFavorites}
           />
         ))}
       </div>

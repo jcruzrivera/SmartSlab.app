@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Show, SignOutButton } from "@clerk/nextjs";
+import { Show, SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
 
 const linkClassName =
   "text-sm font-medium text-slate-600 transition hover:text-[#0d8fa8] dark:text-slate-300";
@@ -13,22 +13,36 @@ export function ClerkAuthSlot() {
   return (
     <div className="flex items-center gap-3">
       <Show when="signed-out">
-        <Link href="/sign-in" className={linkClassName}>
-          Sign in
-        </Link>
-        <Link href="/sign-up" className={primaryButtonClassName}>
-          Get started
-        </Link>
+        <div className="flex items-center gap-3">
+          <SignInButton mode="modal">
+            <button type="button" className={linkClassName}>
+              Sign in
+            </button>
+          </SignInButton>
+          <Link href="/sign-up" className={primaryButtonClassName}>
+            Get started
+          </Link>
+        </div>
       </Show>
       <Show when="signed-in">
-        <SignOutButton>
-          <button type="button" className={linkClassName}>
-            Log out
-          </button>
-        </SignOutButton>
-        <Link href="/dashboard" className={primaryButtonClassName}>
-          Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <UserButton
+            afterSignOutUrl="/browse"
+            appearance={{
+              elements: {
+                avatarBox: "h-9 w-9",
+              },
+            }}
+          />
+          <SignOutButton redirectUrl="/browse">
+            <button type="button" className={linkClassName}>
+              Log out
+            </button>
+          </SignOutButton>
+          <Link href="/dashboard" className={primaryButtonClassName}>
+            Dashboard
+          </Link>
+        </div>
       </Show>
     </div>
   );
