@@ -27,7 +27,6 @@ export function ClerkAuthSlot() {
       <Show when="signed-in">
         <div className="flex items-center gap-3">
           <UserButton
-            afterSignOutUrl="/browse"
             appearance={{
               elements: {
                 avatarBox: "h-9 w-9",
