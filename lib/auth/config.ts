@@ -7,6 +7,27 @@ export function getClerkPublishableKey(): string {
   );
 }
 
+/**
+ * Same-origin Clerk proxy URL. Routes Frontend API traffic through `/__clerk`
+ * instead of a custom `clerk.*` subdomain when DNS is not configured yet.
+ */
+export function getClerkProxyUrl(): string | undefined {
+  const explicit = process.env.NEXT_PUBLIC_CLERK_PROXY_URL?.trim();
+  if (explicit) {
+    return explicit;
+  }
+
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+
+  if (!appUrl) {
+    return undefined;
+  }
+
+  return `${appUrl.replace(/\/$/, "")}/__clerk`;
+}
+
 export function hasValidClerkConfig(): boolean {
   const publishableKey = getClerkPublishableKey();
   const secretKey = process.env.CLERK_SECRET_KEY ?? "";

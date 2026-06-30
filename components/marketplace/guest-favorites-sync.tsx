@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { ClerkLoaded, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -10,7 +10,7 @@ import {
   readFavoriteIds,
 } from "@/lib/marketplace/guest-storage";
 
-export function GuestFavoritesSync() {
+function GuestFavoritesSyncInner() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
   const syncingRef = useRef(false);
@@ -40,4 +40,12 @@ export function GuestFavoritesSync() {
   }, [isLoaded, isSignedIn, router]);
 
   return null;
+}
+
+export function GuestFavoritesSync() {
+  return (
+    <ClerkLoaded>
+      <GuestFavoritesSyncInner />
+    </ClerkLoaded>
+  );
 }

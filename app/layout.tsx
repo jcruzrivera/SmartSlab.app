@@ -10,7 +10,7 @@ import { RegisterServiceWorker } from "@/components/pwa/register-service-worker"
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { getClerkPublishableKey, hasValidClerkConfig } from "@/lib/auth/config";
+import { getClerkPublishableKey, getClerkProxyUrl, hasValidClerkConfig } from "@/lib/auth/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,6 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const hasClerkConfig = hasValidClerkConfig();
+  const clerkProxyUrl = getClerkProxyUrl();
 
   if (!hasClerkConfig) {
     return (
@@ -82,6 +83,7 @@ export default function RootLayout({
         <RegisterServiceWorker />
         <ClerkProvider
           publishableKey={getClerkPublishableKey()}
+          {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
           signInUrl="/sign-in"
           signUpUrl="/sign-up"
           signInFallbackRedirectUrl="/onboarding"

@@ -144,7 +144,12 @@ Copy-Item .env.example .env.local
 - `NEXT_CLERK_PUBLISHABLE_KEY` (server-only; passed to Clerk in `app/layout.tsx`)
 - `CLERK_SECRET_KEY`
 
-For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). Development instances (`*.accounts.dev`) block cross-origin requests from your live domain and cause CORS errors in the browser console. In the Clerk dashboard, add `https://smart-slab-app.vercel.app` (and your custom domain) under **Configure → Domains**.
+For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). Development instances (`*.accounts.dev`) block cross-origin requests from your live domain and cause CORS errors in the browser console. In the Clerk dashboard, add `https://www.smartslab.store` (and any other live domains) under **Configure → Domains**.
+
+If the browser console shows `ERR_NAME_NOT_RESOLVED` for `clerk.smartslab.app` (or another `clerk.*` host), Clerk is trying to load from a custom subdomain whose DNS is not set up yet. Fix it one of two ways:
+
+1. **Recommended (proxy):** set `NEXT_PUBLIC_APP_URL=https://www.smartslab.store` in Vercel. SmartSlab auto-derives `proxyUrl` as `https://www.smartslab.store/__clerk` so auth loads from your own domain. You can override with `NEXT_PUBLIC_CLERK_PROXY_URL` if needed. In Clerk → **Domains**, add the same site URL and enable the proxy option if prompted.
+2. **Custom subdomain:** create the DNS record Clerk shows for `clerk.<your-domain>` and wait for propagation, then remove the proxy env vars.
 
 Optional (SmartSlab also sets these in code):
 
