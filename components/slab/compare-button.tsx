@@ -1,56 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-const STORAGE_KEY = "smartslab.compare";
-const COMPARE_CHANGE_EVENT = "smartslab-compare-change";
-const MAX_COMPARE = 4;
+import {
+  COMPARE_CHANGE_EVENT,
+  readCompareIds,
+  subscribeGuestStore,
+  toggleGuestCompare,
+} from "@/lib/marketplace/guest-storage";
 
-function readIds(): string[] {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed)
-      ? parsed.filter((item): item is string => typeof item === "string")
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function notifyCompareChange(): void {
-  window.dispatchEvent(new Event(COMPARE_CHANGE_EVENT));
+function subscribeCompare(onStoreChange: () => void) {
+  return subscribeGuestStore(COMPARE_CHANGE_EVENT, onStoreChange);
 }
 
 export function CompareButton({ slabId }: { slabId: string }) {
-  // Start empty so the first client render matches SSR, then sync localStorage.
-  const [ids, setIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    setIds(readIds());
-
-    function onStoreChange() {
-      setIds(readIds());
-    }
-
-    window.addEventListener(COMPARE_CHANGE_EVENT, onStoreChange);
-    window.addEventListener("storage", onStoreChange);
-    return () => {
-      window.removeEventListener(COMPARE_CHANGE_EVENT, onStoreChange);
-      window.removeEventListener("storage", onStoreChange);
-    };
-  }, []);
+  const ids = useSyncExternalStore(
+    subscribeCompare,
+    readCompareIds,
+    () => [],
+  );
 
   const included = ids.includes(slabId);
 
   function toggle() {
-    const next = included
-      ? ids.filter((id) => id !== slabId)
-      : [slabId, ...ids.filter((id) => id !== slabId)].slice(0, MAX_COMPARE);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    setIds(next);
-    notifyCompareChange();
+    toggleGuestCompare(slabId);
   }
 
   return (

@@ -8,8 +8,10 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { SortSelect } from "@/components/search/SortSelect";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
+import { listFavoriteSlabIds } from "@/lib/db/favorites";
 import { listMaterials } from "@/lib/db/materials";
 import { searchSlabs } from "@/lib/db/search";
+import { getCurrentDbUser } from "@/lib/db/users";
 import {
   buildActiveChips,
   countActiveFilters,
@@ -58,10 +60,12 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   }
 
   const filters = parseFilters(toSearchParams(await searchParams));
+  const viewer = await getCurrentDbUser();
 
-  const [materials, result] = await Promise.all([
+  const [materials, result, favoriteSlabIds] = await Promise.all([
     listMaterials(),
     searchSlabs(filters),
+    viewer ? listFavoriteSlabIds(viewer.id) : Promise.resolve([]),
   ]);
 
   const materialLabels = Object.fromEntries(
@@ -131,7 +135,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
             <FilterChips chips={chips} />
 
-            <GeoSlabGrid slabs={result.slabs} />
+            <GeoSlabGrid slabs={result.slabs} favoriteSlabIds={favoriteSlabIds} />
           </section>
         </div>
       </main>

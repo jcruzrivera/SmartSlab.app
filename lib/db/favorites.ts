@@ -20,6 +20,42 @@ export async function isFavoriteSlab(
   return Boolean(row);
 }
 
+export async function listFavoriteSlabIds(userId: string): Promise<string[]> {
+  if (!isDbConfigured()) {
+    return [];
+  }
+
+  const db = getDb();
+  const rows = await db.query.favorites.findMany({
+    where: eq(favorites.userId, userId),
+    columns: { slabId: true },
+  });
+
+  return rows.map((row) => row.slabId);
+}
+
+export async function mergeFavoriteSlabs(
+  userId: string,
+  slabIds: string[],
+): Promise<number> {
+  if (!isDbConfigured() || slabIds.length === 0) {
+    return 0;
+  }
+
+  const uniqueSlabIds = [...new Set(slabIds)];
+  if (uniqueSlabIds.length === 0) {
+    return 0;
+  }
+
+  const db = getDb();
+  await db
+    .insert(favorites)
+    .values(uniqueSlabIds.map((slabId) => ({ userId, slabId })))
+    .onConflictDoNothing();
+
+  return uniqueSlabIds.length;
+}
+
 export async function toggleFavoriteSlab(
   userId: string,
   slabId: string,

@@ -10,6 +10,8 @@ const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
 ]);
 
+const isSlabDetailRoute = createRouteMatcher(["/slab/(.*)"]);
+
 const hasClerkConfig = hasValidClerkConfig();
 
 const withClerkMiddleware = hasClerkConfig
@@ -19,7 +21,10 @@ const withClerkMiddleware = hasClerkConfig
       // Only gate on authentication here. Fine-grained role enforcement is
       // handled in the server pages using the database, which avoids depending
       // on a customized Clerk session token (a common cause of redirect loops).
-      if (!userId && isProtectedRoute(req)) {
+      if (
+        !userId &&
+        (isProtectedRoute(req) || isSlabDetailRoute(req))
+      ) {
         const signIn = new URL("/sign-in", req.url);
         signIn.searchParams.set("redirect_url", req.url);
         return NextResponse.redirect(signIn);

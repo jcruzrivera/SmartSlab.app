@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
+import { GuestFavoritesSync } from "@/components/marketplace/guest-favorites-sync";
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -74,6 +75,7 @@ export default function RootLayout({
           signInFallbackRedirectUrl="/onboarding"
           signUpFallbackRedirectUrl="/onboarding"
         >
+          <GuestFavoritesSync />
           <SiteHeader authSlot={<ClerkAuthSlotLoader />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />

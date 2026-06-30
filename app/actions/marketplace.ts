@@ -1,11 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { isDbConfigured } from "@/lib/db/client";
-import { toggleFavoriteSlab } from "@/lib/db/favorites";
+import { mergeFavoriteSlabs, toggleFavoriteSlab } from "@/lib/db/favorites";
 import { createMessage } from "@/lib/db/messages";
 import { createQuoteRequest, updateQuoteStatusForVendor } from "@/lib/db/quotes";
 import { getSlabById } from "@/lib/db/slabs";
@@ -88,6 +87,39 @@ export async function requestQuoteAction(
   };
 }
 
+export async function syncGuestFavoritesAction(
+  slabIds: string[],
+): Promise<{ merged: number }> {
+  if (!isDbConfigured()) {
+    return { merged: 0 };
+  }
+
+  const user = await getOrCreateCurrentDbUser();
+  if (!user) {
+    return { merged: 0 };
+  }
+
+  const validSlabIds = [
+    ...new Set(
+      slabIds.filter((slabId) => z.string().uuid().safeParse(slabId).success),
+    ),
+  ];
+
+  if (validSlabIds.length === 0) {
+    return { merged: 0 };
+  }
+
+  const merged = await mergeFavoriteSlabs(user.id, validSlabIds);
+
+  revalidatePath("/browse");
+  revalidatePath("/account");
+  for (const slabId of validSlabIds) {
+    revalidatePath(`/slab/${slabId}`);
+  }
+
+  return { merged };
+}
+
 export async function toggleFavoriteAction(formData: FormData): Promise<void> {
   if (!isDbConfigured()) {
     return;
@@ -100,11 +132,12 @@ export async function toggleFavoriteAction(formData: FormData): Promise<void> {
 
   const user = await getOrCreateCurrentDbUser();
   if (!user) {
-    redirect("/sign-in");
+    return;
   }
 
   await toggleFavoriteSlab(user.id, slabId);
   revalidatePath(`/slab/${slabId}`);
+  revalidatePath("/browse");
   revalidatePath("/account");
 }
 
