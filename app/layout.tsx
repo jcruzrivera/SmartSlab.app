@@ -11,7 +11,7 @@ import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { CanonicalHostGuard } from "@/components/site/canonical-host-guard";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { getClerkPublishableKey, getClerkDomain, hasValidClerkConfig } from "@/lib/auth/config";
+import { getClerkPublishableKey, getClerkDomain, getClerkScriptUrls, hasValidClerkConfig } from "@/lib/auth/config";
 import { CANONICAL_APP_ORIGIN, getConfiguredAppUrl } from "@/lib/url";
 import "./globals.css";
 
@@ -59,6 +59,7 @@ export default function RootLayout({
 }>) {
   const hasClerkConfig = hasValidClerkConfig();
   const clerkDomain = getClerkDomain();
+  const clerkScriptUrls = getClerkScriptUrls();
 
   if (!hasClerkConfig) {
     return (
@@ -89,6 +90,12 @@ export default function RootLayout({
         <ClerkProvider
           publishableKey={getClerkPublishableKey()}
           {...(clerkDomain ? { domain: clerkDomain } : {})}
+          {...(clerkScriptUrls
+            ? {
+                __internal_clerkJSUrl: clerkScriptUrls.clerkJSUrl,
+                __internal_clerkUIUrl: clerkScriptUrls.clerkUIUrl,
+              }
+            : {})}
           signInUrl="/sign-in"
           signUpUrl="/sign-up"
           signInFallbackRedirectUrl="/onboarding"

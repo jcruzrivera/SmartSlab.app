@@ -1,5 +1,8 @@
 import { CANONICAL_APP_HOST } from "@/lib/app-origin";
 
+const CLERK_JS_VERSION = "6";
+const CLERK_UI_VERSION = "1";
+
 /** Server-only env name (preferred on Vercel). Falls back to legacy NEXT_PUBLIC_* for local dev. */
 export function getClerkPublishableKey(): string {
   return (
@@ -19,11 +22,35 @@ export function getClerkDomain(): string | undefined {
     return fromEnv.replace(/^https?:\/\//, "").replace(/\/$/, "");
   }
 
-  if (isClerkProductionConfig()) {
+  if (!hasValidClerkConfig()) {
+    return undefined;
+  }
+
+  if (process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production") {
     return CANONICAL_APP_HOST;
   }
 
   return undefined;
+}
+
+export function getClerkFrontendHost(): string | undefined {
+  const domain = getClerkDomain();
+  return domain ? `clerk.${domain}` : undefined;
+}
+
+/** Force Clerk browser bundles to load from verified custom DNS, not legacy .app hosts. */
+export function getClerkScriptUrls():
+  | { clerkJSUrl: string; clerkUIUrl: string }
+  | undefined {
+  const host = getClerkFrontendHost();
+  if (!host) {
+    return undefined;
+  }
+
+  return {
+    clerkJSUrl: `https://${host}/npm/@clerk/clerk-js@${CLERK_JS_VERSION}/dist/clerk.browser.js`,
+    clerkUIUrl: `https://${host}/npm/@clerk/ui@${CLERK_UI_VERSION}/dist/ui.browser.js`,
+  };
 }
 
 export function hasValidClerkConfig(): boolean {
