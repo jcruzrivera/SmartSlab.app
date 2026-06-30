@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SignOutButton, UserButton, useAuth } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
 
 const linkClassName =
   "text-sm font-medium text-slate-600 transition hover:text-[#0d8fa8] dark:text-slate-300";
@@ -22,16 +22,12 @@ function GuestLinks() {
   );
 }
 
-function SignedInLinks() {
+function SignedInLinks({ accountLabel }: { accountLabel: string }) {
   return (
     <>
-      <UserButton
-        appearance={{
-          elements: {
-            avatarBox: "h-9 w-9",
-          },
-        }}
-      />
+      <Link href="/account" className={linkClassName}>
+        {accountLabel}
+      </Link>
       <SignOutButton redirectUrl="/browse">
         <button type="button" className={linkClassName}>
           Log out
@@ -45,7 +41,11 @@ function SignedInLinks() {
 }
 
 export function ClerkAuthSlot() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, user } = useUser();
+  const accountLabel =
+    user?.fullName?.trim() ||
+    user?.primaryEmailAddress?.emailAddress ||
+    "Account";
 
   if (!isLoaded) {
     return (
@@ -57,7 +57,7 @@ export function ClerkAuthSlot() {
 
   return (
     <div className="flex items-center gap-3">
-      {isSignedIn ? <SignedInLinks /> : <GuestLinks />}
+      {user ? <SignedInLinks accountLabel={accountLabel} /> : <GuestLinks />}
     </div>
   );
 }

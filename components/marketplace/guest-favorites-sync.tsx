@@ -1,6 +1,6 @@
 "use client";
 
-import { ClerkLoaded, useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -10,18 +10,26 @@ import {
   readFavoriteIds,
 } from "@/lib/marketplace/guest-storage";
 
-function GuestFavoritesSyncInner() {
-  const { isSignedIn, isLoaded } = useAuth();
+const SYNC_FLAG_KEY = "smartslab.guest-favorites-synced";
+
+export function GuestFavoritesSync() {
+  const { isLoaded, user } = useUser();
+  const userId = user?.id;
   const router = useRouter();
   const syncingRef = useRef(false);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || syncingRef.current) {
+    if (!isLoaded || !userId || syncingRef.current) {
+      return;
+    }
+
+    if (sessionStorage.getItem(SYNC_FLAG_KEY) === userId) {
       return;
     }
 
     const guestFavoriteIds = readFavoriteIds();
     if (guestFavoriteIds.length === 0) {
+      sessionStorage.setItem(SYNC_FLAG_KEY, userId);
       return;
     }
 
@@ -29,6 +37,7 @@ function GuestFavoritesSyncInner() {
 
     void syncGuestFavoritesAction(guestFavoriteIds)
       .then(({ merged }) => {
+        sessionStorage.setItem(SYNC_FLAG_KEY, userId);
         if (merged > 0) {
           clearGuestFavorites();
           router.refresh();
@@ -37,15 +46,7 @@ function GuestFavoritesSyncInner() {
       .finally(() => {
         syncingRef.current = false;
       });
-  }, [isLoaded, isSignedIn, router]);
+  }, [isLoaded, router, userId]);
 
   return null;
-}
-
-export function GuestFavoritesSync() {
-  return (
-    <ClerkLoaded>
-      <GuestFavoritesSyncInner />
-    </ClerkLoaded>
-  );
 }
