@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { GuestFavoritesSync } from "@/components/marketplace/guest-favorites-sync";
+import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -26,6 +27,15 @@ export const metadata: Metadata = {
   title: "SmartSlab — Slab & Remnant Marketplace",
   description:
     "Buy and sell natural stone slabs and remnants. Granite, quartz, quartzite, marble and more.",
+  applicationName: "SmartSlab",
+  appleWebApp: {
+    capable: true,
+    title: "SmartSlab",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 function GuestAuthSlot() {
@@ -53,6 +63,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
+          <RegisterServiceWorker />
           <SiteHeader authSlot={<GuestAuthSlot />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
@@ -68,6 +79,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
+        <RegisterServiceWorker />
         <ClerkProvider
           publishableKey={getClerkPublishableKey()}
           signInUrl="/sign-in"

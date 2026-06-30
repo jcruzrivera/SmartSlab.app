@@ -177,6 +177,60 @@ npm run db:push
 npm run dev
 ```
 
+## Progressive Web App (PWA)
+
+SmartSlab ships with installable PWA support for mobile and desktop browsers.
+
+### What is included
+
+- `app/manifest.ts` — Web App Manifest (`/manifest.webmanifest`) with name,
+  theme colors, icons, and shortcuts to Browse, Compare, and Dashboard.
+- `public/sw.js` — production service worker that caches static assets and
+  serves `/offline` when navigation fails without a network connection.
+- `app/offline/page.tsx` — offline fallback screen.
+- `components/pwa/register-service-worker.tsx` — registers the service worker
+  in production builds only.
+- `public/icons/icon-192.png` and `public/icons/icon-512.png` — install icons
+  generated from the app logo.
+
+### Install behavior
+
+- **Android (Chrome):** open the site, then use *Install app* from the browser
+  menu.
+- **iOS (Safari):** tap *Share* → *Add to Home Screen*.
+- **Desktop (Chrome / Edge):** use the install icon in the address bar when
+  offered.
+
+The installed app opens in standalone mode with `start_url` set to `/browse`.
+
+### PWA verification checklist
+
+1. Deploy over HTTPS (required for service workers and install prompts).
+2. Run a production build locally:
+
+```bash
+npm run build
+npm run start
+```
+
+3. Open the site in Chrome DevTools → **Application** → **Manifest** and confirm:
+   - manifest loads without errors
+   - icons include 192×192 and 512×512 entries
+   - `display: standalone` and `theme_color: #1bb0ce`
+4. In **Service Workers**, confirm `/sw.js` is registered after page load.
+5. Toggle **Offline** in DevTools and reload a navigation route — you should
+   see `/offline` instead of a browser error page.
+
+### PWA notes
+
+- The service worker registers only when `NODE_ENV=production` (not during
+  `npm run dev`).
+- Live inventory, auth, checkout, and vendor dashboards still require network
+  access; the PWA improves installability and resilience, not full offline
+  marketplace browsing.
+- Replace `public/icons/icon-192.png` and `public/icons/icon-512.png` with
+  true 192×192 and 512×512 exports if you want pixel-perfect install icons.
+
 ## Notes
 
 - Environment variables are read at server start. Restart dev server after editing `.env.local`.
