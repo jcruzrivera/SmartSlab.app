@@ -1,10 +1,9 @@
 import type { MetadataRoute } from "next";
 
+import { getConfiguredAppUrl } from "@/lib/url";
+
 function baseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "https://smart-slab-app.vercel.app"
-  ).replace(/\/$/, "");
+  return getConfiguredAppUrl();
 }
 
 export default function robots(): MetadataRoute.Robots {

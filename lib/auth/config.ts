@@ -8,24 +8,14 @@ export function getClerkPublishableKey(): string {
 }
 
 /**
- * Same-origin Clerk proxy URL. Routes Frontend API traffic through `/__clerk`
- * instead of a custom `clerk.*` subdomain when DNS is not configured yet.
+ * Optional Clerk proxy override. Not enabled automatically — with custom DNS
+ * (`clerk.smartslab.store`) Clerk loads from Clerk's subdomain once verified.
+ * Set only when explicitly using same-origin proxy, e.g.
+ * `NEXT_PUBLIC_CLERK_PROXY_URL=https://smartslab.store/__clerk`.
  */
 export function getClerkProxyUrl(): string | undefined {
   const explicit = process.env.NEXT_PUBLIC_CLERK_PROXY_URL?.trim();
-  if (explicit) {
-    return explicit;
-  }
-
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
-
-  if (!appUrl) {
-    return undefined;
-  }
-
-  return `${appUrl.replace(/\/$/, "")}/__clerk`;
+  return explicit ? explicit.replace(/\/$/, "") : undefined;
 }
 
 export function hasValidClerkConfig(): boolean {

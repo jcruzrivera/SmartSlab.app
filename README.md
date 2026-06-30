@@ -144,12 +144,27 @@ Copy-Item .env.example .env.local
 - `NEXT_CLERK_PUBLISHABLE_KEY` (server-only; passed to Clerk in `app/layout.tsx`)
 - `CLERK_SECRET_KEY`
 
-For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). Development instances (`*.accounts.dev`) block cross-origin requests from your live domain and cause CORS errors in the browser console. In the Clerk dashboard, add `https://www.smartslab.store` (and any other live domains) under **Configure → Domains**.
+For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). In the Clerk dashboard, add **`https://smartslab.store`** under **Configure → Domains**.
 
-If the browser console shows `ERR_NAME_NOT_RESOLVED` for `clerk.smartslab.app` (or another `clerk.*` host), Clerk is trying to load from a custom subdomain whose DNS is not set up yet. Fix it one of two ways:
+**Domain setup (Namecheap + Vercel):** point Namecheap nameservers to Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`). Add DNS records in **Vercel → Domains → smartslab.store → DNS**, not Namecheap. The canonical storefront URL is **`https://smartslab.store`**; `www.smartslab.store` redirects to the apex in `vercel.json`.
 
-1. **Recommended (proxy):** set `NEXT_PUBLIC_APP_URL=https://www.smartslab.store` in Vercel. SmartSlab auto-derives `proxyUrl` as `https://www.smartslab.store/__clerk` so auth loads from your own domain. You can override with `NEXT_PUBLIC_CLERK_PROXY_URL` if needed. In Clerk → **Domains**, add the same site URL and enable the proxy option if prompted.
-2. **Custom subdomain:** create the DNS record Clerk shows for `clerk.<your-domain>` and wait for propagation, then remove the proxy env vars.
+**Clerk custom DNS (recommended):** in Vercel DNS, replace any A records on Clerk subdomains with these CNAMEs (relative to `smartslab.store`):
+
+| Name | Target |
+|------|--------|
+| `accounts` | `accounts.clerk.services` |
+| `clerk` | `frontend-api.clerk.services` |
+| `clk._domainkey` | `dkim1.zov7sumhsqh0.clerk.services` |
+| `clk2._domainkey` | `dkim2.zov7sumhsqh0.clerk.services` |
+| `clkmail` | `mail.zov7sumhsqh0.clerk.services` |
+
+Then verify the domain in Clerk. Do **not** set `NEXT_PUBLIC_CLERK_PROXY_URL` unless you intentionally use same-origin proxy; the app no longer auto-enables proxy from `VERCEL_URL`.
+
+Set in Vercel:
+
+```
+NEXT_PUBLIC_APP_URL=https://smartslab.store
+```
 
 Optional (SmartSlab also sets these in code):
 

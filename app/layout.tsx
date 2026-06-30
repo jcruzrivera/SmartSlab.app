@@ -11,6 +11,7 @@ import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getClerkPublishableKey, getClerkProxyUrl, hasValidClerkConfig } from "@/lib/auth/config";
+import { CANONICAL_APP_ORIGIN, getConfiguredAppUrl } from "@/lib/url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,6 +25,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(CANONICAL_APP_ORIGIN),
   title: "SmartSlab — Slab & Remnant Marketplace",
   description:
     "Buy and sell natural stone slabs and remnants. Granite, quartz, quartzite, marble and more.",
