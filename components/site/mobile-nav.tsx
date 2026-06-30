@@ -2,17 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type NavItem = { href: string; label: string };
 
 export function MobileNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const [menuPath, setMenuPath] = useState<string | null>(null);
+  const open = menuPath === pathname;
 
   return (
     <div className="sm:hidden">
@@ -20,7 +17,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
         type="button"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setMenuPath(open ? null : pathname)}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
       >
         {open ? (
@@ -40,7 +37,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
             type="button"
             aria-hidden
             tabIndex={-1}
-            onClick={() => setOpen(false)}
+            onClick={() => setMenuPath(null)}
             className="fixed inset-0 top-[57px] z-30 bg-black/20"
           />
           <nav className="absolute left-0 right-0 top-full z-40 border-b border-slate-200 bg-white p-3 shadow-lg dark:border-slate-800 dark:bg-slate-950">

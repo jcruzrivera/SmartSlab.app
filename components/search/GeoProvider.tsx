@@ -5,6 +5,9 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -40,6 +43,14 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
   const [geo, setGeo] = useState<BuyerGeo | null>(null);
   const [promptVisible, setPromptVisible] = useState(false);
   const [requesting, setRequesting] = useState(false);
+
+  // Keep a ref to the latest geo so callbacks don't need it as a dep.
+  // useLayoutEffect syncs after commit (before paint) so it's always current
+  // by the time any user interaction can trigger requestPrecise/keepApproximate.
+  const geoRef = useRef(geo);
+  useLayoutEffect(() => {
+    geoRef.current = geo;
+  });
 
   useEffect(() => {
     let active = true;
@@ -81,11 +92,12 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
     setRequesting(true);
     getBrowserPosition()
       .then((pos) => {
+        const current = geoRef.current;
         const next: BuyerGeo = {
           lat: pos.lat,
           lng: pos.lng,
-          city: geo?.city ?? null,
-          region: geo?.region ?? null,
+          city: current?.city ?? null,
+          region: current?.region ?? null,
           source: "browser",
         };
         setGeo(next);
@@ -94,16 +106,17 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(() => {
         // Denied or failed: keep the approximate (IP) location if we have one.
-        if (geo) writeCachedGeo(geo);
+        const current = geoRef.current;
+        if (current) writeCachedGeo(current);
         setPromptVisible(false);
       })
       .finally(() => setRequesting(false));
-  }, [geo]);
+  }, []); // geo read via geoRef — stable for the lifetime of the provider
 
   const keepApproximate = useCallback(() => {
-    if (geo) writeCachedGeo(geo);
+    if (geoRef.current) writeCachedGeo(geoRef.current);
     setPromptVisible(false);
-  }, [geo]);
+  }, []); // geo read via geoRef — stable for the lifetime of the provider
 
   const reset = useCallback(() => {
     clearCachedGeo();
@@ -111,17 +124,15 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
     setPromptVisible(true);
   }, []);
 
+  // Memoize the context value so consumers only re-render when geo state
+  // actually changes, not on every GeoProvider render.
+  const ctxValue = useMemo(
+    () => ({ geo, promptVisible, requesting, requestPrecise, keepApproximate, reset }),
+    [geo, promptVisible, requesting, requestPrecise, keepApproximate, reset],
+  );
+
   return (
-    <GeoContext.Provider
-      value={{
-        geo,
-        promptVisible,
-        requesting,
-        requestPrecise,
-        keepApproximate,
-        reset,
-      }}
-    >
+    <GeoContext.Provider value={ctxValue}>
       {children}
     </GeoContext.Provider>
   );
