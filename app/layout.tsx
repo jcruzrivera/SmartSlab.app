@@ -11,7 +11,7 @@ import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { CanonicalHostGuard } from "@/components/site/canonical-host-guard";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { getClerkPublishableKey, hasValidClerkConfig } from "@/lib/auth/config";
+import { getClerkPublishableKey, getClerkDomain, hasValidClerkConfig } from "@/lib/auth/config";
 import { CANONICAL_APP_ORIGIN, getConfiguredAppUrl } from "@/lib/url";
 import "./globals.css";
 
@@ -58,6 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const hasClerkConfig = hasValidClerkConfig();
+  const clerkDomain = getClerkDomain();
 
   if (!hasClerkConfig) {
     return (
@@ -87,6 +88,7 @@ export default function RootLayout({
         <RegisterServiceWorker />
         <ClerkProvider
           publishableKey={getClerkPublishableKey()}
+          {...(clerkDomain ? { domain: clerkDomain } : {})}
           signInUrl="/sign-in"
           signUpUrl="/sign-up"
           signInFallbackRedirectUrl="/onboarding"

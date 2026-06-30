@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
-import { hasValidClerkConfig } from "@/lib/auth/config";
+import { getClerkDomain, hasValidClerkConfig } from "@/lib/auth/config";
 import { CANONICAL_APP_HOST, CANONICAL_APP_ORIGIN, normalizeAppHost } from "@/lib/app-origin";
 
 const isProtectedRoute = createRouteMatcher([
@@ -15,8 +15,11 @@ const isSlabDetailRoute = createRouteMatcher(["/slab/(.*)"]);
 
 const hasClerkConfig = hasValidClerkConfig();
 
+const clerkDomain = getClerkDomain();
+
 const withClerkMiddleware = hasClerkConfig
-  ? clerkMiddleware(async (auth, req) => {
+  ? clerkMiddleware(
+      async (auth, req) => {
       const { userId } = await auth();
 
       // Only gate on authentication here. Fine-grained role enforcement is
@@ -36,7 +39,11 @@ const withClerkMiddleware = hasClerkConfig
       }
 
       return NextResponse.next();
-    })
+    },
+      {
+        ...(clerkDomain ? { domain: clerkDomain } : {}),
+      },
+  )
   : null;
 
 function canonicalHostRedirect(request: NextRequest): NextResponse | null {

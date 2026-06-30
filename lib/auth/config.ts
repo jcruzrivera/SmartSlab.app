@@ -1,3 +1,5 @@
+import { CANONICAL_APP_HOST } from "@/lib/app-origin";
+
 /** Server-only env name (preferred on Vercel). Falls back to legacy NEXT_PUBLIC_* for local dev. */
 export function getClerkPublishableKey(): string {
   return (
@@ -5,6 +7,23 @@ export function getClerkPublishableKey(): string {
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
     ""
   );
+}
+
+/**
+ * Primary Clerk domain for production custom DNS.
+ * Overrides legacy `clerk.smartslab.app` baked into older publishable keys.
+ */
+export function getClerkDomain(): string | undefined {
+  const fromEnv = process.env.NEXT_PUBLIC_CLERK_DOMAIN?.trim();
+  if (fromEnv) {
+    return fromEnv.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
+
+  if (isClerkProductionConfig()) {
+    return CANONICAL_APP_HOST;
+  }
+
+  return undefined;
 }
 
 export function hasValidClerkConfig(): boolean {
