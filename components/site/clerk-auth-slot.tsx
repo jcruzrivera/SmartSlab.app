@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ClerkLoaded,
-  ClerkLoading,
-  SignOutButton,
-  UserButton,
-  useAuth,
-} from "@clerk/nextjs";
+import { SignOutButton, UserButton, useAuth } from "@clerk/nextjs";
 
 const linkClassName =
   "text-sm font-medium text-slate-600 transition hover:text-[#0d8fa8] dark:text-slate-300";
@@ -50,25 +44,20 @@ function SignedInLinks() {
   );
 }
 
-function AuthStateLinks() {
-  const { isSignedIn } = useAuth();
+export function ClerkAuthSlot() {
+  const { isLoaded, isSignedIn } = useAuth();
 
-  if (isSignedIn) {
-    return <SignedInLinks />;
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center gap-3">
+        <GuestLinks />
+      </div>
+    );
   }
 
-  return <GuestLinks />;
-}
-
-export function ClerkAuthSlot() {
   return (
     <div className="flex items-center gap-3">
-      <ClerkLoading>
-        <GuestLinks />
-      </ClerkLoading>
-      <ClerkLoaded>
-        <AuthStateLinks />
-      </ClerkLoaded>
+      {isSignedIn ? <SignedInLinks /> : <GuestLinks />}
     </div>
   );
 }
