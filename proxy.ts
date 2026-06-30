@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
 import { hasValidClerkConfig } from "@/lib/auth/config";
-import { CANONICAL_APP_HOST, normalizeAppHost } from "@/lib/url";
+import { CANONICAL_APP_HOST, CANONICAL_APP_ORIGIN, normalizeAppHost } from "@/lib/app-origin";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
@@ -26,8 +26,12 @@ const withClerkMiddleware = hasClerkConfig
         !userId &&
         (isProtectedRoute(req) || isSlabDetailRoute(req))
       ) {
-        const signIn = new URL("/sign-in", req.url);
-        signIn.searchParams.set("redirect_url", req.url);
+        const redirectTarget = new URL(
+          `${req.nextUrl.pathname}${req.nextUrl.search}`,
+          CANONICAL_APP_ORIGIN,
+        );
+        const signIn = new URL("/sign-in", CANONICAL_APP_ORIGIN);
+        signIn.searchParams.set("redirect_url", redirectTarget.toString());
         return NextResponse.redirect(signIn);
       }
 
@@ -69,6 +73,10 @@ export default function proxy(request: NextRequest, event: NextFetchEvent) {
 
 export const config = {
   matcher: [
+    {
+      source: "/:path*",
+      has: [{ type: "host", value: "www.smartslab.store" }],
+    },
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],

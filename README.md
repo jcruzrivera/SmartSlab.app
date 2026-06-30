@@ -144,7 +144,7 @@ Copy-Item .env.example .env.local
 - `NEXT_CLERK_PUBLISHABLE_KEY` (server-only; passed to Clerk in `app/layout.tsx`)
 - `CLERK_SECRET_KEY`
 
-For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). In the Clerk dashboard, add **`https://smartslab.store`** under **Configure → Domains**.
+For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_live_…`), not Development (`pk_test_…`). In the Clerk dashboard, add **`https://smartslab.store`** under **Configure → Domains**. The production domain must be **`smartslab.store`** — if Clerk tries to load from `clerk.smartslab.app`, the dashboard still points at the old `.app` hostname; update or remove that domain and finish DNS for `.store`.
 
 **Domain setup (Namecheap + Vercel):** point Namecheap nameservers to Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`). Add DNS records in **Vercel → Domains → smartslab.store → DNS**, not Namecheap. The canonical storefront URL is **`https://smartslab.store`**; `www.smartslab.store` redirects to the apex in `vercel.json`.
 

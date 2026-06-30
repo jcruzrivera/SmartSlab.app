@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { CANONICAL_APP_HOST } from "@/lib/app-origin";
+
 export function RegisterServiceWorker() {
   useEffect(() => {
     if (
@@ -9,6 +11,11 @@ export function RegisterServiceWorker() {
       !("serviceWorker" in navigator) ||
       process.env.NODE_ENV !== "production"
     ) {
+      return;
+    }
+
+    const host = window.location.hostname.toLowerCase();
+    if (host !== CANONICAL_APP_HOST) {
       return;
     }
 

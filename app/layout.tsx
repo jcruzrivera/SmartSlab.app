@@ -8,6 +8,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { GuestFavoritesSync } from "@/components/marketplace/guest-favorites-sync";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
+import { CanonicalHostGuard } from "@/components/site/canonical-host-guard";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getClerkPublishableKey, hasValidClerkConfig } from "@/lib/auth/config";
@@ -65,6 +66,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
+          <CanonicalHostGuard />
           <RegisterServiceWorker />
           <SiteHeader authSlot={<GuestAuthSlot />} />
           <AppProviders>{children}</AppProviders>
@@ -81,6 +83,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
+        <CanonicalHostGuard />
         <RegisterServiceWorker />
         <ClerkProvider
           publishableKey={getClerkPublishableKey()}
