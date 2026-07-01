@@ -53,10 +53,10 @@ export function SiteHeader({ authSlot }: { authSlot?: ReactNode }) {
             Sell
           </Link>
           <Link
-            href="/dashboard"
+            href="/compare"
             className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
           >
-            Dashboard
+            Compare
           </Link>
         </nav>
 
