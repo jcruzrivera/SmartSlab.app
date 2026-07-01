@@ -23,6 +23,6 @@ const ClerkAuthSlot = dynamic(
   },
 );
 
-export function ClerkAuthSlotLoader() {
-  return <ClerkAuthSlot />;
+export function ClerkAuthSlotLoader({ isSignedIn = false }: { isSignedIn?: boolean }) {
+  return <ClerkAuthSlot isSignedIn={isSignedIn} />;
 }

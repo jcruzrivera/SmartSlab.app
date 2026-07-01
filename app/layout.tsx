@@ -3,16 +3,16 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { AppProviders } from "@/components/providers/app-providers";
-import { GuestFavoritesSync } from "@/components/marketplace/guest-favorites-sync";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { CanonicalHostGuard } from "@/components/site/canonical-host-guard";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getClerkPublishableKey, getClerkDomain, getClerkScriptUrls, hasValidClerkConfig } from "@/lib/auth/config";
-import { CANONICAL_APP_ORIGIN, getConfiguredAppUrl } from "@/lib/url";
+import { CANONICAL_APP_ORIGIN } from "@/lib/url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -52,7 +52,7 @@ function GuestAuthSlot() {
   );
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -60,6 +60,7 @@ export default function RootLayout({
   const hasClerkConfig = hasValidClerkConfig();
   const clerkDomain = getClerkDomain();
   const clerkScriptUrls = getClerkScriptUrls();
+  const isSignedIn = hasClerkConfig ? Boolean((await auth()).userId) : false;
 
   if (!hasClerkConfig) {
     return (
@@ -101,8 +102,7 @@ export default function RootLayout({
           signInFallbackRedirectUrl="/onboarding"
           signUpFallbackRedirectUrl="/onboarding"
         >
-          <GuestFavoritesSync />
-          <SiteHeader authSlot={<ClerkAuthSlotLoader />} />
+          <SiteHeader authSlot={<ClerkAuthSlotLoader isSignedIn={isSignedIn} />} />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
         </ClerkProvider>

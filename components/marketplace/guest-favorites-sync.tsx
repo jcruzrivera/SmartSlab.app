@@ -1,6 +1,5 @@
 "use client";
 
-import { SignedIn, useUser } from "@clerk/nextjs";
 import { useEffect, useRef } from "react";
 
 import { syncGuestFavoritesAction } from "@/app/actions/marketplace";
@@ -11,50 +10,34 @@ import {
 
 const SYNC_FLAG_KEY = "smartslab.guest-favorites-synced";
 
-function GuestFavoritesSyncInner() {
-  const { user } = useUser();
-  const userId = user?.id;
-  const hasRunRef = useRef<string | null>(null);
+export function GuestFavoritesSync() {
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
-    if (!userId || hasRunRef.current === userId) {
-      return;
-    }
-
-    if (sessionStorage.getItem(SYNC_FLAG_KEY) === userId) {
-      hasRunRef.current = userId;
+    if (hasRunRef.current || sessionStorage.getItem(SYNC_FLAG_KEY) === "done") {
       return;
     }
 
     const guestFavoriteIds = readFavoriteIds();
     if (guestFavoriteIds.length === 0) {
-      sessionStorage.setItem(SYNC_FLAG_KEY, userId);
-      hasRunRef.current = userId;
       return;
     }
 
-    hasRunRef.current = userId;
+    hasRunRef.current = true;
 
     void syncGuestFavoritesAction(guestFavoriteIds)
       .then(({ merged }) => {
-        sessionStorage.setItem(SYNC_FLAG_KEY, userId);
         if (merged > 0) {
+          sessionStorage.setItem(SYNC_FLAG_KEY, "done");
           clearGuestFavorites();
+        } else {
+          hasRunRef.current = false;
         }
       })
       .catch(() => {
-        hasRunRef.current = null;
-        sessionStorage.removeItem(SYNC_FLAG_KEY);
+        hasRunRef.current = false;
       });
-  }, [userId]);
+  }, []);
 
   return null;
-}
-
-export function GuestFavoritesSync() {
-  return (
-    <SignedIn>
-      <GuestFavoritesSyncInner />
-    </SignedIn>
-  );
 }
