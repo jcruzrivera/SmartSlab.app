@@ -160,22 +160,44 @@ For **Vercel production**, use Clerk **Production** keys (`pk_live_…` / `sk_li
 
 Then verify the domain in Clerk. Do **not** set `NEXT_PUBLIC_CLERK_PROXY_URL` — the app does not use same-origin Clerk proxy (that path caused `/__clerk/handshake` redirect loops).
 
-Set in Vercel:
+**Google OAuth (Sign in with Google):** production requires your own Google OAuth client. A `400 invalid_request` / `GeneralOAuthFlow` error almost always means the redirect URI in Google Cloud Console does not match Clerk exactly.
 
-```
+1. Clerk Dashboard (Production instance) → **Configure → SSO connections → Google**.
+2. Enable **Use custom credentials** and copy the **Authorized Redirect URI** shown there (typically `https://accounts.smartslab.store/v1/oauth_callback` once custom DNS is verified).
+3. [Google Cloud Console](https://console.cloud.google.com) → **APIs & Services → Credentials** → your OAuth 2.0 Web client (or create one).
+4. **Authorized JavaScript origins** — add:
+   - `https://smartslab.store`
+   - `https://accounts.smartslab.store`
+   - `https://clerk.smartslab.store`
+5. **Authorized redirect URIs** — paste the URI from step 2 **character-for-character** (no trailing slash unless Clerk shows one).
+6. Copy **Client ID** and **Client Secret** back into Clerk → Google → Save.
+
+The Google consent screen should say the user is signing in to **SmartSlab** / `smartslab.store`, not a generic Clerk dev proxy.
+
+**Vercel environment variables (production checklist):**
+
+```bash
 NEXT_PUBLIC_APP_URL=https://smartslab.store
+NEXT_CLERK_PUBLISHABLE_KEY=pk_live_…   # same Production instance as below
+CLERK_SECRET_KEY=sk_live_…
 ```
 
-Optional (SmartSlab also sets these in code):
+Optional (SmartSlab also sets domain and script URLs in code when `VERCEL_ENV=production`):
 
-- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
-- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
+- `NEXT_PUBLIC_CLERK_DOMAIN=smartslab.store`
+
+**Remove or align stale vars** (common source of OAuth / redirect bugs):
+
+- Do **not** set `NEXT_PUBLIC_CLERK_PROXY_URL`.
+- Remove `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` if it differs from `NEXT_CLERK_PUBLISHABLE_KEY` (legacy `.app` instance).
+- Optional path-only overrides: `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`.
+
+**Auth UI in this repo:** the site header uses server `auth()` plus static links (no `SignedIn` / `useUser` in the root layout — that pattern caused React error #185). Guest favorites sync runs only on `/browse` via `app/(public)/browse/layout.tsx`.
 
 - `STRIPE_SECRET_KEY`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `BLOB_READ_WRITE_TOKEN`
-- `NEXT_PUBLIC_APP_URL`
 - `PLATFORM_FEE_PERCENT`
 
 4. Apply schema:
