@@ -29,12 +29,33 @@ function notify(eventName: string): void {
   window.dispatchEvent(new Event(eventName));
 }
 
+// Module-level caches so useSyncExternalStore always gets a stable reference
+// when the underlying data hasn't changed. Without this, JSON.parse returns a
+// new array on every call, causing React to see a "changed" snapshot every
+// render and loop infinitely.
+let compareIdsCache: string[] = [];
+let favoriteIdsCache: string[] = [];
+
+function stableIds(fresh: string[], cache: string[]): string[] {
+  if (
+    fresh.length === cache.length &&
+    fresh.every((id, i) => id === cache[i])
+  ) {
+    return cache;
+  }
+  return fresh;
+}
+
 export function readCompareIds(): string[] {
-  return readStringIds(COMPARE_STORAGE_KEY);
+  const fresh = readStringIds(COMPARE_STORAGE_KEY);
+  compareIdsCache = stableIds(fresh, compareIdsCache);
+  return compareIdsCache;
 }
 
 export function readFavoriteIds(): string[] {
-  return readStringIds(FAVORITES_STORAGE_KEY);
+  const fresh = readStringIds(FAVORITES_STORAGE_KEY);
+  favoriteIdsCache = stableIds(fresh, favoriteIdsCache);
+  return favoriteIdsCache;
 }
 
 export function isInGuestCompare(slabId: string): boolean {

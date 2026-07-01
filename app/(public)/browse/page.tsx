@@ -109,7 +109,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Browse" }]} />
       <div className="flex flex-col gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">Browse slabs</h1>
-        <SearchBar initialQuery={filters.q} suggestions={suggestions} />
+        <SearchBar key={filters.q ? "active" : "empty"} initialQuery={filters.q} suggestions={suggestions} />
         <GeoPrompt />
       </div>
 

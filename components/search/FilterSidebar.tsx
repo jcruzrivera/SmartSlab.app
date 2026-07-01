@@ -126,6 +126,7 @@ export function FilterSidebar({
 
       <Section title="Price">
         <PriceRange
+          key={`${filters.priceMin > PRICE_MIN}:${filters.priceMax < PRICE_MAX}`}
           min={filters.priceMin}
           max={filters.priceMax}
           onChange={(key, value) => setParam(key, value)}
@@ -133,7 +134,11 @@ export function FilterSidebar({
       </Section>
 
       <Section title="Size">
-        <MinSqft value={filters.minSqft} onChange={(v) => setParam("min_sqft", v)} />
+        <MinSqft
+          key={filters.minSqft > 0 ? "active" : "default"}
+          value={filters.minSqft}
+          onChange={(v) => setParam("min_sqft", v)}
+        />
       </Section>
 
       {brandOptions.length > 0 ? (
@@ -307,19 +312,7 @@ function PriceRange({
 }) {
   const [localMin, setLocalMin] = useState(String(min));
   const [localMax, setLocalMax] = useState(String(max));
-  const [prevMin, setPrevMin] = useState(min);
-  const [prevMax, setPrevMax] = useState(max);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  if (min !== prevMin) {
-    setPrevMin(min);
-    setLocalMin(String(min));
-  }
-
-  if (max !== prevMax) {
-    setPrevMax(max);
-    setLocalMax(String(max));
-  }
 
   function commit(key: "price_min" | "price_max", raw: string, fallback: number) {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -428,13 +421,7 @@ function MinSqft({
   onChange: (value: string | null) => void;
 }) {
   const [local, setLocal] = useState(value);
-  const [prevValue, setPrevValue] = useState(value);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  if (value !== prevValue) {
-    setPrevValue(value);
-    setLocal(value);
-  }
 
   function commit(next: number) {
     if (timerRef.current) clearTimeout(timerRef.current);
