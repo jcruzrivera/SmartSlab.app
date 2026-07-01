@@ -1,8 +1,7 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { SignedIn, useUser } from "@clerk/nextjs";
+import { useEffect, useRef } from "react";
 
 import { syncGuestFavoritesAction } from "@/app/actions/marketplace";
 import {
@@ -12,18 +11,13 @@ import {
 
 const SYNC_FLAG_KEY = "smartslab.guest-favorites-synced";
 
-export function GuestFavoritesSync() {
-  const { isLoaded, user } = useUser();
+function GuestFavoritesSyncInner() {
+  const { user } = useUser();
   const userId = user?.id;
-  const router = useRouter();
   const hasRunRef = useRef<string | null>(null);
-  const refreshPageRef = useRef(router.refresh);
-  useLayoutEffect(() => {
-    refreshPageRef.current = router.refresh;
-  });
 
   useEffect(() => {
-    if (!isLoaded || !userId || hasRunRef.current === userId) {
+    if (!userId || hasRunRef.current === userId) {
       return;
     }
 
@@ -46,13 +40,21 @@ export function GuestFavoritesSync() {
         sessionStorage.setItem(SYNC_FLAG_KEY, userId);
         if (merged > 0) {
           clearGuestFavorites();
-          refreshPageRef.current();
         }
       })
       .catch(() => {
         hasRunRef.current = null;
+        sessionStorage.removeItem(SYNC_FLAG_KEY);
       });
-  }, [isLoaded, userId]);
+  }, [userId]);
 
   return null;
+}
+
+export function GuestFavoritesSync() {
+  return (
+    <SignedIn>
+      <GuestFavoritesSyncInner />
+    </SignedIn>
+  );
 }
