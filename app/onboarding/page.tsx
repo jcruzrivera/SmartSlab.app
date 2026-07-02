@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 
 import { RoleOnboardingForm } from "@/components/auth/role-onboarding-form";
 import { hasValidClerkConfig } from "@/lib/auth/config";
-import { getClerkUserId } from "@/lib/auth/session";
 import { FALLBACK_ROUTES } from "@/lib/auth/roles";
+import { signInUrlWithRedirect } from "@/lib/auth/safe-redirect";
+import { getClerkUserId } from "@/lib/auth/session";
 import { getCurrentDbUser } from "@/lib/db/users";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function OnboardingPage() {
   const userId = await getClerkUserId();
 
   if (!userId) {
-    redirect("/sign-in");
+    redirect(signInUrlWithRedirect("/onboarding"));
   }
 
   const existing = await getCurrentDbUser();

@@ -8,7 +8,6 @@ const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/account(.*)",
   "/admin(.*)",
-  "/onboarding(.*)",
 ]);
 
 const isSlabDetailRoute = createRouteMatcher(["/slab/(.*)"]);
@@ -20,30 +19,29 @@ const clerkDomain = getClerkDomain();
 const withClerkMiddleware = hasClerkConfig
   ? clerkMiddleware(
       async (auth, req) => {
-      const { userId } = await auth();
+        const { userId } = await auth();
 
-      // Only gate on authentication here. Fine-grained role enforcement is
-      // handled in the server pages using the database, which avoids depending
-      // on a customized Clerk session token (a common cause of redirect loops).
-      if (
-        !userId &&
-        (isProtectedRoute(req) || isSlabDetailRoute(req))
-      ) {
-        const redirectTarget = new URL(
-          `${req.nextUrl.pathname}${req.nextUrl.search}`,
-          CANONICAL_APP_ORIGIN,
-        );
-        const signIn = new URL("/sign-in", CANONICAL_APP_ORIGIN);
-        signIn.searchParams.set("redirect_url", redirectTarget.toString());
-        return NextResponse.redirect(signIn);
-      }
+        // Onboarding auth is handled in app/onboarding/page.tsx to avoid
+        // sign-in ↔ onboarding loops when the session cookie is still settling.
+        if (
+          !userId &&
+          (isProtectedRoute(req) || isSlabDetailRoute(req))
+        ) {
+          const redirectTarget = new URL(
+            `${req.nextUrl.pathname}${req.nextUrl.search}`,
+            CANONICAL_APP_ORIGIN,
+          );
+          const signIn = new URL("/sign-in", CANONICAL_APP_ORIGIN);
+          signIn.searchParams.set("redirect_url", redirectTarget.toString());
+          return NextResponse.redirect(signIn);
+        }
 
-      return NextResponse.next();
-    },
+        return NextResponse.next();
+      },
       {
         ...(clerkDomain ? { domain: clerkDomain } : {}),
       },
-  )
+    )
   : null;
 
 function canonicalHostRedirect(request: NextRequest): NextResponse | null {

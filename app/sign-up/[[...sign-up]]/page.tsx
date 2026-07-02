@@ -1,6 +1,8 @@
 import { SignUp } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+import { resolveSafeRedirectUrl } from "@/lib/auth/safe-redirect";
 import { hasValidClerkConfig } from "@/lib/auth/config";
 
 type SignUpPageProps = {
@@ -12,12 +14,18 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
     redirect("/");
   }
 
-  const { redirect_url: redirectUrl } = await searchParams;
+  const { redirect_url: redirectUrlParam } = await searchParams;
+  const afterSignUp = resolveSafeRedirectUrl(redirectUrlParam);
+  const { userId } = await auth();
+
+  if (userId) {
+    redirect(afterSignUp);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 py-10">
       <SignUp
-        forceRedirectUrl={redirectUrl ?? "/onboarding"}
+        fallbackRedirectUrl={afterSignUp}
         appearance={{
           variables: {
             colorPrimary: "#1bb0ce",
