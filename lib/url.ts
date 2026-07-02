@@ -1,9 +1,9 @@
 import { headers } from "next/headers";
 
+import { CANONICAL_APP_ORIGIN } from "@/lib/app-origin";
+
 /**
- * Resolves the current absolute origin (e.g. https://smart-slab-app.vercel.app
- * or http://localhost:3000) for building Stripe redirect URLs that work both in
- * local development and production.
+ * Resolves the current absolute origin for Stripe redirect URLs and webhooks.
  */
 export async function getOrigin(): Promise<string> {
   const h = await headers();
@@ -18,5 +18,9 @@ export async function getOrigin(): Promise<string> {
     return `${proto}://${host}`;
   }
 
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    CANONICAL_APP_ORIGIN
+  ).replace(/\/$/, "");
 }

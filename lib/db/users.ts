@@ -14,6 +14,35 @@ type UpsertUserInput = {
   role?: AppRole;
 };
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: string }).code === "23505"
+  );
+}
+
+function mergeContactName(
+  incoming: string | null | undefined,
+  existing: string | null | undefined,
+): string | undefined {
+  const next = incoming?.trim();
+  if (next) {
+    return next;
+  }
+  return existing ?? undefined;
+}
+
+/**
+ * Creates or updates the app user row for a Clerk account. Re-links by email when
+ * a production Clerk user signs in with an address that still has a dev-era row
+ * (avoids users_email_unique / 23505).
+ */
 export async function upsertUserFromClerk(
   input: UpsertUserInput,
 ): Promise<DbUser | null> {
@@ -22,25 +51,86 @@ export async function upsertUserFromClerk(
   }
 
   const db = getDb();
-  const [row] = await db
-    .insert(users)
-    .values({
-      clerkId: input.clerkId,
-      email: input.email,
-      contactName: input.contactName ?? undefined,
-      role: input.role ?? "buyer",
-    })
-    .onConflictDoUpdate({
-      target: users.clerkId,
-      set: {
-        email: input.email,
-        contactName: input.contactName ?? undefined,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+  const email = normalizeEmail(input.email);
+  const contactName = mergeContactName(input.contactName, undefined);
 
-  return row ?? null;
+  try {
+    const existingByClerk = await db.query.users.findFirst({
+      where: eq(users.clerkId, input.clerkId),
+    });
+
+    if (existingByClerk) {
+      const [row] = await db
+        .update(users)
+        .set({
+          email,
+          contactName: mergeContactName(input.contactName, existingByClerk.contactName),
+          ...(input.role ? { role: input.role } : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.clerkId, input.clerkId))
+        .returning();
+
+      return row ?? existingByClerk;
+    }
+
+    const existingByEmail = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (existingByEmail) {
+      const [row] = await db
+        .update(users)
+        .set({
+          clerkId: input.clerkId,
+          contactName: mergeContactName(input.contactName, existingByEmail.contactName),
+          ...(input.role ? { role: input.role } : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.email, email))
+        .returning();
+
+      return row ?? existingByEmail;
+    }
+
+    const [row] = await db
+      .insert(users)
+      .values({
+        clerkId: input.clerkId,
+        email,
+        contactName,
+        role: input.role ?? "buyer",
+      })
+      .onConflictDoUpdate({
+        target: users.email,
+        set: {
+          clerkId: input.clerkId,
+          contactName: mergeContactName(input.contactName, undefined),
+          ...(input.role ? { role: input.role } : {}),
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+
+    return row ?? null;
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      const reconciled =
+        (await db.query.users.findFirst({
+          where: eq(users.clerkId, input.clerkId),
+        })) ??
+        (await db.query.users.findFirst({
+          where: eq(users.email, email),
+        }));
+
+      if (reconciled) {
+        return reconciled;
+      }
+    }
+
+    console.error("[upsertUserFromClerk] failed", error);
+    return null;
+  }
 }
 
 /**
@@ -53,48 +143,53 @@ export async function getOrCreateCurrentDbUser(): Promise<DbUser | null> {
     return null;
   }
 
-  const userId = await getClerkUserId();
+  try {
+    const userId = await getClerkUserId();
 
-  if (!userId) {
+    if (!userId) {
+      return null;
+    }
+
+    const db = getDb();
+    const existing = await db.query.users.findFirst({
+      where: eq(users.clerkId, userId),
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const clerkUser = await getClerkUser();
+
+    if (!clerkUser) {
+      return null;
+    }
+
+    const email =
+      clerkUser.emailAddresses.find(
+        (entry) => entry.id === clerkUser.primaryEmailAddressId,
+      )?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress;
+
+    if (!email) {
+      return null;
+    }
+
+    const role =
+      parseAppRole(clerkUser.publicMetadata?.role as string | undefined) ??
+      "buyer";
+
+    return upsertUserFromClerk({
+      clerkId: clerkUser.id,
+      email,
+      contactName:
+        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
+        null,
+      role,
+    });
+  } catch (error) {
+    console.error("[getOrCreateCurrentDbUser] failed", error);
     return null;
   }
-
-  const db = getDb();
-  const existing = await db.query.users.findFirst({
-    where: eq(users.clerkId, userId),
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  const clerkUser = await getClerkUser();
-
-  if (!clerkUser) {
-    return null;
-  }
-
-  const email =
-    clerkUser.emailAddresses.find(
-      (entry) => entry.id === clerkUser.primaryEmailAddressId,
-    )?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress;
-
-  if (!email) {
-    return null;
-  }
-
-  const role =
-    parseAppRole(clerkUser.publicMetadata?.role as string | undefined) ??
-    "buyer";
-
-  return upsertUserFromClerk({
-    clerkId: clerkUser.id,
-    email,
-    contactName:
-      [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
-      null,
-    role,
-  });
 }
 
 export async function setStripeAccountId(
@@ -178,16 +273,21 @@ export async function getCurrentDbUser(): Promise<DbUser | null> {
     return null;
   }
 
-  const userId = await getClerkUserId();
+  try {
+    const userId = await getClerkUserId();
 
-  if (!userId) {
+    if (!userId) {
+      return null;
+    }
+
+    const db = getDb();
+    const existing = await db.query.users.findFirst({
+      where: eq(users.clerkId, userId),
+    });
+
+    return existing ?? null;
+  } catch (error) {
+    console.error("[getCurrentDbUser] failed", error);
     return null;
   }
-
-  const db = getDb();
-  const existing = await db.query.users.findFirst({
-    where: eq(users.clerkId, userId),
-  });
-
-  return existing ?? null;
 }

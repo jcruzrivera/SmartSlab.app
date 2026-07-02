@@ -48,13 +48,17 @@ export async function POST(request: Request) {
 
       if (email) {
         const { upsertUserFromClerk } = await import("@/lib/db/users");
-        await upsertUserFromClerk({
-          clerkId: user.id,
-          email,
-          contactName:
-            [user.first_name, user.last_name].filter(Boolean).join(" ") || null,
-          role: role ?? "buyer",
-        });
+        try {
+          await upsertUserFromClerk({
+            clerkId: user.id,
+            email,
+            contactName:
+              [user.first_name, user.last_name].filter(Boolean).join(" ") || null,
+            role: role ?? "buyer",
+          });
+        } catch (syncError) {
+          console.error("[clerk webhook] user sync failed", syncError);
+        }
       }
     }
 
