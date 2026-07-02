@@ -27,7 +27,40 @@ function uploadErrorDetail(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+  if (typeof error === "object" && error !== null) {
+    const record = error as {
+      message?: string;
+      http_code?: number;
+      error?: { message?: string };
+    };
+    if (record.message) {
+      return record.http_code
+        ? `${record.message} (HTTP ${record.http_code})`
+        : record.message;
+    }
+    if (record.error?.message) {
+      return record.error.message;
+    }
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
   return String(error);
+}
+
+async function uploadToBlob(
+  fileName: string,
+  buffer: Buffer,
+  contentType: string,
+) {
+  return put(fileName, buffer, {
+    access: "public",
+    addRandomSuffix: true,
+    contentType,
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  });
 }
 
 export async function GET(): Promise<NextResponse> {
@@ -38,6 +71,8 @@ export async function GET(): Promise<NextResponse> {
     cloudinaryConfigured: isCloudinaryConfigured(),
     blobConfigured: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
     provider,
+    blobFallbackAvailable:
+      isCloudinaryConfigured() && Boolean(process.env.BLOB_READ_WRITE_TOKEN),
     signedIn: Boolean(userId),
   });
 }
@@ -95,19 +130,44 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     if (provider === "cloudinary") {
-      const uploaded = await uploadImageToCloudinary(buffer, file.name);
-      return NextResponse.json({
-        url: uploaded.url,
-        provider: "cloudinary",
-      });
+      try {
+        const uploaded = await uploadImageToCloudinary(buffer, file.name);
+        return NextResponse.json({
+          url: uploaded.url,
+          provider: "cloudinary",
+        });
+      } catch (cloudinaryError) {
+        console.error("UPLOAD_ERROR cloudinary:", cloudinaryError);
+
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+          throw cloudinaryError;
+        }
+
+        try {
+          const blob = await uploadToBlob(file.name, buffer, file.type);
+          console.warn("UPLOAD_FALLBACK: cloudinary failed, stored in vercel-blob");
+          return NextResponse.json({
+            url: blob.url,
+            provider: "vercel-blob",
+            fallback: true,
+          });
+        } catch (blobError) {
+          console.error("UPLOAD_ERROR blob fallback:", blobError);
+          return NextResponse.json(
+            {
+              error: "Could not upload image.",
+              provider: "cloudinary",
+              detail: uploadErrorDetail(cloudinaryError),
+              fallbackProvider: "vercel-blob",
+              fallbackDetail: uploadErrorDetail(blobError),
+            },
+            { status: 400 },
+          );
+        }
+      }
     }
 
-    const blob = await put(file.name, buffer, {
-      access: "public",
-      addRandomSuffix: true,
-      contentType: file.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
+    const blob = await uploadToBlob(file.name, buffer, file.type);
 
     return NextResponse.json({
       url: blob.url,
