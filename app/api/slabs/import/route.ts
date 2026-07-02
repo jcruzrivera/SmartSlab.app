@@ -16,8 +16,8 @@ type ParsedRow = {
   name: string;
   materialId: string | null;
   type: "full_slab" | "remnant";
-  widthCm: string | null;
-  heightCm: string | null;
+  widthIn: string | null;
+  heightIn: string | null;
   thicknessCm: string;
   finish: (typeof finishTypeEnum.enumValues)[number];
   colorFamily: string | null;
@@ -132,8 +132,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       name: name!,
       materialId: materialId!,
       type: type as "full_slab" | "remnant",
-      widthCm: row.width_in,
-      heightCm: row.height_in,
+      widthIn: row.width_in,
+      heightIn: row.height_in,
       thicknessCm: Number.isNaN(thickness) ? "3" : String(thickness),
       finish,
       colorFamily: row.color_family?.trim() || null,

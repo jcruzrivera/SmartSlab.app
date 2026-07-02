@@ -29,7 +29,7 @@ export function SlabCard({
       }) ?? primaryImage
     : null;
   const location = formatLocation(slab.city, slab.state) ?? slab.zip ?? null;
-  const sqft = formatSqft(slab.widthCm, slab.heightCm);
+  const sqft = formatSqft(slab.widthIn, slab.heightIn);
   const locationOrDistance =
     distanceMiles !== undefined ? formatDistance(distanceMiles) : location;
   const priceLabel = formatSlabPrice(slab.price, slab.isNegotiable);

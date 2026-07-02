@@ -236,10 +236,10 @@ export default async function SlabDetailPage({
 
           <dl className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 p-4 text-sm dark:border-slate-800">
             <Detail label="Dimensions">
-              {formatDimensions(slab.widthCm, slab.heightCm, slab.thicknessCm)}
+              {formatDimensions(slab.widthIn, slab.heightIn, slab.thicknessCm)}
             </Detail>
             <Detail label="Total area">
-              {formatSqft(slab.widthCm, slab.heightCm) ?? "Not provided"}
+              {formatSqft(slab.widthIn, slab.heightIn) ?? "Not provided"}
             </Detail>
             <Detail label="Finish">
               {finishLabels[slab.finish] ?? slab.finish}

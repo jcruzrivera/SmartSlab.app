@@ -19,8 +19,8 @@ type CompareSlab = {
   type: string;
   finish: string;
   colorFamily: string | null;
-  widthCm: string | null;
-  heightCm: string | null;
+  widthIn: string | null;
+  heightIn: string | null;
   thicknessCm: string | null;
   price: string;
   isNegotiable?: boolean;
@@ -219,14 +219,14 @@ export function CompareTable() {
             <CompareRow label="Dimensions">
               {slabs.map((slab) => (
                 <td key={slab.id} className="px-4 py-3">
-                  {formatDimensions(slab.widthCm, slab.heightCm, slab.thicknessCm)}
+                  {formatDimensions(slab.widthIn, slab.heightIn, slab.thicknessCm)}
                 </td>
               ))}
             </CompareRow>
             <CompareRow label="Area">
               {slabs.map((slab) => (
                 <td key={slab.id} className="px-4 py-3">
-                  {formatSqft(slab.widthCm, slab.heightCm) ?? "Not provided"}
+                  {formatSqft(slab.widthIn, slab.heightIn) ?? "Not provided"}
                 </td>
               ))}
             </CompareRow>

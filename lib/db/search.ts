@@ -56,8 +56,8 @@ function normalizeBrand(value: string | null | undefined): string {
 }
 
 function sqftOf(slab: SlabWithRelations): number | null {
-  const w = num(slab.widthCm);
-  const h = num(slab.heightCm);
+  const w = num(slab.widthIn);
+  const h = num(slab.heightIn);
   if (w === null || h === null || w <= 0 || h <= 0) return null;
   return (w * h) / 144; // width/height are inches
 }

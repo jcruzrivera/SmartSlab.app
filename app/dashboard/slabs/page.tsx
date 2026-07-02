@@ -106,7 +106,7 @@ export default async function DashboardSlabsPage() {
                     {slab.material?.name ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {formatDimensions(slab.widthCm, slab.heightCm, slab.thicknessCm)}
+                    {formatDimensions(slab.widthIn, slab.heightIn, slab.thicknessCm)}
                   </td>
                   <td className="px-4 py-3 font-medium">{formatPrice(slab.price)}</td>
                   <td className="px-4 py-3">

@@ -34,8 +34,8 @@ export type SlabFormInitialValues = {
   city?: string | null;
   state?: string | null;
   zip?: string | null;
-  widthCm?: string | null;
-  heightCm?: string | null;
+  widthIn?: string | null;
+  heightIn?: string | null;
   thicknessCm?: string | null;
   price: string;
   quantity: number;
@@ -99,8 +99,8 @@ export function SlabForm({
     FormData
   >(action, {});
 
-  const [widthIn, setWidthIn] = useState(initialValues?.widthCm ?? "");
-  const [heightIn, setHeightIn] = useState(initialValues?.heightCm ?? "");
+  const [widthIn, setWidthIn] = useState(initialValues?.widthIn ?? "");
+  const [heightIn, setHeightIn] = useState(initialValues?.heightIn ?? "");
   const [slabType, setSlabType] = useState<"full_slab" | "remnant">(
     initialValues?.type ?? "full_slab",
   );
@@ -365,10 +365,10 @@ export function SlabForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Width (in)" htmlFor="widthCm">
+          <Field label="Width (in)" htmlFor="widthIn">
             <input
-              id="widthCm"
-              name="widthCm"
+              id="widthIn"
+              name="widthIn"
               type="number"
               step="0.1"
               min="0"
@@ -378,10 +378,10 @@ export function SlabForm({
               className={inputClass}
             />
           </Field>
-          <Field label="Height (in)" htmlFor="heightCm">
+          <Field label="Height (in)" htmlFor="heightIn">
             <input
-              id="heightCm"
-              name="heightCm"
+              id="heightIn"
+              name="heightIn"
               type="number"
               step="0.1"
               min="0"

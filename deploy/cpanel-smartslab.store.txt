@@ -1,0 +1,73 @@
+SmartSlab — configuración cPanel (Namecheap) para smartslab.store
+================================================================
+La app Next.js corre en Vercel. cPanel solo administra DNS (no sube la app).
+
+DOMINIO CANÓNICO
+----------------
+https://smartslab.store  (sin www)
+
+VERCEL — Project Settings > Domains
+-----------------------------------
+Añadir y verificar:
+  smartslab.store
+  www.smartslab.store   (redirige a apex en Vercel)
+
+CPANEL — Zone Editor (smartslab.store)
+--------------------------------------
+Borrar registros A/CNAME viejos que apunten a hosting compartido.
+
+Registro 1 — apex (@)
+  Type:   A
+  Host:   @
+  Value:  76.76.21.21
+  TTL:    300 (o Automatic)
+
+Registro 2 — www
+  Type:   CNAME
+  Host:   www
+  Value:  cname.vercel-dns.com.
+  TTL:    300 (o Automatic)
+
+Opcional — Clerk (si lo pide el dashboard de Clerk)
+  Type:   CNAME
+  Host:   clerk
+  Value:  (el target que indique Clerk para tu instancia live)
+
+Opcional — email (solo si usas correo en Namecheap; no tocar si no)
+  Mantén MX/TXT de email existentes.
+
+ARCHIVO .htaccess (solo si aún tienes sitio en public_html de cPanel)
+---------------------------------------------------------------------
+Si el dominio todavía resuelve al servidor cPanel y quieres redirigir todo
+a Vercel mientras propagas DNS, crea public_html/.htaccess con:
+
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  RewriteCond %{HTTP_HOST} ^www\.smartslab\.store$ [NC]
+  RewriteRule ^ https://smartslab.store%{REQUEST_URI} [L,R=301]
+
+Cuando DNS apunte a Vercel, este .htaccess ya no se usará para smartslab.store.
+
+VERIFICACIÓN
+------------
+1. Vercel > Domains: ambos hosts en "Valid Configuration".
+2. https://smartslab.store/ carga la app (no WooCommerce viejo).
+3. https://www.smartslab.store/ redirige a https://smartslab.store/
+4. curl -I https://smartslab.store/ → HTTP 200
+
+VARIABLES EN VERCEL (Production) — recordatorio
+-----------------------------------------------
+NEXT_PUBLIC_SITE_URL=https://smartslab.store
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+DATABASE_URL=postgres://...neon...
+BLOB_READ_WRITE_TOKEN=...
+(CLOUDINARY_* opcional; si falla, la app hace fallback a Blob)
+
+MIGRACIÓN DB (ya aplicada en Neon)
+----------------------------------
+drizzle/0005_slab_dimensions_inches.sql
+  width_cm  → width_in   (pulgadas)
+  height_cm → height_in  (pulgadas)
+  thickness_cm sin cambio (centímetros)

@@ -1,0 +1,13 @@
+# Pegar en cPanel > File Manager > public_html/.htaccess
+# Solo útil mientras el dominio aún apunta al hosting cPanel.
+# Cuando DNS apunte a Vercel (76.76.21.21), este archivo deja de aplicarse.
+
+RewriteEngine On
+
+# Forzar HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# www → apex (coincide con SmartSlab en Vercel)
+RewriteCond %{HTTP_HOST} ^www\.smartslab\.store$ [NC]
+RewriteRule ^ https://smartslab.store%{REQUEST_URI} [L,R=301]

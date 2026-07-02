@@ -21,8 +21,8 @@ export const slabFormSchema = z
     city: z.string().trim().max(80).optional(),
     state: z.string().trim().max(60).optional(),
     zip: z.string().trim().max(20).optional(),
-    widthCm: z.coerce.number().positive().optional(),
-    heightCm: z.coerce.number().positive().optional(),
+    widthIn: z.coerce.number().positive().optional(),
+    heightIn: z.coerce.number().positive().optional(),
     thicknessCm: z.coerce.number().positive().optional(),
     price: z.coerce.number().min(0, "Price must be 0 or more"),
     quantity: z.coerce.number().int().positive().default(1),
@@ -41,12 +41,12 @@ export const slabFormSchema = z
       });
     }
 
-    if (data.widthCm !== undefined && data.heightCm !== undefined) {
-      const sqft = computeSqft(data.widthCm, data.heightCm);
+    if (data.widthIn !== undefined && data.heightIn !== undefined) {
+      const sqft = computeSqft(data.widthIn, data.heightIn);
       if (sqft === null || sqft <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["widthCm"],
+          path: ["widthIn"],
           message: "Width and height must produce an area greater than 0 sq ft.",
         });
       }
@@ -71,8 +71,8 @@ export function parseSlabFormData(formData: FormData) {
     city: optional(formData.get("city")),
     state: optional(formData.get("state")),
     zip: optional(formData.get("zip")),
-    widthCm: optional(formData.get("widthCm")),
-    heightCm: optional(formData.get("heightCm")),
+    widthIn: optional(formData.get("widthIn")),
+    heightIn: optional(formData.get("heightIn")),
     thicknessCm: optional(formData.get("thicknessCm")),
     price: formData.get("price"),
     quantity: optional(formData.get("quantity")) ?? 1,

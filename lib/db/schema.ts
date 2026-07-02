@@ -129,8 +129,11 @@ export const slabs = pgTable("slabs", {
   status: slabStatusEnum("status").notNull().default("available"),
   sku: text("sku"),
   name: text("name").notNull(),
-  widthCm: numeric("width_cm", { precision: 10, scale: 2 }),
-  heightCm: numeric("height_cm", { precision: 10, scale: 2 }),
+  /** Slab face width in inches (industry standard). */
+  widthIn: numeric("width_in", { precision: 10, scale: 2 }),
+  /** Slab face height/length in inches (industry standard). */
+  heightIn: numeric("height_in", { precision: 10, scale: 2 }),
+  /** Slab thickness in centimeters (industry standard). */
   thicknessCm: numeric("thickness_cm", { precision: 10, scale: 2 }),
   weightKg: numeric("weight_kg", { precision: 10, scale: 2 }),
   finish: finishTypeEnum("finish").notNull().default("other"),

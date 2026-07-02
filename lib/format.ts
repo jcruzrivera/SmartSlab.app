@@ -69,16 +69,16 @@ function toNumber(value: string | number | null | undefined): number | null {
 }
 
 /**
- * Width and height are in inches; thickness is in centimeters.
+ * Industry-standard slab dimensions: width/height in inches, thickness in cm.
  */
 export function formatDimensions(
-  width: string | number | null | undefined,
-  height: string | number | null | undefined,
-  thickness: string | number | null | undefined,
+  widthIn: string | number | null | undefined,
+  heightIn: string | number | null | undefined,
+  thicknessCm: string | number | null | undefined,
 ): string {
-  const w = toNumber(width);
-  const h = toNumber(height);
-  const t = toNumber(thickness);
+  const w = toNumber(widthIn);
+  const h = toNumber(heightIn);
+  const t = toNumber(thicknessCm);
 
   if (w === null && h === null && t === null) {
     return "Dimensions not provided";
@@ -102,15 +102,14 @@ export function formatDimensions(
 }
 
 /**
- * Total area of the piece in square feet, computed from width x height in
- * inches divided by 144.
+ * Square feet from width x height in inches (÷ 144).
  */
 export function computeSqft(
-  width: string | number | null | undefined,
-  height: string | number | null | undefined,
+  widthIn: string | number | null | undefined,
+  heightIn: string | number | null | undefined,
 ): number | null {
-  const w = toNumber(width);
-  const h = toNumber(height);
+  const w = toNumber(widthIn);
+  const h = toNumber(heightIn);
 
   if (w === null || h === null || w <= 0 || h <= 0) {
     return null;
@@ -120,10 +119,10 @@ export function computeSqft(
 }
 
 export function formatSqft(
-  width: string | number | null | undefined,
-  height: string | number | null | undefined,
+  widthIn: string | number | null | undefined,
+  heightIn: string | number | null | undefined,
 ): string | null {
-  const sqft = computeSqft(width, height);
+  const sqft = computeSqft(widthIn, heightIn);
 
   if (sqft === null) {
     return null;

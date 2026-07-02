@@ -138,8 +138,8 @@ export type CreateSlabInput = {
   lng?: number;
   roomUse?: string[];
   aestheticTags?: string[];
-  widthCm?: number;
-  heightCm?: number;
+  widthIn?: number;
+  heightIn?: number;
   thicknessCm?: number;
   price: number;
   quantity: number;
@@ -222,14 +222,14 @@ export async function updateSlab(
       lng: input.lng?.toString(),
       roomUse: input.roomUse ?? [],
       aestheticTags: input.aestheticTags ?? [],
-      widthCm: input.widthCm?.toString(),
-      heightCm: input.heightCm?.toString(),
+      widthIn: input.widthIn?.toString(),
+      heightIn: input.heightIn?.toString(),
       thicknessCm: input.thicknessCm?.toString(),
       price: input.price.toString(),
       pricePerSqft: computePricePerSqft(
         input.price,
-        input.widthCm,
-        input.heightCm,
+        input.widthIn,
+        input.heightIn,
       ),
       quantity: input.quantity,
       isNegotiable: input.isNegotiable,
@@ -309,14 +309,14 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
       lng: input.lng?.toString(),
       roomUse: input.roomUse ?? [],
       aestheticTags: input.aestheticTags ?? [],
-      widthCm: input.widthCm?.toString(),
-      heightCm: input.heightCm?.toString(),
+      widthIn: input.widthIn?.toString(),
+      heightIn: input.heightIn?.toString(),
       thicknessCm: input.thicknessCm?.toString(),
       price: input.price.toString(),
       pricePerSqft: computePricePerSqft(
         input.price,
-        input.widthCm,
-        input.heightCm,
+        input.widthIn,
+        input.heightIn,
       ),
       quantity: input.quantity,
       isNegotiable: input.isNegotiable,
