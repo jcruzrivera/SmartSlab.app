@@ -31,8 +31,9 @@ export default async function NewSlabPage() {
       />
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">List a slab</h1>
       <p className="mt-1 text-slate-600 dark:text-slate-300">
-        Upload a photo first — SmartSlab suggests the details. Review and publish
-        when ready.
+        Start with a photo from your phone or gallery. SmartSlab uses AI to
+        suggest the material, dimensions, and a starting price — then you review
+        and publish in minutes.
       </p>
 
       <div className="mt-6">

@@ -10,12 +10,14 @@ type ImageUploaderProps = {
   initialUrls?: string[];
   enableAnalysis?: boolean;
   onAnalysis?: (analysis: SlabImageAnalysis) => void;
+  onUrlsChange?: (urls: string[]) => void;
 };
 
 export function ImageUploader({
   initialUrls = [],
   enableAnalysis = false,
   onAnalysis,
+  onUrlsChange,
 }: ImageUploaderProps) {
   const [urls, setUrls] = useState<string[]>(initialUrls);
   const [isUploading, setIsUploading] = useState(false);
@@ -28,6 +30,11 @@ export function ImageUploader({
   const analyzedUrlRef = useRef<string | null>(null);
 
   const remaining = MAX_IMAGES - urls.length;
+
+  function commitUrls(next: string[]) {
+    setUrls(next);
+    onUrlsChange?.(next);
+  }
 
   async function analyzeImage(imageUrl: string) {
     if (!enableAnalysis || !onAnalysis || analyzedUrlRef.current === imageUrl) {
@@ -60,7 +67,13 @@ export function ImageUploader({
 
       if (data.analysis && Object.keys(data.analysis).length > 0) {
         onAnalysis(data.analysis);
-        setAnalysisNote("Details suggested from your photo — review before publishing.");
+        const priceHint =
+          data.analysis.suggestedPriceUsd && data.analysis.suggestedPriceUsd > 0
+            ? ` Suggested price: $${data.analysis.suggestedPriceUsd.toLocaleString("en-US")}.`
+            : "";
+        setAnalysisNote(
+          `Details suggested from your photo — review before publishing.${priceHint}`,
+        );
       }
     } catch (analysisError) {
       setAnalysisNote(
@@ -106,13 +119,11 @@ export function ImageUploader({
         uploaded.push(await uploadFile(file));
       }
 
-      setUrls((prev) => {
-        const next = [...prev, ...uploaded];
-        if (enableAnalysis && prev.length === 0 && uploaded[0]) {
-          void analyzeImage(uploaded[0]);
-        }
-        return next;
-      });
+      const next = [...urls, ...uploaded];
+      commitUrls(next);
+      if (enableAnalysis && urls.length === 0 && uploaded[0]) {
+        void analyzeImage(uploaded[0]);
+      }
     } catch (uploadError) {
       const message =
         uploadError instanceof Error ? uploadError.message : String(uploadError);
@@ -151,18 +162,16 @@ export function ImageUploader({
     }
 
     setError(null);
-    setUrls((prev) => {
-      const next = [...prev, value];
-      if (enableAnalysis && prev.length === 0) {
-        void analyzeImage(value);
-      }
-      return next;
-    });
+    const next = [...urls, value];
+    commitUrls(next);
+    if (enableAnalysis && urls.length === 0) {
+      void analyzeImage(value);
+    }
     setManualUrl("");
   }
 
   function removeUrl(target: string) {
-    setUrls((prev) => prev.filter((url) => url !== target));
+    commitUrls(urls.filter((url) => url !== target));
     if (analyzedUrlRef.current === target) {
       analyzedUrlRef.current = null;
     }

@@ -15,9 +15,11 @@ import { createSlabAction } from "@/app/dashboard/slabs/new/actions";
 import { ImageUploader } from "@/components/slab/image-uploader";
 import { SlabEditActions } from "@/components/slab/slab-edit-actions";
 import {
+  enrichSuggestedPrice,
   matchMaterialId,
   type SlabImageAnalysis,
 } from "@/lib/ai/slab-analysis";
+import { formatPrice } from "@/lib/format";
 import { AESTHETIC_OPTIONS, ROOM_OPTIONS } from "@/lib/search/filters";
 
 type MaterialOption = { id: string; name: string };
@@ -111,11 +113,23 @@ export function SlabForm({
   const [aesthetics, setAesthetics] = useState<string[]>(
     initialValues?.aestheticTags ?? [],
   );
+  const [price, setPrice] = useState(initialValues?.price ?? "");
+  const [thicknessCm, setThicknessCm] = useState(initialValues?.thicknessCm ?? "");
+  const [brandSupplier, setBrandSupplier] = useState(
+    initialValues?.brandSupplier ?? "",
+  );
+  const [hasPhoto, setHasPhoto] = useState(
+    (initialValues?.imageUrls?.length ?? 0) > 0,
+  );
+  const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null);
+  const [priceNote, setPriceNote] = useState<string | null>(null);
 
   const isCreate = mode === "create";
   const isSold = initialValues?.status === "sold";
 
-  function applyAnalysis(analysis: SlabImageAnalysis) {
+  function applyAnalysis(raw: SlabImageAnalysis) {
+    const analysis = enrichSuggestedPrice(raw);
+
     if (analysis.name) {
       setName(analysis.name);
     }
@@ -135,6 +149,35 @@ export function SlabForm({
     if (analysis.notes) {
       setNotes(analysis.notes);
     }
+    if (analysis.brandSupplier) {
+      setBrandSupplier(analysis.brandSupplier);
+    }
+    if (analysis.widthIn) {
+      setWidthIn(String(analysis.widthIn));
+    }
+    if (analysis.heightIn) {
+      setHeightIn(String(analysis.heightIn));
+    }
+    if (analysis.thicknessCm) {
+      setThicknessCm(String(analysis.thicknessCm));
+    }
+    if (analysis.roomUse?.length) {
+      setRooms(analysis.roomUse);
+    }
+    if (analysis.aestheticTags?.length) {
+      setAesthetics(analysis.aestheticTags);
+    }
+    if (analysis.suggestedPriceUsd && analysis.suggestedPriceUsd > 0) {
+      setSuggestedPrice(analysis.suggestedPriceUsd);
+      setPrice(String(analysis.suggestedPriceUsd));
+      setPriceNote(analysis.priceNote ?? null);
+    }
+  }
+
+  function applySuggestedPrice() {
+    if (suggestedPrice && suggestedPrice > 0) {
+      setPrice(String(suggestedPrice));
+    }
   }
 
   const photoSection = (
@@ -151,6 +194,7 @@ export function SlabForm({
           initialUrls={initialValues?.imageUrls ?? []}
           enableAnalysis={isCreate}
           onAnalysis={isCreate ? applyAnalysis : undefined}
+          onUrlsChange={isCreate ? (urls) => setHasPhoto(urls.length > 0) : undefined}
         />
       ) : (
         <p className="text-sm text-slate-500">
@@ -195,6 +239,40 @@ export function SlabForm({
 
         {isCreate ? photoSection : null}
 
+        {isCreate && !hasPhoto ? (
+          <p className="rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-500 dark:border-slate-700">
+            Add at least one photo to unlock the listing form. SmartSlab uses AI
+            to suggest material, dimensions, and a starting price.
+          </p>
+        ) : null}
+
+        {isCreate && hasPhoto && suggestedPrice && suggestedPrice > 0 ? (
+          <div className="rounded-xl border border-[#1bb0ce]/30 bg-[#1bb0ce]/5 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-[#0d8fa8]">
+                  Suggested list price
+                </p>
+                <p className="text-2xl font-semibold tracking-tight">
+                  {formatPrice(suggestedPrice)}
+                </p>
+                {priceNote ? (
+                  <p className="mt-1 text-xs text-slate-500">{priceNote}</p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={applySuggestedPrice}
+                className="inline-flex h-9 items-center rounded-lg border border-[#1bb0ce] px-3 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce]/10"
+              >
+                Use suggested price
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {(!isCreate || hasPhoto) && (
+          <>
         <Field label="Listing name" htmlFor="name">
           <input
             id="name"
@@ -320,7 +398,13 @@ export function SlabForm({
               type="number"
               step="0.1"
               min="0"
-              defaultValue={initialValues?.thicknessCm ?? ""}
+              value={isCreate ? thicknessCm : undefined}
+              defaultValue={isCreate ? undefined : initialValues?.thicknessCm ?? ""}
+              onChange={
+                isCreate
+                  ? (event) => setThicknessCm(event.target.value)
+                  : undefined
+              }
               disabled={isSold}
               className={inputClass}
             />
@@ -444,7 +528,9 @@ export function SlabForm({
               step="0.01"
               min="0"
               required
-              defaultValue={initialValues?.price}
+              value={isCreate ? price : undefined}
+              defaultValue={isCreate ? undefined : initialValues?.price}
+              onChange={isCreate ? (event) => setPrice(event.target.value) : undefined}
               disabled={isSold}
               className={inputClass}
             />
@@ -472,7 +558,13 @@ export function SlabForm({
             <input
               id="brandSupplier"
               name="brandSupplier"
-              defaultValue={initialValues?.brandSupplier ?? ""}
+              value={isCreate ? brandSupplier : undefined}
+              defaultValue={isCreate ? undefined : initialValues?.brandSupplier ?? ""}
+              onChange={
+                isCreate
+                  ? (event) => setBrandSupplier(event.target.value)
+                  : undefined
+              }
               disabled={isSold}
               className={inputClass}
             />
@@ -517,6 +609,8 @@ export function SlabForm({
             label={mode === "create" ? "Publish listing" : "Save changes"}
           />
         ) : null}
+          </>
+        )}
       </form>
 
       {mode === "edit" && slabId && initialValues?.status ? (
