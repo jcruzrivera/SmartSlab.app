@@ -11,10 +11,13 @@ import {
 import {
   type BuyerGeo,
   clearCachedGeo,
+  clearGeoPromptDismissed,
   fetchIpGeo,
   getBrowserPosition,
   readCachedGeo,
+  readGeoPromptDismissed,
   writeCachedGeo,
+  writeGeoPromptDismissed,
 } from "@/lib/search/geo";
 
 type GeoContextValue = {
@@ -50,6 +53,10 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
         if (active) {
           setGeo(cached);
         }
+        return;
+      }
+
+      if (readGeoPromptDismissed()) {
         return;
       }
 
@@ -90,11 +97,13 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
         };
         setGeo(next);
         writeCachedGeo(next);
+        writeGeoPromptDismissed();
         setPromptVisible(false);
       })
       .catch(() => {
         // Denied or failed: keep the approximate (IP) location if we have one.
         if (geo) writeCachedGeo(geo);
+        writeGeoPromptDismissed();
         setPromptVisible(false);
       })
       .finally(() => setRequesting(false));
@@ -102,11 +111,13 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
 
   const keepApproximate = useCallback(() => {
     if (geo) writeCachedGeo(geo);
+    writeGeoPromptDismissed();
     setPromptVisible(false);
   }, [geo]);
 
   const reset = useCallback(() => {
     clearCachedGeo();
+    clearGeoPromptDismissed();
     setGeo(null);
     setPromptVisible(true);
   }, []);

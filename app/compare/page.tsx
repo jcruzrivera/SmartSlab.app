@@ -1,7 +1,16 @@
 import { CompareTable } from "@/components/slab/compare-table";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
+import { buildPageMetadata } from "@/lib/site-metadata";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Compare slabs",
+  description:
+    "Review up to four stone slabs side by side before contacting a vendor.",
+  path: "/compare",
+});
 
 export default function ComparePage() {
   return (

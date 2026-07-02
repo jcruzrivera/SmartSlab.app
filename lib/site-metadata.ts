@@ -4,7 +4,7 @@ import { CANONICAL_APP_ORIGIN } from "@/lib/app-origin";
 
 const SITE_NAME = "SmartSlab";
 
-function baseUrl(): string {
+function siteOrigin(): string {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
@@ -12,30 +12,27 @@ function baseUrl(): string {
   ).replace(/\/$/, "");
 }
 
-export function buildLegalMetadata(input: {
+export function buildPageMetadata(input: {
   title: string;
   description: string;
   path: string;
+  openGraphType?: "website" | "article";
 }): Metadata {
-  const fullTitle = `${input.title} | ${SITE_NAME}`;
-  const url = `${baseUrl()}${input.path}`;
+  const url = `${siteOrigin()}${input.path}`;
+  const title = input.title.includes(SITE_NAME)
+    ? input.title
+    : `${input.title} | ${SITE_NAME}`;
 
   return {
-    title: fullTitle,
+    title,
     description: input.description,
     alternates: { canonical: url },
     openGraph: {
-      title: fullTitle,
+      title,
       description: input.description,
       url,
       siteName: SITE_NAME,
-      type: "website",
+      type: input.openGraphType ?? "website",
     },
-    twitter: {
-      card: "summary",
-      title: fullTitle,
-      description: input.description,
-    },
-    robots: { index: true, follow: true },
   };
 }

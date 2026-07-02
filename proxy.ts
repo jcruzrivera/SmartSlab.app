@@ -11,8 +11,6 @@ const isProtectedRoute = createRouteMatcher([
   "/admin(.*)",
 ]);
 
-const isSlabDetailRoute = createRouteMatcher(["/slab/(.*)"]);
-
 const hasClerkConfig = hasValidClerkConfig();
 
 const clerkDomain = getClerkDomain();
@@ -24,10 +22,7 @@ const withClerkMiddleware = hasClerkConfig
 
         // Onboarding auth is handled in app/onboarding/page.tsx to avoid
         // sign-in ↔ onboarding loops when the session cookie is still settling.
-        if (
-          !userId &&
-          (isProtectedRoute(req) || isSlabDetailRoute(req))
-        ) {
+        if (!userId && isProtectedRoute(req)) {
           const redirectTarget = `${req.nextUrl.pathname}${req.nextUrl.search}`;
           const signIn = new URL("/sign-in", CANONICAL_APP_ORIGIN);
           signIn.searchParams.set(

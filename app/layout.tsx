@@ -102,7 +102,10 @@ export default async function RootLayout({
           signInFallbackRedirectUrl="/onboarding"
           signUpFallbackRedirectUrl="/onboarding"
         >
-          <SiteHeader authSlot={<ClerkAuthSlotLoader isSignedIn={isSignedIn} />} />
+          <SiteHeader
+            authSlot={<ClerkAuthSlotLoader isSignedIn={isSignedIn} />}
+            isSignedIn={isSignedIn}
+          />
           <AppProviders>{children}</AppProviders>
           <SiteFooter />
         </ClerkProvider>

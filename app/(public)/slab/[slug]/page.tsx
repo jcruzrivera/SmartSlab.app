@@ -11,12 +11,13 @@ import { getSlabById, getVendorContactForSlab } from "@/lib/db/slabs";
 import { getCurrentDbUser } from "@/lib/db/users";
 import {
   formatDimensions,
-  formatPrice,
   formatPricePrecise,
+  formatSlabPrice,
   formatSqft,
 } from "@/lib/format";
 import { fulfillCheckoutSession } from "@/lib/payments/fulfill";
 import { isStripeConfigured } from "@/lib/stripe";
+import { buildPageMetadata } from "@/lib/site-metadata";
 import { getOrigin } from "@/lib/url";
 import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
 
@@ -63,15 +64,18 @@ export async function generateMetadata({
   const image =
     slab.images.find((item) => item.isPrimary)?.url ?? slab.images[0]?.url;
   const ogImage = getOptimizedImageUrl(image, { width: 1200, crop: "limit" });
-
-  return {
+  const path = `/slab/${slab.id}`;
+  const pageMeta = buildPageMetadata({
     title,
     description,
+    path,
+  });
+
+  return {
+    ...pageMeta,
     openGraph: {
-      title,
-      description,
+      ...pageMeta.openGraph,
       images: ogImage ? [{ url: ogImage }] : undefined,
-      type: "website",
     },
   };
 }
@@ -216,7 +220,7 @@ export default async function SlabDetailPage({
 
           <div className="flex items-end gap-3">
             <span className="text-3xl font-semibold">
-              {formatPrice(slab.price)}
+              {formatSlabPrice(slab.price, slab.isNegotiable)}
             </span>
             {slab.pricePerSqft ? (
               <span className="pb-1 text-sm text-slate-500">

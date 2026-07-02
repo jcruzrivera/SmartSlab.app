@@ -21,7 +21,9 @@ export const RADIUS_OPTIONS = [25, 50, 100, 250] as const;
 export const DEFAULT_RADIUS = 100;
 
 const STORAGE_KEY = "smartslab_geo";
-const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const PROMPT_DISMISSED_KEY = "smartslab_geo_prompt_dismissed";
+const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const PROMPT_DISMISSED_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
 /** Great-circle distance between two points, in miles. */
 export function haversineMiles(
@@ -89,6 +91,42 @@ export function clearCachedGeo(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function readGeoPromptDismissed(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = window.localStorage.getItem(PROMPT_DISMISSED_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { dismissedAt?: number };
+    if (typeof parsed.dismissedAt !== "number") {
+      return false;
+    }
+    return Date.now() - parsed.dismissedAt <= PROMPT_DISMISSED_MAX_AGE_MS;
+  } catch {
+    return false;
+  }
+}
+
+export function writeGeoPromptDismissed(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      PROMPT_DISMISSED_KEY,
+      JSON.stringify({ dismissedAt: Date.now() }),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+export function clearGeoPromptDismissed(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(PROMPT_DISMISSED_KEY);
   } catch {
     // ignore
   }

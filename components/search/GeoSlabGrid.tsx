@@ -19,6 +19,22 @@ export function GeoSlabGrid({ slabs }: { slabs: SlabWithRelations[] }) {
   const searchParams = useSearchParams();
   const radius = Number(searchParams.get("radius") ?? 0);
   const sort = searchParams.get("sort") ?? "newest";
+  const query = (searchParams.get("q") ?? "").trim();
+  const hasQuery = query.length > 0;
+  const hasFilters =
+    searchParams.has("material") ||
+    searchParams.has("type") ||
+    searchParams.has("color") ||
+    searchParams.has("finish") ||
+    searchParams.has("thickness") ||
+    searchParams.has("brand") ||
+    searchParams.has("room") ||
+    searchParams.has("aesthetic") ||
+    searchParams.has("price_min") ||
+    searchParams.has("price_max") ||
+    searchParams.has("min_sqft") ||
+    searchParams.get("available") === "false" ||
+    searchParams.get("negotiable") === "true";
 
   let items = slabs.map((slab) => {
     let distance: number | null = null;
@@ -45,17 +61,24 @@ export function GeoSlabGrid({ slabs }: { slabs: SlabWithRelations[] }) {
   }
 
   if (items.length === 0) {
+    const title = hasQuery
+      ? `No results for “${query}”`
+      : "No slabs match these filters";
+    const description = hasQuery
+      ? hasFilters
+        ? "Try clearing the search term or removing a filter chip below."
+        : "Try a different search term or browse all inventory."
+      : "Try widening your distance radius or removing a filter chip below.";
+
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
-        <p className="text-lg font-medium">No slabs match these filters</p>
-        <p className="mt-2 text-slate-600 dark:text-slate-300">
-          Try widening your distance radius or removing a filter.
-        </p>
+        <p className="text-lg font-medium">{title}</p>
+        <p className="mt-2 text-slate-600 dark:text-slate-300">{description}</p>
         <Link
-          href="/dashboard/slabs/new"
+          href="/browse"
           className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
         >
-          List a slab
+          Browse all slabs
         </Link>
       </div>
     );

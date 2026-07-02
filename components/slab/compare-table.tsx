@@ -3,8 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  COMPARE_CHANGE_EVENT,
+  clearGuestCompare,
+  readCompareIds,
+  removeGuestCompare,
+  subscribeGuestStore,
+} from "@/lib/marketplace/guest-storage";
 import { SlabPhoto } from "@/components/media/slab-photo";
-import { formatDimensions, formatLocation, formatPrice, formatSqft } from "@/lib/format";
+import { formatDimensions, formatLocation, formatSlabPrice, formatSqft } from "@/lib/format";
 
 type CompareSlab = {
   id: string;
@@ -16,36 +23,42 @@ type CompareSlab = {
   heightCm: string | null;
   thicknessCm: string | null;
   price: string;
+  isNegotiable?: boolean;
   city: string | null;
   state: string | null;
   material: { name: string } | null;
   images: { id: string; url: string; isPrimary: boolean }[];
 };
 
-const STORAGE_KEY = "smartslab.compare";
-
 export function CompareTable() {
+  const [ids, setIds] = useState<string[]>([]);
   const [slabs, setSlabs] = useState<CompareSlab[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    function syncIds() {
+      setIds(readCompareIds());
+    }
+
+    syncIds();
+    return subscribeGuestStore(COMPARE_CHANGE_EVENT, syncIds);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function loadCompareSlabs() {
-      let ids: unknown;
-      try {
-        ids = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
-      } catch {
-        ids = [];
-      }
-
-      if (!Array.isArray(ids) || ids.length === 0) {
+      if (ids.length === 0) {
         if (!cancelled) {
+          setSlabs([]);
+          setError(null);
           setLoading(false);
         }
         return;
       }
+
+      setLoading(true);
 
       try {
         const response = await fetch(
@@ -82,12 +95,14 @@ export function CompareTable() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [ids]);
 
   function clear() {
-    window.localStorage.removeItem(STORAGE_KEY);
-    setSlabs([]);
-    setError(null);
+    clearGuestCompare();
+  }
+
+  function remove(slabId: string) {
+    removeGuestCompare(slabId);
   }
 
   if (loading) {
@@ -113,7 +128,7 @@ export function CompareTable() {
       <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
         <p className="font-medium">No slabs selected</p>
         <p className="mt-2 text-sm text-slate-500">
-          Open a listing and use Compare to add up to four slabs.
+          Use Compare on a listing to add up to four slabs.
         </p>
         <Link
           href="/browse"
@@ -127,7 +142,10 @@ export function CompareTable() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-slate-500">
+          Comparing {slabs.length} of 4 slabs
+        </p>
         <button
           type="button"
           onClick={clear}
@@ -145,9 +163,18 @@ export function CompareTable() {
               </th>
               {slabs.map((slab) => (
                 <th key={slab.id} className="px-4 py-3">
-                  <Link href={`/slab/${slab.id}`} className="hover:text-[#0d8fa8]">
-                    {slab.name}
-                  </Link>
+                  <div className="flex flex-col gap-1">
+                    <Link href={`/slab/${slab.id}`} className="hover:text-[#0d8fa8]">
+                      {slab.name}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => remove(slab.id)}
+                      className="w-fit text-xs font-medium text-slate-400 hover:text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </th>
               ))}
             </tr>
@@ -178,7 +205,7 @@ export function CompareTable() {
             <CompareRow label="Price">
               {slabs.map((slab) => (
                 <td key={slab.id} className="px-4 py-3 font-semibold">
-                  {formatPrice(slab.price)}
+                  {formatSlabPrice(slab.price, slab.isNegotiable)}
                 </td>
               ))}
             </CompareRow>

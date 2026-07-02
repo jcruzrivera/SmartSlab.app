@@ -1,4 +1,5 @@
 import { FilterChips } from "@/components/search/FilterChips";
+import { ActiveFilterHint } from "@/components/search/ActiveFilterHint";
 import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { GeoProvider } from "@/components/search/GeoProvider";
 import { GeoPrompt } from "@/components/search/GeoPrompt";
@@ -15,15 +16,17 @@ import {
   countActiveFilters,
   parseFilters,
 } from "@/lib/search/filters";
+import { buildPageMetadata } from "@/lib/site-metadata";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Browse stone slabs and remnants | SmartSlab",
+export const metadata: Metadata = buildPageMetadata({
+  title: "Browse stone slabs and remnants",
   description:
     "Search available granite, quartz, quartzite, marble, dolomite slabs and remnants by material, finish, color, price, size, and location.",
-};
+  path: "/browse",
+});
 
 type BrowsePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -130,6 +133,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             </div>
 
             <FilterChips chips={chips} />
+            <ActiveFilterHint query={filters.q} filterCount={activeCount} />
 
             <GeoSlabGrid slabs={result.slabs} />
           </section>

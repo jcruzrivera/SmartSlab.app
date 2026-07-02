@@ -1,10 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { SlabCard } from "@/components/slab/slab-card";
 import { isDbConfigured } from "@/lib/db/client";
 import { listPublicSlabs } from "@/lib/db/slabs";
+import { buildPageMetadata } from "@/lib/site-metadata";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "SmartSlab — Slab & Remnant Marketplace",
+  description:
+    "Buy and sell natural stone slabs and remnants. Granite, quartz, quartzite, marble and more.",
+  path: "/",
+});
 
 const categories = [
   { slug: "granite", name: "Granite" },

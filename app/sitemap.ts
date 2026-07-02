@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { CANONICAL_APP_ORIGIN } from "@/lib/app-origin";
 import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { listPublicSlabs } from "@/lib/db/slabs";
@@ -7,8 +8,9 @@ import { LEGAL_NAV } from "@/lib/legal/nav";
 
 function baseUrl(): string {
   return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
-    "https://smart-slab-app.vercel.app"
+    CANONICAL_APP_ORIGIN
   ).replace(/\/$/, "");
 }
 

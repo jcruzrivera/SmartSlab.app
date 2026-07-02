@@ -24,6 +24,25 @@ export function formatPrice(value: string | number | null | undefined): string {
   return currencyFormatter.format(numeric);
 }
 
+/** Shared listing price label for cards and detail pages. */
+export function formatSlabPrice(
+  price: string | number | null | undefined,
+  isNegotiable = false,
+): string {
+  const numeric =
+    price === null || price === undefined
+      ? null
+      : typeof price === "string"
+        ? Number(price)
+        : price;
+
+  if (isNegotiable && (numeric === null || Number.isNaN(numeric) || numeric <= 0)) {
+    return "Negotiable";
+  }
+
+  return formatPrice(price);
+}
+
 export function formatPricePrecise(
   value: string | number | null | undefined,
 ): string {

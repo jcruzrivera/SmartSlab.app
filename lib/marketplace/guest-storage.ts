@@ -77,6 +77,23 @@ export function toggleGuestCompare(slabId: string): string[] {
   return next;
 }
 
+export function removeGuestCompare(slabId: string): string[] {
+  const next = readCompareIds().filter((id) => id !== slabId);
+  writeStringIds(COMPARE_STORAGE_KEY, next);
+  notify(COMPARE_CHANGE_EVENT);
+  return next;
+}
+
+export function clearGuestCompare(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(COMPARE_STORAGE_KEY);
+  compareIdsCache = [];
+  notify(COMPARE_CHANGE_EVENT);
+}
+
 export function toggleGuestFavorite(slabId: string): string[] {
   const ids = readFavoriteIds();
   const next = ids.includes(slabId)

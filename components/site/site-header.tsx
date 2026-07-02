@@ -3,11 +3,14 @@ import type { ReactNode } from "react";
 
 import { MobileNav, type NavItem } from "@/components/site/mobile-nav";
 
-const mobileNavItems: NavItem[] = [
+const publicMobileNavItems: NavItem[] = [
   { href: "/browse", label: "Browse" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/compare", label: "Compare" },
   { href: "/dashboard/slabs/new", label: "Sell a slab" },
+];
+
+const signedInMobileNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/slabs", label: "Inventory" },
   { href: "/dashboard/sales", label: "Sales" },
@@ -17,7 +20,17 @@ const mobileNavItems: NavItem[] = [
   { href: "/account", label: "Account" },
 ];
 
-export function SiteHeader({ authSlot }: { authSlot?: ReactNode }) {
+export function SiteHeader({
+  authSlot,
+  isSignedIn = false,
+}: {
+  authSlot?: ReactNode;
+  isSignedIn?: boolean;
+}) {
+  const mobileNavItems = isSignedIn
+    ? [...publicMobileNavItems, ...signedInMobileNavItems]
+    : publicMobileNavItems;
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/60">
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
