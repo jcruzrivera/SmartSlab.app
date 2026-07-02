@@ -13,12 +13,31 @@ const ALLOWED_TYPES = new Set([
   "image/gif",
 ]);
 
+function uploadProvider(): "cloudinary" | "vercel-blob" | null {
+  if (isCloudinaryConfigured()) {
+    return "cloudinary";
+  }
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return "vercel-blob";
+  }
+  return null;
+}
+
+function uploadErrorDetail(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
 export async function GET(): Promise<NextResponse> {
   const userId = await getClerkUserId();
+  const provider = uploadProvider();
 
   return NextResponse.json({
     cloudinaryConfigured: isCloudinaryConfigured(),
     blobConfigured: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    provider,
     signedIn: Boolean(userId),
   });
 }
@@ -33,7 +52,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  if (!isCloudinaryConfigured() && !process.env.BLOB_READ_WRITE_TOKEN) {
+  const provider = uploadProvider();
+
+  if (!provider) {
     return NextResponse.json(
       {
         error:
@@ -73,7 +94,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
-    if (isCloudinaryConfigured()) {
+    if (provider === "cloudinary") {
       const uploaded = await uploadImageToCloudinary(buffer, file.name);
       return NextResponse.json({
         url: uploaded.url,
@@ -85,6 +106,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       access: "public",
       addRandomSuffix: true,
       contentType: file.type,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     return NextResponse.json({
@@ -92,10 +114,13 @@ export async function POST(request: Request): Promise<NextResponse> {
       provider: "vercel-blob",
     });
   } catch (error) {
+    // Temporary: expose provider + detail in logs/response for production diagnosis.
+    console.error("UPLOAD_ERROR:", { provider, error });
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Could not upload image.",
+        error: "Could not upload image.",
+        detail: uploadErrorDetail(error),
+        provider,
       },
       { status: 400 },
     );
