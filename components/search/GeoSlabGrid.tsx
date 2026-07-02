@@ -14,21 +14,11 @@ import { haversineMiles } from "@/lib/search/geo";
  * optional radius filtering, and "nearest first" sorting using the buyer's
  * coordinates — which never leave the browser.
  */
-export function GeoSlabGrid({
-  slabs,
-  favoriteSlabIds = [],
-  canSyncFavorites = false,
-}: {
-  slabs: SlabWithRelations[];
-  favoriteSlabIds?: string[];
-  canSyncFavorites?: boolean;
-}) {
+export function GeoSlabGrid({ slabs }: { slabs: SlabWithRelations[] }) {
   const { geo } = useBuyerGeo();
   const searchParams = useSearchParams();
   const radius = Number(searchParams.get("radius") ?? 0);
   const sort = searchParams.get("sort") ?? "newest";
-
-  const favoriteSlabIdSet = new Set(favoriteSlabIds);
 
   let items = slabs.map((slab) => {
     let distance: number | null = null;
@@ -89,8 +79,6 @@ export function GeoSlabGrid({
             key={slab.id}
             slab={slab}
             distanceMiles={distance ?? undefined}
-            isFavorite={favoriteSlabIdSet.has(slab.id)}
-            persistFavorites={canSyncFavorites}
           />
         ))}
       </div>

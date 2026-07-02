@@ -12,7 +12,7 @@ import { CanonicalHostGuard } from "@/components/site/canonical-host-guard";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getClerkPublishableKey, getClerkDomain, getClerkScriptUrls, hasValidClerkConfig } from "@/lib/auth/config";
-import { CANONICAL_APP_ORIGIN } from "@/lib/url";
+import { CANONICAL_APP_ORIGIN } from "@/lib/app-origin";
 import "./globals.css";
 
 const geistSans = Geist({

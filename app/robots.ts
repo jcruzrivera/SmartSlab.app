@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 
-import { getConfiguredAppUrl } from "@/lib/url";
+import { CANONICAL_APP_ORIGIN } from "@/lib/app-origin";
 
 function baseUrl(): string {
-  return getConfiguredAppUrl();
+  return CANONICAL_APP_ORIGIN;
 }
 
 export default function robots(): MetadataRoute.Robots {

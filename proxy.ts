@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
 import { getClerkDomain, hasValidClerkConfig } from "@/lib/auth/config";
+import { resolveSafeRedirectUrl } from "@/lib/auth/safe-redirect";
 import { CANONICAL_APP_HOST, CANONICAL_APP_ORIGIN, normalizeAppHost } from "@/lib/app-origin";
 
 const isProtectedRoute = createRouteMatcher([
@@ -27,12 +28,12 @@ const withClerkMiddleware = hasClerkConfig
           !userId &&
           (isProtectedRoute(req) || isSlabDetailRoute(req))
         ) {
-          const redirectTarget = new URL(
-            `${req.nextUrl.pathname}${req.nextUrl.search}`,
-            CANONICAL_APP_ORIGIN,
-          );
+          const redirectTarget = `${req.nextUrl.pathname}${req.nextUrl.search}`;
           const signIn = new URL("/sign-in", CANONICAL_APP_ORIGIN);
-          signIn.searchParams.set("redirect_url", redirectTarget.toString());
+          signIn.searchParams.set(
+            "redirect_url",
+            resolveSafeRedirectUrl(redirectTarget, redirectTarget),
+          );
           return NextResponse.redirect(signIn);
         }
 

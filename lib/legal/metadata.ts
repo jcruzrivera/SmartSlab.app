@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { getConfiguredAppUrl } from "@/lib/url";
-
 const SITE_NAME = "SmartSlab";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://smart-slab-app.vercel.app";
 
 export function buildLegalMetadata(input: {
   title: string;
@@ -10,7 +10,7 @@ export function buildLegalMetadata(input: {
   path: string;
 }): Metadata {
   const fullTitle = `${input.title} | ${SITE_NAME}`;
-  const url = `${getConfiguredAppUrl()}${input.path}`;
+  const url = `${BASE_URL}${input.path}`;
 
   return {
     title: fullTitle,

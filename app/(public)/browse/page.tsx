@@ -1,5 +1,6 @@
 import { FilterChips } from "@/components/search/FilterChips";
 import { FilterSidebar } from "@/components/search/FilterSidebar";
+import { GeoProvider } from "@/components/search/GeoProvider";
 import { GeoPrompt } from "@/components/search/GeoPrompt";
 import { GeoSlabGrid } from "@/components/search/GeoSlabGrid";
 import { MobileFilters } from "@/components/search/MobileFilters";
@@ -7,10 +8,8 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { SortSelect } from "@/components/search/SortSelect";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
-import { listFavoriteSlabIds } from "@/lib/db/favorites";
 import { listMaterials } from "@/lib/db/materials";
 import { searchSlabs } from "@/lib/db/search";
-import { getCurrentDbUser } from "@/lib/db/users";
 import {
   buildActiveChips,
   countActiveFilters,
@@ -59,12 +58,10 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   }
 
   const filters = parseFilters(toSearchParams(await searchParams));
-  const viewer = await getCurrentDbUser();
 
-  const [materials, result, favoriteSlabIds] = await Promise.all([
+  const [materials, result] = await Promise.all([
     listMaterials(),
     searchSlabs(filters),
-    viewer ? listFavoriteSlabIds(viewer.id) : Promise.resolve([]),
   ]);
 
   const materialLabels = Object.fromEntries(
@@ -105,41 +102,39 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-8">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Browse" }]} />
-      <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Browse slabs</h1>
-        <SearchBar key={filters.q ? "active" : "empty"} initialQuery={filters.q} suggestions={suggestions} />
-        <GeoPrompt />
-      </div>
+    <GeoProvider>
+      <main className="mx-auto w-full max-w-6xl px-6 py-8">
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Browse" }]} />
+        <div className="flex flex-col gap-4">
+          <h1 className="text-3xl font-semibold tracking-tight">Browse slabs</h1>
+          <SearchBar initialQuery={filters.q} suggestions={suggestions} />
+          <GeoPrompt />
+        </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-6">{sidebar}</div>
-        </aside>
+        <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
+          <aside className="hidden lg:block">
+            <div className="sticky top-6">{sidebar}</div>
+          </aside>
 
-        <section className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <MobileFilters activeCount={activeCount}>
-                {sidebar}
-              </MobileFilters>
-              <span className="text-sm text-slate-500">
-                {result.total} result{result.total === 1 ? "" : "s"}
-              </span>
+          <section className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <MobileFilters activeCount={activeCount}>
+                  {sidebar}
+                </MobileFilters>
+                <span className="text-sm text-slate-500">
+                  {result.total} result{result.total === 1 ? "" : "s"}
+                </span>
+              </div>
+              <SortSelect value={filters.sort} />
             </div>
-            <SortSelect value={filters.sort} />
-          </div>
 
-          <FilterChips chips={chips} />
+            <FilterChips chips={chips} />
 
-          <GeoSlabGrid
-            slabs={result.slabs}
-            favoriteSlabIds={favoriteSlabIds}
-            canSyncFavorites={Boolean(viewer)}
-          />
-        </section>
-      </div>
-    </main>
+            <GeoSlabGrid slabs={result.slabs} />
+          </section>
+        </div>
+      </main>
+    </GeoProvider>
   );
 }

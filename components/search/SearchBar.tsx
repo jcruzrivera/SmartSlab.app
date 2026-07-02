@@ -14,10 +14,16 @@ type SearchBarProps = {
 export function SearchBar({ initialQuery, suggestions }: SearchBarProps) {
   const { setParam } = useFilterNav();
   const [value, setValue] = useState(initialQuery);
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
+    setValue(initialQuery);
+  }
 
   useEffect(() => {
     function onClickOutside(event: MouseEvent) {

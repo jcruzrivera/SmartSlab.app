@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { SlabPhoto } from "@/components/media/slab-photo";
-import { SlabCardActionsLoader } from "@/components/slab/slab-card-actions-loader";
 import type { SlabWithRelations } from "@/lib/db/slabs";
 import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
 import { formatLocation, formatPrice, formatSqft } from "@/lib/format";
@@ -15,13 +14,9 @@ const typeLabels: Record<string, string> = {
 export function SlabCard({
   slab,
   distanceMiles,
-  isFavorite = false,
-  persistFavorites = false,
 }: {
   slab: SlabWithRelations;
   distanceMiles?: number;
-  isFavorite?: boolean;
-  persistFavorites?: boolean;
 }) {
   const primaryImage =
     slab.images.find((image) => image.isPrimary)?.url ?? slab.images[0]?.url;
@@ -38,11 +33,10 @@ export function SlabCard({
     distanceMiles !== undefined ? formatDistance(distanceMiles) : location;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
-      <Link
-        href={`/slab/${slab.id}`}
-        className="flex flex-1 flex-col"
-      >
+    <Link
+      href={`/slab/${slab.id}`}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+    >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
         {cardImageUrl ? (
           <SlabPhoto
@@ -100,12 +94,6 @@ export function SlabCard({
           ) : null}
         </div>
       </div>
-      </Link>
-      <SlabCardActionsLoader
-        slabId={slab.id}
-        initialIsFavorite={isFavorite}
-        persistFavorites={persistFavorites}
-      />
-    </article>
+    </Link>
   );
 }

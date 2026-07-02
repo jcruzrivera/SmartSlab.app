@@ -27,9 +27,6 @@ export function resolveSafeRedirectUrl(
 
 export function signInUrlWithRedirect(destination: string): string {
   const signIn = new URL("/sign-in", CANONICAL_APP_ORIGIN);
-  signIn.searchParams.set(
-    "redirect_url",
-    new URL(destination, CANONICAL_APP_ORIGIN).toString(),
-  );
+  signIn.searchParams.set("redirect_url", resolveSafeRedirectUrl(destination));
   return `${signIn.pathname}${signIn.search}`;
 }

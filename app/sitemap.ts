@@ -4,10 +4,12 @@ import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { listPublicSlabs } from "@/lib/db/slabs";
 import { LEGAL_NAV } from "@/lib/legal/nav";
-import { getConfiguredAppUrl } from "@/lib/url";
 
 function baseUrl(): string {
-  return getConfiguredAppUrl();
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "https://smart-slab-app.vercel.app"
+  ).replace(/\/$/, "");
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

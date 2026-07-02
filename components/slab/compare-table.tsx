@@ -22,10 +22,7 @@ type CompareSlab = {
   images: { id: string; url: string; isPrimary: boolean }[];
 };
 
-import {
-  COMPARE_STORAGE_KEY,
-  readCompareIds,
-} from "@/lib/marketplace/guest-storage";
+const STORAGE_KEY = "smartslab.compare";
 
 export function CompareTable() {
   const [slabs, setSlabs] = useState<CompareSlab[]>([]);
@@ -36,14 +33,14 @@ export function CompareTable() {
     let cancelled = false;
 
     async function loadCompareSlabs() {
-      let ids: string[];
+      let ids: unknown;
       try {
-        ids = readCompareIds();
+        ids = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
       } catch {
         ids = [];
       }
 
-      if (ids.length === 0) {
+      if (!Array.isArray(ids) || ids.length === 0) {
         if (!cancelled) {
           setLoading(false);
         }
@@ -88,7 +85,7 @@ export function CompareTable() {
   }, []);
 
   function clear() {
-    window.localStorage.removeItem(COMPARE_STORAGE_KEY);
+    window.localStorage.removeItem(STORAGE_KEY);
     setSlabs([]);
     setError(null);
   }
