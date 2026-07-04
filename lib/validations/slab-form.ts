@@ -7,7 +7,7 @@ export const slabFormSchema = z
   .object({
     name: z.string().trim().min(2, "Name is too short").max(120),
     type: z.enum(["full_slab", "remnant"]),
-    materialId: z.string().uuid().optional(),
+    materialId: z.string().uuid("Please select a material"),
     finish: z.enum([
       "polished",
       "honed",
@@ -21,23 +21,30 @@ export const slabFormSchema = z
     city: z.string().trim().max(80).optional(),
     state: z.string().trim().max(60).optional(),
     zip: z.string().trim().max(20).optional(),
-    widthIn: z.coerce.number().positive().optional(),
-    heightIn: z.coerce.number().positive().optional(),
+    widthIn: z.coerce.number().positive("Width must be greater than 0"),
+    heightIn: z.coerce.number().positive("Height must be greater than 0"),
     thicknessCm: z.coerce.number().positive().optional(),
     price: z.coerce.number().min(0, "Price must be 0 or more"),
     quantity: z.coerce.number().int().positive().default(1),
     isNegotiable: z.boolean().default(false),
+    isSmallSample: z.boolean().default(false),
     notes: z.string().trim().max(2000).optional(),
     imageUrls: z.array(z.string().url()).max(6).default([]),
     roomUse: z.array(z.string()).max(12).default([]),
     aestheticTags: z.array(z.string()).max(12).default([]),
   })
   .superRefine((data, ctx) => {
-    if (!data.isNegotiable && data.price <= 0) {
+    if (data.price <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["price"],
-        message: "Enter a price or mark the listing as negotiable.",
+        message: "Price must be greater than $0.",
+      });
+    } else if (data.price < 5 && !data.isSmallSample) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["price"],
+        message: "Price must be at least $5 unless marked as a small sample/remnant.",
       });
     }
 
@@ -77,6 +84,7 @@ export function parseSlabFormData(formData: FormData) {
     price: formData.get("price"),
     quantity: optional(formData.get("quantity")) ?? 1,
     isNegotiable: formData.get("isNegotiable") === "on",
+    isSmallSample: formData.get("isSmallSample") === "on",
     notes: optional(formData.get("notes")),
     imageUrls: formData
       .getAll("imageUrls")

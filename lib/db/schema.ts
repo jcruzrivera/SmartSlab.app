@@ -156,6 +156,8 @@ export const slabs = pgTable("slabs", {
   }),
   notes: text("notes"),
   isNegotiable: boolean("is_negotiable").notNull().default(false),
+  isSmallSample: boolean("is_small_sample").notNull().default(false),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   aiExtracted: boolean("ai_extracted").notNull().default(false),
   embedding: vector("embedding", { dimensions: 1536 }),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -323,6 +325,7 @@ export const slabsRelations = relations(slabs, ({ one, many }) => ({
   images: many(slabImages),
   quoteRequests: many(quoteRequests),
   favorites: many(favorites),
+  listingFlags: many(listingFlags),
 }));
 
 export const slabImagesRelations = relations(slabImages, ({ one }) => ({
@@ -400,5 +403,49 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   slab: one(slabs, {
     fields: [transactions.slabId],
     references: [slabs.id],
+  }),
+}));
+
+export const listingFlags = pgTable("listing_flags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  slabId: uuid("slab_id").references(() => slabs.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  category: text("category").notNull(),
+  confidence: numeric("confidence", { precision: 3, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const listingFlagsRelations = relations(listingFlags, ({ one }) => ({
+  user: one(users, {
+    fields: [listingFlags.userId],
+    references: [users.id],
+  }),
+  slab: one(slabs, {
+    fields: [listingFlags.slabId],
+    references: [slabs.id],
+  }),
+}));
+
+export const adminAuditLog = pgTable("admin_audit_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  adminId: uuid("admin_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  action: text("action").notNull(),
+  targetId: uuid("target_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const adminAuditLogRelations = relations(adminAuditLog, ({ one }) => ({
+  admin: one(users, {
+    fields: [adminAuditLog.adminId],
+    references: [users.id],
   }),
 }));
