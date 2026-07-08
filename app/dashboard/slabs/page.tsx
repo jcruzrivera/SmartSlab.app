@@ -80,7 +80,8 @@ export default async function DashboardSlabsPage() {
         </div>
       ) : (
         <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900">
               <tr>
                 <th className="px-4 py-3">Name</th>
@@ -133,6 +134,7 @@ export default async function DashboardSlabsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </section>
