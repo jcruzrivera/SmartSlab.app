@@ -110,7 +110,7 @@ export function SearchBar({ initialQuery, suggestions }: SearchBarProps) {
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Search slabs, colors, brands…"
-          className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-10 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-900"
+          className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-10 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-900"
           aria-label="Search slabs"
           autoComplete="off"
         />
@@ -143,7 +143,7 @@ export function SearchBar({ initialQuery, suggestions }: SearchBarProps) {
                 onClick={() => selectSuggestion(item)}
                 className={`flex w-full items-center px-3 py-2 text-left text-sm transition ${
                   index === highlight
-                    ? "bg-[#1bb0ce]/10 text-[#0d8fa8]"
+                    ? "bg-brand/10 text-brand-strong"
                     : "hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >

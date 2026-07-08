@@ -7,7 +7,7 @@ import { useToastStore, type Toast } from "@/lib/notifications/toast-store";
 const variantStyles: Record<Toast["variant"], { bar: string; icon: string }> = {
   success: { bar: "bg-emerald-500", icon: "text-emerald-500" },
   error: { bar: "bg-red-500", icon: "text-red-500" },
-  info: { bar: "bg-[#1bb0ce]", icon: "text-[#1bb0ce]" },
+  info: { bar: "bg-brand", icon: "text-brand" },
 };
 
 function ToastCard({ toast }: { toast: Toast }) {

@@ -16,7 +16,7 @@ export function MobileFilters({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 transition hover:border-[#1bb0ce] dark:border-slate-700 dark:text-slate-200"
+        className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 transition hover:border-brand dark:border-slate-700 dark:text-slate-200"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path d="M3 5h18M6 12h12M10 19h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -51,7 +51,7 @@ export function MobileFilters({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="h-11 w-full rounded-lg bg-[#1bb0ce] text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+                className="h-11 w-full rounded-lg bg-brand text-sm font-medium text-white transition hover:bg-brand-strong"
               >
                 Show results
               </button>

@@ -18,7 +18,7 @@ export function SiteFooter() {
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <Link href="/" className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#1bb0ce] text-sm font-bold text-white">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
               S
             </span>
             <span className="text-base font-semibold tracking-tight">
@@ -106,7 +106,7 @@ function FooterLink({
     <li>
       <Link
         href={href}
-        className="text-sm text-slate-500 transition hover:text-[#0d8fa8] dark:text-slate-400"
+        className="text-sm text-slate-500 transition hover:text-brand-strong dark:text-slate-400"
       >
         {children}
       </Link>

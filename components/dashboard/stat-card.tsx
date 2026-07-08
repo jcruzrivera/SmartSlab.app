@@ -1,6 +1,8 @@
+import { Card } from "@/components/ui/card";
+
 /**
- * Reusable stat/KPI card. Mirrors the existing dashboard card styling so new
- * sections stay visually consistent with the current MVP.
+ * Reusable stat/KPI card. Built on the shared Card surface so dashboard tiles
+ * stay visually consistent with the rest of the app.
  */
 export function StatCard({
   label,
@@ -12,10 +14,10 @@ export function StatCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <Card padded>
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
       {hint ? <p className="mt-1 text-xs text-slate-400">{hint}</p> : null}
-    </div>
+    </Card>
   );
 }

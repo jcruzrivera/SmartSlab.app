@@ -22,7 +22,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex h-11 items-center justify-center rounded-lg border border-[#1bb0ce] px-5 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex h-11 items-center justify-center rounded-lg border border-brand px-5 text-sm font-medium text-brand-strong transition hover:bg-brand hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Sending..." : "Request quote"}
     </button>
@@ -52,7 +52,7 @@ export function QuoteRequestForm({
           name="buyerName"
           defaultValue={defaultName ?? ""}
           placeholder="Name or company"
-          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-950"
+          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-950"
         />
         <input
           name="buyerEmail"
@@ -60,20 +60,20 @@ export function QuoteRequestForm({
           required
           defaultValue={defaultEmail ?? ""}
           placeholder="Email"
-          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-950"
+          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-950"
         />
         <input
           name="buyerPhone"
           defaultValue={defaultPhone ?? ""}
           placeholder="Phone"
-          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-950"
+          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-950"
         />
         <textarea
           name="message"
           required
           rows={3}
           placeholder="Tell the vendor what size, pickup/delivery timing, and questions you have."
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-950 sm:col-span-2"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-950 sm:col-span-2"
         />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3">

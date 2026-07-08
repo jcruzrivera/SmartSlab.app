@@ -60,11 +60,11 @@ export function FaqAccordion({
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => toggle(item.id)}
-                className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-medium transition hover:bg-[#1bb0ce]/5"
+                className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-medium transition hover:bg-brand/5"
               >
                 <span>{item.question}</span>
                 <svg
-                  className={`h-5 w-5 shrink-0 text-[#0d8fa8] transition-transform ${
+                  className={`h-5 w-5 shrink-0 text-brand-strong transition-transform ${
                     isOpen ? "rotate-180" : ""
                   }`}
                   viewBox="0 0 24 24"

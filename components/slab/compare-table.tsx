@@ -115,7 +115,7 @@ export function CompareTable() {
         <p className="font-medium text-red-700 dark:text-red-300">{error}</p>
         <Link
           href="/browse"
-          className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="mt-5 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Browse slabs
         </Link>
@@ -132,7 +132,7 @@ export function CompareTable() {
         </p>
         <Link
           href="/browse"
-          className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="mt-5 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Browse slabs
         </Link>
@@ -149,7 +149,7 @@ export function CompareTable() {
         <button
           type="button"
           onClick={clear}
-          className="text-sm font-medium text-slate-500 hover:text-[#0d8fa8]"
+          className="text-sm font-medium text-slate-500 hover:text-brand-strong"
         >
           Clear comparison
         </button>
@@ -164,7 +164,7 @@ export function CompareTable() {
               {slabs.map((slab) => (
                 <th key={slab.id} className="px-4 py-3">
                   <div className="flex flex-col gap-1">
-                    <Link href={`/slab/${slab.id}`} className="hover:text-[#0d8fa8]">
+                    <Link href={`/slab/${slab.id}`} className="hover:text-brand-strong">
                       {slab.name}
                     </Link>
                     <button

@@ -32,7 +32,7 @@ export function DashboardNav() {
               href={link.href}
               className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 active
-                  ? "bg-[#1bb0ce]/10 text-[#0d8fa8]"
+                  ? "bg-brand/10 text-brand-strong"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
               }`}
             >

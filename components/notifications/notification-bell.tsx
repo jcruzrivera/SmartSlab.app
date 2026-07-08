@@ -89,7 +89,7 @@ export function NotificationBell() {
         aria-label={unread > 0 ? `Notifications (${unread} unread)` : "Notifications"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8] dark:text-slate-300"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-brand/10 hover:text-brand-strong dark:text-slate-300"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -110,7 +110,7 @@ export function NotificationBell() {
               <button
                 type="button"
                 onClick={() => markRead.mutate({ all: true })}
-                className="text-xs font-medium text-[#0d8fa8] transition hover:underline"
+                className="text-xs font-medium text-brand-strong transition hover:underline"
               >
                 Mark all read
               </button>
@@ -128,7 +128,7 @@ export function NotificationBell() {
                   const content = (
                     <div className="flex gap-3">
                       {!item.isRead ? (
-                        <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[#1bb0ce]" />
+                        <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-brand" />
                       ) : (
                         <span className="mt-1.5 h-2 w-2 flex-shrink-0" />
                       )}
@@ -149,7 +149,7 @@ export function NotificationBell() {
                   );
 
                   const className = `block px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
-                    item.isRead ? "" : "bg-[#1bb0ce]/[0.04]"
+                    item.isRead ? "" : "bg-brand/[0.04]"
                   }`;
 
                   function handleActivate() {

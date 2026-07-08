@@ -58,7 +58,7 @@ export default function ConnectHomePage() {
           <Link
             key={step.href}
             href={step.href}
-            className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] dark:border-slate-800 dark:bg-slate-900"
+            className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand dark:border-slate-800 dark:bg-slate-900"
           >
             <p className="font-medium">{step.title}</p>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">

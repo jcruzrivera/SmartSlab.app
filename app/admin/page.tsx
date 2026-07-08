@@ -55,7 +55,7 @@ export default async function AdminPage() {
         </div>
         <Link
           href="/browse"
-          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
         >
           View marketplace
         </Link>
@@ -85,7 +85,7 @@ export default async function AdminPage() {
               {slabs.map((slab) => (
                 <tr key={slab.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
                   <td className="px-4 py-3">
-                    <Link href={`/slab/${slab.id}`} className="font-medium hover:text-[#0d8fa8]">
+                    <Link href={`/slab/${slab.id}`} className="font-medium hover:text-brand-strong">
                       {slab.name}
                     </Link>
                     <p className="text-xs text-slate-500">
@@ -114,7 +114,7 @@ export default async function AdminPage() {
                       </select>
                       <button
                         type="submit"
-                        className="h-9 rounded-lg bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-[#0d8fa8] dark:bg-slate-700"
+                        className="h-9 rounded-lg bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-brand-strong dark:bg-slate-700"
                       >
                         Save
                       </button>
@@ -123,7 +123,7 @@ export default async function AdminPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/slabs/${slab.id}/edit`}
-                      className="font-medium text-[#0d8fa8] hover:underline"
+                      className="font-medium text-brand-strong hover:underline"
                     >
                       Edit
                     </Link>
@@ -165,7 +165,7 @@ export default async function AdminPage() {
                         />
                         <button
                           type="submit"
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
                         >
                           {vendor.isVerified ? "Verified" : "Mark verified"}
                         </button>
@@ -190,7 +190,7 @@ export default async function AdminPage() {
                   <div>
                     <p className="font-medium">
                       {quote.slab ? (
-                        <Link href={`/slab/${quote.slab.id}`} className="hover:text-[#0d8fa8]">
+                        <Link href={`/slab/${quote.slab.id}`} className="hover:text-brand-strong">
                           {quote.slab.name}
                         </Link>
                       ) : (
@@ -218,7 +218,7 @@ export default async function AdminPage() {
                     </select>
                     <button
                       type="submit"
-                      className="h-9 rounded-lg bg-[#1bb0ce] px-3 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+                      className="h-9 rounded-lg bg-brand px-3 text-sm font-medium text-white transition hover:bg-brand-strong"
                     >
                       Save
                     </button>
@@ -251,7 +251,7 @@ export default async function AdminPage() {
                 <tr key={tx.id}>
                   <td className="px-4 py-3">
                     {tx.slab ? (
-                      <Link href={`/slab/${tx.slab.id}`} className="font-medium hover:text-[#0d8fa8]">
+                      <Link href={`/slab/${tx.slab.id}`} className="font-medium hover:text-brand-strong">
                         {tx.slab.name}
                       </Link>
                     ) : (

@@ -197,7 +197,7 @@ export function ImageUploader({
                 className="h-full w-full object-cover"
               />
               {index === 0 ? (
-                <span className="absolute left-1 top-1 rounded bg-[#1bb0ce] px-1.5 py-0.5 text-[10px] font-medium text-white">
+                <span className="absolute left-1 top-1 rounded bg-brand px-1.5 py-0.5 text-[10px] font-medium text-white">
                   Cover
                 </span>
               ) : null}
@@ -226,7 +226,7 @@ export function ImageUploader({
               event.preventDefault();
               void handleFiles(event.dataTransfer.files);
             }}
-            className="flex min-h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900/50"
+            className="flex min-h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-brand hover:bg-brand/5 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900/50"
           >
             <span className="text-3xl" aria-hidden>
               📷
@@ -288,7 +288,7 @@ export function ImageUploader({
                 value={manualUrl}
                 onChange={(event) => setManualUrl(event.target.value)}
                 placeholder="https://…"
-                className="h-9 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#1bb0ce] dark:border-slate-700 dark:bg-slate-900"
+                className="h-9 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand dark:border-slate-700 dark:bg-slate-900"
               />
               <button
                 type="button"
@@ -307,7 +307,7 @@ export function ImageUploader({
       )}
 
       {isAnalyzing ? (
-        <p className="rounded-lg bg-[#1bb0ce]/10 px-3 py-2 text-sm text-[#0d8fa8]">
+        <p className="rounded-lg bg-brand/10 px-3 py-2 text-sm text-brand-strong">
           Analyzing photo for listing details…
         </p>
       ) : null}

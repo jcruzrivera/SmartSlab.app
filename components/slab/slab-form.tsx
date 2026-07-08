@@ -48,7 +48,7 @@ export type SlabFormInitialValues = {
 };
 
 const inputClass =
-  "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-900";
+  "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-900";
 const labelClass = "text-sm font-medium text-slate-700 dark:text-slate-200";
 
 const VALID_FINISHES = new Set([
@@ -67,7 +67,7 @@ function SubmitButton({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex h-11 items-center rounded-lg bg-[#1bb0ce] px-5 text-sm font-medium text-white transition hover:bg-[#0d8fa8] disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex h-11 items-center rounded-lg bg-brand px-5 text-sm font-medium text-white transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Saving..." : label}
     </button>
@@ -247,10 +247,10 @@ export function SlabForm({
         ) : null}
 
         {isCreate && hasPhoto && suggestedPrice && suggestedPrice > 0 ? (
-          <div className="rounded-xl border border-[#1bb0ce]/30 bg-[#1bb0ce]/5 px-4 py-3">
+          <div className="rounded-xl border border-brand/30 bg-brand/5 px-4 py-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-[#0d8fa8]">
+                <p className="text-sm font-medium text-brand-strong">
                   Suggested list price
                 </p>
                 <p className="text-2xl font-semibold tracking-tight">
@@ -263,7 +263,7 @@ export function SlabForm({
               <button
                 type="button"
                 onClick={applySuggestedPrice}
-                className="inline-flex h-9 items-center rounded-lg border border-[#1bb0ce] px-3 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce]/10"
+                className="inline-flex h-9 items-center rounded-lg border border-brand px-3 text-sm font-medium text-brand-strong transition hover:bg-brand/10"
               >
                 Use suggested price
               </button>
@@ -508,8 +508,8 @@ export function SlabForm({
                   }
                   className={`rounded-full border px-3 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
                     active
-                      ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
-                      : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+                      ? "border-brand bg-brand text-white"
+                      : "border-slate-300 text-slate-600 hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:text-slate-300"
                   }`}
                 >
                   {option.label}
@@ -583,7 +583,7 @@ export function SlabForm({
             onChange={isCreate ? (event) => setNotes(event.target.value) : undefined}
             disabled={isSold}
             placeholder="Veining, edges, condition, pickup details..."
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-900"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-900"
           />
         </Field>
 

@@ -39,13 +39,13 @@ export default function Error({
         <button
           type="button"
           onClick={() => reset()}
-          className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Try again
         </button>
         <a
           href="/browse"
-          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
         >
           Back to browse
         </a>

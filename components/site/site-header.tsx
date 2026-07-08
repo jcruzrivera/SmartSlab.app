@@ -39,7 +39,7 @@ export function SiteHeader({
         <div className="flex items-center gap-3">
           <MobileNav items={mobileNavItems} />
           <Link href="/" className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#1bb0ce] text-sm font-bold text-white">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
               S
             </span>
             <span className="text-base font-semibold tracking-tight">
@@ -51,32 +51,32 @@ export function SiteHeader({
         <nav className="hidden items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 sm:flex">
           <Link
             href="/how-it-works"
-            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-brand/10 hover:text-brand-strong"
           >
             How it works
           </Link>
           <Link
             href="/browse"
-            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-brand/10 hover:text-brand-strong"
           >
             Browse
           </Link>
           <Link
             href="/dashboard/slabs/new"
-            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-brand/10 hover:text-brand-strong"
           >
             Sell
           </Link>
           <Link
             href="/compare"
-            className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+            className="rounded-lg px-3 py-1.5 transition hover:bg-brand/10 hover:text-brand-strong"
           >
             Compare
           </Link>
           {isSignedIn ? (
             <Link
               href="/account/smartfinder"
-              className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+              className="rounded-lg px-3 py-1.5 transition hover:bg-brand/10 hover:text-brand-strong"
             >
               SmartFinder
             </Link>

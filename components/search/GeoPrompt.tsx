@@ -28,9 +28,9 @@ export function GeoPrompt() {
     : null;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-[#1bb0ce]/30 bg-[#1bb0ce]/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-        <span className="text-[#0d8fa8]">
+        <span className="text-brand-strong">
           <PinIcon />
         </span>
         {place
@@ -42,7 +42,7 @@ export function GeoPrompt() {
           type="button"
           onClick={requestPrecise}
           disabled={requesting}
-          className="inline-flex h-9 items-center rounded-lg bg-[#1bb0ce] px-3 text-sm font-medium text-white transition hover:bg-[#0d8fa8] disabled:opacity-60"
+          className="inline-flex h-9 items-center rounded-lg bg-brand px-3 text-sm font-medium text-white transition hover:bg-brand-strong disabled:opacity-60"
         >
           {requesting ? "Locating…" : "Use my location"}
         </button>

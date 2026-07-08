@@ -58,7 +58,7 @@ export function GettingStarted({ steps }: { steps: OnboardingStep[] }) {
               {!step.complete && link ? (
                 <Link
                   href={link.href}
-                  className="shrink-0 text-sm font-medium text-[#0d8fa8] hover:underline"
+                  className="shrink-0 text-sm font-medium text-brand-strong hover:underline"
                 >
                   {link.cta}
                 </Link>

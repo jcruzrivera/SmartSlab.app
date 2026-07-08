@@ -98,7 +98,7 @@ function MessageCard({
             {message.slab ? (
               <>
                 {" - "}
-                <Link href={`/slab/${message.slab.id}`} className="hover:text-[#0d8fa8]">
+                <Link href={`/slab/${message.slab.id}`} className="hover:text-brand-strong">
                   {message.slab.name}
                 </Link>
               </>
@@ -120,11 +120,11 @@ function MessageCard({
             name="content"
             rows={2}
             placeholder="Reply..."
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/30 dark:border-slate-700 dark:bg-slate-950"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-700 dark:bg-slate-950"
           />
           <button
             type="submit"
-            className="inline-flex h-9 w-fit items-center rounded-lg bg-[#1bb0ce] px-3 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className="inline-flex h-9 w-fit items-center rounded-lg bg-brand px-3 text-sm font-medium text-white transition hover:bg-brand-strong"
           >
             Send reply
           </button>

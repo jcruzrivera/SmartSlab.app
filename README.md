@@ -26,7 +26,64 @@ operations.
 
 ## Version status
 
-### Marketplace operations and admin workflow (current working version)
+### Design system, branding & UX pass (current working version)
+
+This version made the whole product visually coherent around a single source of
+truth for branding, added the reusable UI primitives the app was missing, and
+closed a notable UX gap (no way to sign out). No business logic or page
+structure was changed — it is a design-foundation + polish pass.
+
+#### What was completed
+
+- **Brand design tokens** — the SmartSlab cyan is now defined in Tailwind v4
+  `@theme` (`app/globals.css`) as `brand` / `brand-strong` plus a `brand-50…900`
+  scale. Utilities like `bg-brand`, `text-brand-strong`, `ring-brand` now work
+  app-wide. Previously `--primary` existed but was never wired into the theme,
+  so the hex was copy-pasted everywhere.
+- **Branding migration** — replaced the hardcoded `[#1bb0ce]` / `[#0d8fa8]`
+  Tailwind arbitrary values with the `brand` / `brand-strong` tokens across
+  ~65 files. Real hex values (transactional email, `manifest.ts`, `viewport.ts`,
+  Clerk `colorPrimary`) were intentionally left untouched.
+- **Reusable UI primitives** (`components/ui/`):
+  - `Button` / `buttonClasses` — variants (`primary`, `secondary`, `outline`,
+    `ghost`, `danger`) and sizes (`sm`/`md`/`lg`) with built-in accessible focus.
+  - `Badge` — status variants + `slabStatusVariant` map so slab status pills
+    look identical everywhere.
+  - `Card` — the standard surface (radius / border / light-dark background).
+  - `lib/cn.ts` — dependency-free className joiner.
+- **Global accessibility & polish** (`app/globals.css`) — coherent brand
+  `focus-visible` rings, brand-tinted text selection, subtle scrollbars, and
+  smooth in-page scrolling that respects `prefers-reduced-motion`.
+- **Sign out** — new `components/site/user-menu.tsx`: a signed-in avatar
+  dropdown (Dashboard, Account, SmartFinder, and **Sign out** via Clerk). The
+  app previously had no sign-out control anywhere. It replaces the loose
+  "Account" header link and declutters the header on mobile.
+
+#### Files added in this version
+
+- `components/ui/button.tsx`
+- `components/ui/badge.tsx`
+- `components/ui/card.tsx`
+- `components/site/user-menu.tsx`
+- `lib/cn.ts`
+
+#### Validation
+
+- `npm run lint` — only pre-existing warnings/error remain (`mobile-nav.tsx`
+  set-state-in-effect and unused `_prevState`/`_formData` in some actions);
+  nothing new was introduced.
+- `npm run build` — passes (exit 0, all routes compile).
+
+#### Related fix shipped alongside
+
+- Checkout: `RESERVATION_MINUTES` raised from 15 to 30 in `lib/db/slabs.ts` so
+  the Stripe Checkout Session `expires_at` (kept in sync with the slab
+  reservation) satisfies Stripe's 30-minute minimum. Previously every checkout
+  failed with `expires_at must be at least 30 minutes`.
+
+---
+
+### Marketplace operations and admin workflow (previous working version)
 
 This version focused on closing the main production loop:
 

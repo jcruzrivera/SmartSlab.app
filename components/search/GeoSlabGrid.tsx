@@ -76,7 +76,7 @@ export function GeoSlabGrid({ slabs }: { slabs: SlabWithRelations[] }) {
         <p className="mt-2 text-slate-600 dark:text-slate-300">{description}</p>
         <Link
           href="/browse"
-          className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="mt-5 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Browse all slabs
         </Link>

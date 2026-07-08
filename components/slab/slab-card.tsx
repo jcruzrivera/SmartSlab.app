@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SlabPhoto } from "@/components/media/slab-photo";
+import { Badge } from "@/components/ui/badge";
 import { SlabCardActionsLoader } from "@/components/slab/slab-card-actions-loader";
 import type { SlabWithRelations } from "@/lib/db/slabs";
 import { getOptimizedImageUrl } from "@/lib/cloudinary/images";
@@ -35,10 +36,10 @@ export function SlabCard({
   const priceLabel = formatSlabPrice(slab.price, slab.isNegotiable);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 focus-within:ring-offset-background dark:border-slate-800 dark:bg-slate-900">
       <Link
         href={`/slab/${slab.id}`}
-        className="flex flex-1 flex-col"
+        className="flex flex-1 flex-col outline-none"
       >
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
           {cardImageUrl ? (
@@ -56,14 +57,14 @@ export function SlabCard({
             {typeLabels[slab.type] ?? slab.type}
           </span>
           {slab.type === "full_slab" && slab.quantity > 1 ? (
-            <span className="absolute right-3 top-3 rounded-full bg-[#1bb0ce] px-2.5 py-1 text-xs font-medium text-white shadow-sm">
+            <span className="absolute right-3 top-3 rounded-full bg-brand px-2.5 py-1 text-xs font-medium text-white shadow-sm">
               {slab.quantity} available
             </span>
           ) : null}
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#0d8fa8]">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-brand-strong">
             {slab.material?.name ?? "Stone"}
             {slab.colorFamily ? (
               <span className="text-slate-400">| {slab.colorFamily}</span>
@@ -91,9 +92,7 @@ export function SlabCard({
           <div className="mt-2 flex items-center justify-between">
             <span className="text-lg font-semibold">{priceLabel}</span>
             {slab.isNegotiable && priceLabel !== "Negotiable" ? (
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                Negotiable
-              </span>
+              <Badge variant="warning">Negotiable</Badge>
             ) : null}
           </div>
         </div>

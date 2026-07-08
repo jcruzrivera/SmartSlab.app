@@ -91,7 +91,7 @@ export function SmartfinderFlow() {
               {i > 0 && (
                 <div
                   className={`h-px w-8 sm:w-12 ${
-                    isPast ? "bg-[#1bb0ce]" : "bg-slate-300 dark:bg-slate-700"
+                    isPast ? "bg-brand" : "bg-slate-300 dark:bg-slate-700"
                   }`}
                 />
               )}
@@ -103,9 +103,9 @@ export function SmartfinderFlow() {
                 disabled={!isPast}
                 className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition sm:text-sm ${
                   isCurrent
-                    ? "bg-[#1bb0ce] text-white shadow-md shadow-[#1bb0ce]/25"
+                    ? "bg-brand text-white shadow-md shadow-brand/25"
                     : isPast
-                      ? "bg-[#1bb0ce]/15 text-[#0d8fa8] hover:bg-[#1bb0ce]/25"
+                      ? "bg-brand/15 text-brand-strong hover:bg-brand/25"
                       : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
                 }`}
               >
@@ -114,7 +114,7 @@ export function SmartfinderFlow() {
                     isCurrent
                       ? "bg-white/20 text-white"
                       : isPast
-                        ? "bg-[#1bb0ce]/20 text-[#0d8fa8]"
+                        ? "bg-brand/20 text-brand-strong"
                         : "bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500"
                   }`}
                 >

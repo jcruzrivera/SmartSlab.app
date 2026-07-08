@@ -62,7 +62,7 @@ export default function FaqPage() {
             <p className="font-medium">Need the full policy text?</p>
             <p className="mt-1 text-slate-600 dark:text-slate-300">
               Visit the{" "}
-              <Link href="/legal" className="text-[#0d8fa8] hover:underline">
+              <Link href="/legal" className="text-brand-strong hover:underline">
                 Legal center
               </Link>{" "}
               for Terms, Privacy, Shipping, Refunds, and Safety &amp; Compliance.

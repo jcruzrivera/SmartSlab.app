@@ -29,7 +29,7 @@ export function DuplicateButton({ slabId }: { slabId: string }) {
       type="button"
       onClick={handleDuplicate}
       disabled={loading}
-      className="text-sm font-medium text-slate-500 transition hover:text-[#0d8fa8] disabled:opacity-60"
+      className="text-sm font-medium text-slate-500 transition hover:text-brand-strong disabled:opacity-60"
       title="Duplicate this listing"
     >
       {loading ? "Duplicating…" : "Duplicate"}

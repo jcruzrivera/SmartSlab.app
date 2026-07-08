@@ -17,7 +17,7 @@ export function SortSelect({ value }: { value: SlabSort }) {
             event.target.value === "newest" ? null : event.target.value,
           )
         }
-        className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 outline-none focus:border-[#1bb0ce] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 outline-none focus:border-brand dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
       >
         {SORT_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>

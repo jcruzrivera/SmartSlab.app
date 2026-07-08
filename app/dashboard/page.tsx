@@ -38,7 +38,7 @@ export default async function DashboardHomePage() {
         </div>
         <Link
           href="/dashboard/slabs/new"
-          className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           + List a slab
         </Link>
@@ -103,7 +103,7 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand hover:bg-brand/5 dark:border-slate-800 dark:bg-slate-900"
     >
       <p className="font-medium">{title}</p>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{description}</p>

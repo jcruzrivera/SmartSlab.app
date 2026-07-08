@@ -68,7 +68,7 @@ export default async function LeadsPage() {
         </div>
         <Link
           href="/dashboard/sales"
-          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+          className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
         >
           View orders
         </Link>
@@ -82,7 +82,7 @@ export default async function LeadsPage() {
           </p>
           <Link
             href="/dashboard/slabs"
-            className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className="mt-5 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
           >
             Manage inventory
           </Link>
@@ -112,7 +112,7 @@ function LeadCard({ quote }: { quote: QuoteRequestWithRelations }) {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-semibold">
               {quote.slab ? (
-                <Link href={`/slab/${quote.slab.id}`} className="hover:text-[#0d8fa8]">
+                <Link href={`/slab/${quote.slab.id}`} className="hover:text-brand-strong">
                   {quote.slab.name}
                 </Link>
               ) : (
@@ -146,7 +146,7 @@ function LeadCard({ quote }: { quote: QuoteRequestWithRelations }) {
           </select>
           <button
             type="submit"
-            className="h-9 rounded-lg bg-[#1bb0ce] px-3 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className="h-9 rounded-lg bg-brand px-3 text-sm font-medium text-white transition hover:bg-brand-strong"
           >
             Save
           </button>
@@ -156,7 +156,7 @@ function LeadCard({ quote }: { quote: QuoteRequestWithRelations }) {
         {quote.message}
       </p>
       <div className="mt-4 flex flex-wrap gap-3 text-sm">
-        <a href={`mailto:${quote.buyerEmail}`} className="text-[#0d8fa8] hover:underline">
+        <a href={`mailto:${quote.buyerEmail}`} className="text-brand-strong hover:underline">
           {quote.buyerEmail}
         </a>
         {quote.buyerPhone ? <span>{quote.buyerPhone}</span> : null}

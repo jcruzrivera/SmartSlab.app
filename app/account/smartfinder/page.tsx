@@ -46,7 +46,7 @@ export default async function SmartFinderPage() {
         </p>
         <Link
           href="/sign-in"
-          className="mt-6 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="mt-6 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Sign in
         </Link>
@@ -64,7 +64,7 @@ export default async function SmartFinderPage() {
         ]}
       />
       <div className="mb-8 text-center">
-        <span className="inline-flex rounded-full bg-[#1bb0ce]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0d8fa8]">
+        <span className="inline-flex rounded-full bg-brand/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-strong">
           Premium tool
         </span>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">

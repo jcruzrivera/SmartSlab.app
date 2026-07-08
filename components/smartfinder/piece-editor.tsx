@@ -103,7 +103,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
               key={preset.id}
               type="button"
               onClick={() => addPreset(preset)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[#1bb0ce]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -134,7 +134,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
                 value={piece.label}
                 onChange={(e) => updatePiece(piece.key, "label", e.target.value)}
                 placeholder="e.g. Kitchen counter"
-                className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/20 dark:border-slate-700"
+                className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
               />
             </div>
 
@@ -151,7 +151,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
                 value={piece.widthIn || ""}
                 onChange={(e) => updatePiece(piece.key, "widthIn", Number(e.target.value))}
                 placeholder="96"
-                className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/20 dark:border-slate-700"
+                className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
               />
             </div>
 
@@ -168,7 +168,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
                 value={piece.heightIn || ""}
                 onChange={(e) => updatePiece(piece.key, "heightIn", Number(e.target.value))}
                 placeholder="26"
-                className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-[#1bb0ce] focus:ring-2 focus:ring-[#1bb0ce]/20 dark:border-slate-700"
+                className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
               />
             </div>
 
@@ -203,7 +203,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
         <button
           type="button"
           onClick={addPiece}
-          className="flex h-12 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 text-sm font-medium text-slate-500 transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:hover:border-[#1bb0ce]"
+          className="flex h-12 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 text-sm font-medium text-slate-500 transition hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:hover:border-brand"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -213,7 +213,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
       </div>
 
       {/* Summary + actions */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-[#1bb0ce]/5 to-transparent p-5 dark:border-slate-800">
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-brand/5 to-transparent p-5 dark:border-slate-800">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -231,7 +231,7 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
             type="button"
             onClick={handleSubmit}
             disabled={!isValid}
-            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#1bb0ce] px-6 text-sm font-medium text-white transition hover:bg-[#0d8fa8] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-6 text-sm font-medium text-white transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />

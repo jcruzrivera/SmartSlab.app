@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { SlabCard } from "@/components/slab/slab-card";
+import { buttonClasses } from "@/components/ui/button";
 import { isDbConfigured } from "@/lib/db/client";
 import { listPublicSlabs } from "@/lib/db/slabs";
 import { buildPageMetadata } from "@/lib/site-metadata";
@@ -32,7 +33,7 @@ export default async function Home() {
     <main className="flex flex-1 flex-col">
       <section className="border-b border-slate-200/60 dark:border-slate-800/50">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-8 pt-10 md:gap-6 md:py-16">
-          <p className="inline-flex w-fit rounded-full bg-[#1bb0ce]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0d8fa8]">
+          <p className="inline-flex w-fit rounded-full bg-brand/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-strong">
             Slab & remnant marketplace
           </p>
           <h1 className="max-w-3xl text-4xl font-semibold tracking-tight md:text-5xl">
@@ -44,15 +45,12 @@ export default async function Home() {
             verified vendors.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href="/browse"
-              className="inline-flex h-11 items-center rounded-lg bg-[#1bb0ce] px-5 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
-            >
+            <Link href="/browse" className={buttonClasses({ size: "lg" })}>
               Browse inventory
             </Link>
             <Link
               href="/dashboard/slabs/new"
-              className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-5 text-sm font-medium transition hover:bg-white dark:border-slate-700 dark:hover:bg-slate-900"
+              className={buttonClasses({ variant: "secondary", size: "lg" })}
             >
               Sell a slab
             </Link>
@@ -63,7 +61,7 @@ export default async function Home() {
               <Link
                 key={category.slug}
                 href={`/browse?material=${category.slug}`}
-                className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-medium text-slate-600 transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-medium text-slate-600 transition hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
               >
                 {category.name}
               </Link>
@@ -74,7 +72,7 @@ export default async function Home() {
           <a
             href="#listings"
             aria-label="Scroll to latest listings"
-            className="mx-auto mt-1 flex flex-col items-center gap-0.5 text-[#0d8fa8] md:hidden"
+            className="mx-auto mt-1 flex flex-col items-center gap-0.5 text-brand-strong md:hidden"
           >
             <span className="text-[11px] font-semibold uppercase tracking-wide">
               See slabs
@@ -109,7 +107,7 @@ export default async function Home() {
           </h2>
           <Link
             href="/browse"
-            className="text-sm font-medium text-[#0d8fa8] hover:underline"
+            className="text-sm font-medium text-brand-strong hover:underline"
           >
             View all
           </Link>
@@ -123,7 +121,7 @@ export default async function Home() {
             </p>
             <Link
               href="/dashboard/slabs/new"
-              className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+              className={buttonClasses({ className: "mt-5" })}
             >
               List the first slab
             </Link>
@@ -138,7 +136,11 @@ export default async function Home() {
             <div className="mt-8 flex justify-center">
               <Link
                 href="/browse"
-                className="inline-flex h-11 items-center rounded-lg border border-[#1bb0ce] px-6 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce] hover:text-white"
+                className={buttonClasses({
+                  variant: "outline",
+                  size: "lg",
+                  className: "px-6",
+                })}
               >
                 View all slabs
               </Link>

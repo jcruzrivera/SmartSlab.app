@@ -45,7 +45,7 @@ export default async function ConnectStorePage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <Link href="/connect" className="text-sm text-[#0d8fa8] hover:underline">
+      <Link href="/connect" className="text-sm text-brand-strong hover:underline">
         ← Connect sample
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Storefront</h1>
@@ -71,7 +71,7 @@ export default async function ConnectStorePage({
           </p>
           <Link
             href="/connect/products"
-            className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className="mt-5 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
           >
             Add a product
           </Link>

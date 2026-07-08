@@ -35,7 +35,7 @@ export default async function ConnectOnboardingPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-10">
-      <Link href="/connect" className="text-sm text-[#0d8fa8] hover:underline">
+      <Link href="/connect" className="text-sm text-brand-strong hover:underline">
         ← Connect sample
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">

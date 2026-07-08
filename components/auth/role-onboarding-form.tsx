@@ -79,7 +79,7 @@ export function RoleOnboardingForm() {
               type="button"
               className={`rounded-xl border px-4 py-3 text-left transition ${
                 isActive
-                  ? "border-[#1bb0ce] bg-[#1bb0ce]/10"
+                  ? "border-brand bg-brand/10"
                   : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
               }`}
               onClick={() => setSelectedRole(option.value)}
@@ -99,7 +99,7 @@ export function RoleOnboardingForm() {
         type="button"
         onClick={submitRole}
         disabled={isSaving}
-        className="mt-6 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSaving ? "Saving..." : "Continue"}
       </button>

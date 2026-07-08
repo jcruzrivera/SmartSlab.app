@@ -2,21 +2,14 @@ import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { DuplicateButton } from "@/components/slab/duplicate-button";
+import { Badge, slabStatusVariant } from "@/components/ui/badge";
+import { buttonClasses } from "@/components/ui/button";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
 import { formatDimensions, formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-
-const statusStyles: Record<string, string> = {
-  available:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  reserved:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  sold: "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  hidden: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-};
 
 export default async function DashboardSlabsPage() {
   if (!isDbConfigured()) {
@@ -52,13 +45,13 @@ export default async function DashboardSlabsPage() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/dashboard/slabs/import"
-            className="inline-flex h-10 items-center rounded-lg border border-[#1bb0ce] px-4 text-sm font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce] hover:text-white"
+            className={buttonClasses({ variant: "outline" })}
           >
             Bulk import CSV
           </Link>
           <Link
             href="/dashboard/slabs/new"
-            className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className={buttonClasses()}
           >
             + List a slab
           </Link>
@@ -73,7 +66,7 @@ export default async function DashboardSlabsPage() {
           </p>
           <Link
             href="/dashboard/slabs/new"
-            className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className={buttonClasses({ className: "mt-5" })}
           >
             List a slab
           </Link>
@@ -98,7 +91,7 @@ export default async function DashboardSlabsPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/slab/${slab.id}`}
-                      className="font-medium hover:text-[#0d8fa8]"
+                      className="font-medium hover:text-brand-strong"
                     >
                       {slab.name}
                     </Link>
@@ -111,20 +104,19 @@ export default async function DashboardSlabsPage() {
                   </td>
                   <td className="px-4 py-3 font-medium">{formatPrice(slab.price)}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        statusStyles[slab.status] ?? statusStyles.hidden
-                      }`}
+                    <Badge
+                      variant={slabStatusVariant[slab.status] ?? "muted"}
+                      className="capitalize"
                     >
                       {slab.status}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <DuplicateButton slabId={slab.id} />
                       <Link
                         href={`/dashboard/slabs/${slab.id}/edit`}
-                        className="text-sm font-medium text-[#0d8fa8] hover:underline"
+                        className="text-sm font-medium text-brand-strong hover:underline"
                       >
                         Edit
                       </Link>

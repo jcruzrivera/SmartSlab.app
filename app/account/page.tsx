@@ -58,7 +58,7 @@ export default async function AccountPage() {
         </p>
         <Link
           href="/sign-in"
-          className="mt-6 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="mt-6 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Sign in
         </Link>
@@ -104,9 +104,9 @@ export default async function AccountPage() {
       <section className="mt-10">
         <Link
           href="/account/smartfinder"
-          className="group flex items-center gap-5 rounded-2xl border border-[#1bb0ce]/30 bg-gradient-to-r from-[#1bb0ce]/10 to-transparent p-6 transition hover:border-[#1bb0ce]/60 hover:shadow-md"
+          className="group flex items-center gap-5 rounded-2xl border border-brand/30 bg-gradient-to-r from-brand/10 to-transparent p-6 transition hover:border-brand/60 hover:shadow-md"
         >
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#1bb0ce]/15 text-[#0d8fa8] transition group-hover:bg-[#1bb0ce]/25">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-brand/15 text-brand-strong transition group-hover:bg-brand/25">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
               <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -116,7 +116,7 @@ export default async function AccountPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold tracking-tight">SmartFinder</h2>
-              <span className="rounded-full bg-[#1bb0ce]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0d8fa8]">
+              <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-strong">
                 New
               </span>
             </div>
@@ -129,7 +129,7 @@ export default async function AccountPage() {
             height="20"
             viewBox="0 0 24 24"
             fill="none"
-            className="ml-auto flex-shrink-0 text-slate-400 transition group-hover:text-[#0d8fa8]"
+            className="ml-auto flex-shrink-0 text-slate-400 transition group-hover:text-brand-strong"
             aria-hidden
           >
             <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -146,7 +146,7 @@ export default async function AccountPage() {
             </p>
             <Link
               href="/browse"
-              className="mt-4 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+              className="mt-4 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
             >
               Browse slabs
             </Link>
@@ -172,7 +172,7 @@ export default async function AccountPage() {
                       {purchase.slab ? (
                         <Link
                           href={`/slab/${purchase.slab.id}`}
-                          className="font-medium hover:text-[#0d8fa8]"
+                          className="font-medium hover:text-brand-strong"
                         >
                           {purchase.slab.name}
                         </Link>
@@ -248,7 +248,7 @@ export default async function AccountPage() {
                       {quote.slab ? (
                         <Link
                           href={`/slab/${quote.slab.id}`}
-                          className="font-medium hover:text-[#0d8fa8]"
+                          className="font-medium hover:text-brand-strong"
                         >
                           {quote.slab.name}
                         </Link>

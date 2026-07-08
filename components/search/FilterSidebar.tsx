@@ -82,7 +82,7 @@ export function FilterSidebar({
                 <span
                   className={`h-7 w-7 rounded-full border transition ${
                     active
-                      ? "ring-2 ring-[#1bb0ce] ring-offset-1 dark:ring-offset-slate-900"
+                      ? "ring-2 ring-brand ring-offset-1 dark:ring-offset-slate-900"
                       : "border-slate-300 dark:border-slate-600"
                   } ${option.ring ? "border-slate-300" : "border-transparent"}`}
                   style={{ background: option.swatch }}
@@ -284,10 +284,10 @@ function Pill({
       disabled={disabled}
       className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
         active
-          ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
+          ? "border-brand bg-brand text-white"
           : disabled
             ? "border-slate-200 text-slate-300 dark:border-slate-800"
-            : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+            : "border-slate-300 text-slate-600 hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:text-slate-300"
       }`}
     >
       {label}
@@ -349,7 +349,7 @@ function PriceRange({
             setLocalMin(event.target.value);
             commit("price_min", event.target.value, PRICE_MIN);
           }}
-          className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm outline-none focus:border-[#1bb0ce] dark:border-slate-700 dark:bg-slate-900"
+          className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm outline-none focus:border-brand dark:border-slate-700 dark:bg-slate-900"
           aria-label="Minimum price"
         />
         <span className="text-slate-400">–</span>
@@ -362,7 +362,7 @@ function PriceRange({
             setLocalMax(event.target.value);
             commit("price_max", event.target.value, PRICE_MAX);
           }}
-          className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm outline-none focus:border-[#1bb0ce] dark:border-slate-700 dark:bg-slate-900"
+          className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm outline-none focus:border-brand dark:border-slate-700 dark:bg-slate-900"
           aria-label="Maximum price"
         />
       </div>
@@ -397,8 +397,8 @@ function DistanceSection({
             onClick={() => onChange(String(option))}
             className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
               radius === option
-                ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
-                : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+                ? "border-brand bg-brand text-white"
+                : "border-slate-300 text-slate-600 hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:text-slate-300"
             }`}
           >
             {option} mi
@@ -409,8 +409,8 @@ function DistanceSection({
           onClick={() => onChange(null)}
           className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
             radius === 0
-              ? "border-[#1bb0ce] bg-[#1bb0ce] text-white"
-              : "border-slate-300 text-slate-600 hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700 dark:text-slate-300"
+              ? "border-brand bg-brand text-white"
+              : "border-slate-300 text-slate-600 hover:border-brand hover:text-brand-strong dark:border-slate-700 dark:text-slate-300"
           }`}
         >
           Any
@@ -456,7 +456,7 @@ function MinSqft({
           setLocal(next);
           commit(next);
         }}
-        className="w-full accent-[#1bb0ce]"
+        className="w-full accent-brand"
         aria-label="Minimum square feet"
       />
       <p className="text-xs text-slate-500">

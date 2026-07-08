@@ -13,9 +13,33 @@
   --bg-glow-teal: rgba(13, 143, 168, 0.08);
 }
 
+/*
+ * Brand design tokens. `brand` is the SmartSlab cyan used for primary actions
+ * and accents; `brand-strong` is the darker shade used on hover / for text on
+ * light surfaces (better contrast). The numbered scale exists for surfaces that
+ * need tints/shades (soft backgrounds, borders) while keeping a single source
+ * of truth — change these and the whole app updates.
+ */
+@theme {
+  --color-brand: #1bb0ce;
+  --color-brand-strong: #0d8fa8;
+  --color-brand-50: #ecfbfe;
+  --color-brand-100: #d1f4fa;
+  --color-brand-200: #a8e9f4;
+  --color-brand-300: #6ed7e9;
+  --color-brand-400: #33bdd8;
+  --color-brand-500: #1bb0ce;
+  --color-brand-600: #0d8fa8;
+  --color-brand-700: #0f7488;
+  --color-brand-800: #135e6f;
+  --color-brand-900: #144e5e;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -55,4 +79,53 @@ body {
       radial-gradient(circle at 20% 30%, rgba(0, 194, 255, 0.06) 0%, transparent 35%),
       radial-gradient(circle at 80% 70%, rgba(180, 74, 255, 0.07) 0%, transparent 35%);
   }
+}
+
+/* Smooth in-page anchor scrolling (e.g. the homepage "See slabs" hint). */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+ * Coherent, accessible keyboard focus across the whole app. Uses the brand
+ * color so focus states match the design system. Mouse clicks don't trigger it
+ * (focus-visible), only keyboard/AT navigation.
+ */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Brand-tinted text selection. */
+::selection {
+  background-color: color-mix(in srgb, var(--color-brand) 28%, transparent);
+}
+
+/* Subtle, unobtrusive scrollbars that match the neutral surface palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.35);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.55);
 }

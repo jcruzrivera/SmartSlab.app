@@ -29,7 +29,7 @@ export function FilterChips({ chips }: { chips: FilterChipDescriptor[] }) {
           key={`${chip.key}:${chip.value ?? ""}`}
           type="button"
           onClick={() => remove(chip)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[#1bb0ce]/40 bg-[#1bb0ce]/10 px-3 py-1 text-xs font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce]/20"
+          className="inline-flex items-center gap-1.5 rounded-full border border-brand/40 bg-brand/10 px-3 py-1 text-xs font-medium text-brand-strong transition hover:bg-brand/20"
         >
           {chip.label}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>

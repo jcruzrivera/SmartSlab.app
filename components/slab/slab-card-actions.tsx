@@ -77,14 +77,14 @@ export function SlabCardActions({
       <button
         type="button"
         onClick={toggleSave}
-        className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+        className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
       >
         {isFavorite ? "Saved" : "Save"}
       </button>
       <button
         type="button"
         onClick={toggleCompare}
-        className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+        className="inline-flex h-8 items-center rounded-lg border border-slate-300 px-3 text-xs font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
       >
         {inCompare ? "In compare" : "Compare"}
       </button>
@@ -92,7 +92,7 @@ export function SlabCardActions({
         <Link
           href="/compare"
           onClick={(event) => event.stopPropagation()}
-          className="text-xs font-medium text-[#0d8fa8] hover:underline"
+          className="text-xs font-medium text-brand-strong hover:underline"
         >
           View compare ({compareIds.length})
         </Link>

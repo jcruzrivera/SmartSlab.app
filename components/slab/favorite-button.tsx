@@ -17,7 +17,7 @@ function Button({
     <button
       type="submit"
       disabled={pending || disabled}
-      className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
+      className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-brand hover:text-brand-strong disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
     >
       {isFavorite ? "Saved" : "Save"}
     </button>

@@ -106,7 +106,7 @@ export default async function SlabDetailPage({
         </p>
         <Link
           href="/browse"
-          className="mt-6 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+          className="mt-6 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
         >
           Back to browse
         </Link>
@@ -207,7 +207,7 @@ export default async function SlabDetailPage({
 
         <div className="flex flex-col gap-5">
           <div>
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#0d8fa8]">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-brand-strong">
               {slab.material?.name ?? "Stone"}
               <span className="text-slate-400">
                 | {slab.type === "remnant" ? "Remnant" : "Full slab"}
@@ -318,13 +318,13 @@ export default async function SlabDetailPage({
             <div className="flex flex-wrap gap-3">
               <Link
                 href={`/dashboard/slabs/${slab.id}/edit`}
-                className="inline-flex h-11 items-center rounded-lg bg-[#1bb0ce] px-5 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+                className="inline-flex h-11 items-center rounded-lg bg-brand px-5 text-sm font-medium text-white transition hover:bg-brand-strong"
               >
                 Edit listing
               </Link>
               <Link
                 href="/dashboard/slabs"
-                className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-5 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+                className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-5 text-sm font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
               >
                 Manage inventory
               </Link>

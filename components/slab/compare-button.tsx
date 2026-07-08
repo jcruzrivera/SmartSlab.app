@@ -34,14 +34,14 @@ export function CompareButton({ slabId }: { slabId: string }) {
       <button
         type="button"
         onClick={toggle}
-        className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-[#1bb0ce] hover:text-[#0d8fa8] dark:border-slate-700"
+        className="inline-flex h-11 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium transition hover:border-brand hover:text-brand-strong dark:border-slate-700"
       >
         {included ? "In compare" : "Compare"}
       </button>
       {ids.length > 0 ? (
         <Link
           href="/compare"
-          className="text-sm font-medium text-[#0d8fa8] hover:underline"
+          className="text-sm font-medium text-brand-strong hover:underline"
         >
           View compare ({ids.length})
         </Link>

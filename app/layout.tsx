@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 
 import { AppProviders } from "@/components/providers/app-providers";
+import { buttonClasses } from "@/components/ui/button";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { ClerkAuthSlotLoader } from "@/components/site/clerk-auth-slot-loader";
 import { CanonicalHostGuard } from "@/components/site/canonical-host-guard";
@@ -43,10 +44,7 @@ export const metadata: Metadata = {
 
 function GuestAuthSlot() {
   return (
-    <Link
-      href="/browse"
-      className="inline-flex h-9 items-center rounded-lg bg-[#1bb0ce] px-3.5 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
-    >
+    <Link href="/browse" className={buttonClasses({ size: "sm" })}>
       Browse slabs
     </Link>
   );

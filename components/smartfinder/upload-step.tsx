@@ -109,11 +109,11 @@ export function UploadStep({ imageUrl, onImageSelected, onSkip }: UploadStepProp
           onDragLeave={handleDragLeave}
           className={`flex w-full cursor-pointer flex-col items-center gap-4 rounded-2xl border-2 border-dashed px-8 py-16 text-center transition ${
             dragging
-              ? "border-[#1bb0ce] bg-[#1bb0ce]/10"
-              : "border-slate-300 bg-slate-50 hover:border-[#1bb0ce]/50 hover:bg-[#1bb0ce]/5 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-[#1bb0ce]/40"
+              ? "border-brand bg-brand/10"
+              : "border-slate-300 bg-slate-50 hover:border-brand/50 hover:bg-brand/5 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand/40"
           }`}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1bb0ce]/15 text-[#0d8fa8]">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/15 text-brand-strong">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path
                 d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
@@ -149,7 +149,7 @@ export function UploadStep({ imageUrl, onImageSelected, onSkip }: UploadStepProp
           <button
             type="button"
             onClick={handleConfirm}
-            className="inline-flex h-11 items-center rounded-lg bg-[#1bb0ce] px-6 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className="inline-flex h-11 items-center rounded-lg bg-brand px-6 text-sm font-medium text-white transition hover:bg-brand-strong"
           >
             Continue with photo
           </button>

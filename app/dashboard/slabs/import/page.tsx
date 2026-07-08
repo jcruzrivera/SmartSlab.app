@@ -127,7 +127,7 @@ export default function ImportSlabsPage() {
           <div className="mt-4 flex gap-3">
             <Link
               href="/dashboard/slabs"
-              className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+              className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
             >
               View inventory
             </Link>
@@ -149,7 +149,7 @@ export default function ImportSlabsPage() {
             }}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => inputRef.current?.click()}
-            className="mt-6 cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 p-10 text-center transition hover:border-[#1bb0ce] hover:bg-[#1bb0ce]/5 dark:border-slate-700"
+            className="mt-6 cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 p-10 text-center transition hover:border-brand hover:bg-brand/5 dark:border-slate-700"
           >
             <input
               ref={inputRef}
@@ -168,7 +168,7 @@ export default function ImportSlabsPage() {
                 e.stopPropagation();
                 downloadTemplate();
               }}
-              className="mt-4 text-sm font-medium text-[#0d8fa8] underline"
+              className="mt-4 text-sm font-medium text-brand-strong underline"
             >
               Download CSV template
             </button>
@@ -196,7 +196,7 @@ export default function ImportSlabsPage() {
                     type="button"
                     onClick={handleImport}
                     disabled={loading}
-                    className="inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8] disabled:opacity-60"
+                    className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong disabled:opacity-60"
                   >
                     Import {preview.previewRows.length} slab
                     {preview.previewRows.length === 1 ? "" : "s"}

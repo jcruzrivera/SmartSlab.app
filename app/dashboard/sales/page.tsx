@@ -84,7 +84,7 @@ export default async function SalesPage() {
           </p>
           <Link
             href="/dashboard/slabs"
-            className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#1bb0ce] px-4 text-sm font-medium text-white transition hover:bg-[#0d8fa8]"
+            className="mt-5 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-strong"
           >
             Manage inventory
           </Link>
@@ -133,7 +133,7 @@ function SaleRow({ sale }: { sale: SaleWithRelations }) {
         {sale.slab ? (
           <Link
             href={`/slab/${sale.slab.id}`}
-            className="font-medium hover:text-[#0d8fa8]"
+            className="font-medium hover:text-brand-strong"
           >
             {sale.slab.name}
           </Link>
@@ -148,7 +148,7 @@ function SaleRow({ sale }: { sale: SaleWithRelations }) {
             {sale.buyer?.email ? (
               <a
                 href={`mailto:${sale.buyer.email}`}
-                className="text-xs text-[#0d8fa8] hover:underline"
+                className="text-xs text-brand-strong hover:underline"
               >
                 {sale.buyer.email}
               </a>

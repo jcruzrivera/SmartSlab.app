@@ -58,7 +58,7 @@ export function WalletPreview({ wallet }: { wallet: Wallet }) {
         </p>
         <Link
           href="/dashboard/payments"
-          className="shrink-0 text-sm font-medium text-[#0d8fa8] hover:underline"
+          className="shrink-0 text-sm font-medium text-brand-strong hover:underline"
         >
           Payouts
         </Link>

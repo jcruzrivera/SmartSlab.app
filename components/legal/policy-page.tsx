@@ -69,7 +69,7 @@ export function PolicyPage({ content, currentPath }: PolicyPageProps) {
             <p className="font-medium">Questions?</p>
             <p className="mt-1 text-slate-600 dark:text-slate-300">
               Review our{" "}
-              <Link href="/faq" className="text-[#0d8fa8] hover:underline">
+              <Link href="/faq" className="text-brand-strong hover:underline">
                 FAQ
               </Link>{" "}
               or contact us through your SmartSlab account for order-related

@@ -201,7 +201,7 @@ export function ResultsList({
                 {/* Details */}
                 <div className="flex flex-1 flex-col gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[#0d8fa8]">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-brand-strong">
                       {result.materialName ?? "Stone"}
                     </span>
                     {result.colorFamily && (
@@ -212,7 +212,7 @@ export function ResultsList({
 
                   <Link
                     href={`/slab/${result.slabId}`}
-                    className="line-clamp-1 text-base font-semibold tracking-tight transition hover:text-[#0d8fa8]"
+                    className="line-clamp-1 text-base font-semibold tracking-tight transition hover:text-brand-strong"
                   >
                     {result.slabName}
                   </Link>
@@ -248,7 +248,7 @@ export function ResultsList({
                     <div className="flex gap-2">
                       <Link
                         href={`/slab/${result.slabId}`}
-                        className="inline-flex h-8 items-center rounded-lg border border-[#1bb0ce] px-3 text-xs font-medium text-[#0d8fa8] transition hover:bg-[#1bb0ce] hover:text-white"
+                        className="inline-flex h-8 items-center rounded-lg border border-brand px-3 text-xs font-medium text-brand-strong transition hover:bg-brand hover:text-white"
                       >
                         View slab
                       </Link>
@@ -269,11 +269,11 @@ export function ResultsList({
 
       {/* Subscription gate */}
       {!loading && limited && (
-        <div className="relative overflow-hidden rounded-2xl border border-[#1bb0ce]/30 bg-gradient-to-br from-[#1bb0ce]/10 to-[#0d8fa8]/5 p-8 text-center">
-          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#1bb0ce]/10 blur-2xl" />
-          <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-[#0d8fa8]/10 blur-2xl" />
+        <div className="relative overflow-hidden rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-brand-strong/5 p-8 text-center">
+          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand/10 blur-2xl" />
+          <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-brand-strong/10 blur-2xl" />
           <div className="relative">
-            <p className="text-sm font-semibold text-[#0d8fa8]">
+            <p className="text-sm font-semibold text-brand-strong">
               +{totalMatches - results.length} more matching slabs
             </p>
             <h3 className="mt-2 text-lg font-semibold tracking-tight">
@@ -286,7 +286,7 @@ export function ResultsList({
             <button
               type="button"
               disabled
-              className="mt-4 inline-flex h-11 items-center rounded-lg bg-[#1bb0ce] px-6 text-sm font-medium text-white opacity-70"
+              className="mt-4 inline-flex h-11 items-center rounded-lg bg-brand px-6 text-sm font-medium text-white opacity-70"
             >
               Coming soon
             </button>
