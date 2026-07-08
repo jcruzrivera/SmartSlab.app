@@ -32,10 +32,20 @@ secrets (`DATABASE_URL`, `NEXT_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
   `api.` and POSTing to `https://<that-host>/sql`. So a plain local Postgres TCP DSN
   will NOT work at runtime — you need a real Neon database or a local Neon-HTTP proxy.
 - **`drizzle-kit` (`db:push`, `db:studio`) uses the Neon WEBSOCKET driver** and cannot
-  talk to a plain local Postgres. To apply the schema to a local/standard Postgres,
-  run the SQL files in `drizzle/*.sql` directly via `psql` (the `--> statement-breakpoint`
-  lines are just SQL comments). `npm run db:setup` (enable `pgvector`) goes through the
-  HTTP path and needs the proxy / a real Neon DB.
+ talk to a plain local Postgres. To apply the schema to a local/standard Postgres,
+ run the SQL files in `drizzle/*.sql` directly via `psql` (the `--> statement-breakpoint`
+ lines are just SQL comments). `npm run db:setup` (enable `pgvector`) goes through the
+ HTTP path and needs the proxy / a real Neon DB.
+- **Migration files overlap — don't apply them blindly with `ON_ERROR_STOP`.** Apply
+ in `drizzle/meta/_journal.json` order (`0000`→`0001`→`0002`→`0003`→`0004`→
+ `0005_bumpy_mercury`→`0006_nervous_wolfsbane`); `0005_slab_dimensions_inches.sql` is
+ NOT journaled — skip it. `0005_bumpy_mercury.sql` re-creates the `quote_status` enum
+ and the `favorites` / `quote_requests` tables already created by `0004`, so its first
+ statement aborts. Only its *new* objects need applying idempotently: tables
+ `admin_audit_log` and `listing_flags`, the `slabs` columns `width_in` / `height_in` /
+ `is_small_sample` / `deleted_at`, and dropping `slabs.width_cm` / `slabs.height_cm`
+ (add `IF NOT EXISTS` / `IF EXISTS` and wrap the FKs in a `DO $$ ... EXCEPTION WHEN
+ duplicate_object THEN NULL; END $$`).
 - Pages that call Clerk `auth()` — the slab detail page `/slab/[id]`, `/dashboard/*`,
   `/account`, `/admin` — return HTTP 500 without valid Clerk keys. Only `/` and
   `/browse` are safe to load unauthenticated.
