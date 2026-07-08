@@ -43,6 +43,13 @@
       "when": 1783186234346,
       "tag": "0005_bumpy_mercury",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783517261292,
+      "tag": "0006_nervous_wolfsbane",
+      "breakpoints": true
     }
   ]
 }

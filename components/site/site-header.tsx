@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { MobileNav, type NavItem } from "@/components/site/mobile-nav";
 
 const publicMobileNavItems: NavItem[] = [
@@ -82,7 +83,10 @@ export function SiteHeader({
           ) : null}
         </nav>
 
-        <div className="flex items-center gap-3">{authSlot}</div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {isSignedIn ? <NotificationBell /> : null}
+          {authSlot}
+        </div>
       </div>
     </header>
   );

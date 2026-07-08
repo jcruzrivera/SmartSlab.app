@@ -9,6 +9,7 @@ import {
   subscribeGuestStore,
   toggleGuestCompare,
 } from "@/lib/marketplace/guest-storage";
+import { toast } from "@/lib/notifications/toast-store";
 
 export function CompareButton({ slabId }: { slabId: string }) {
   const ids = useSyncExternalStore(
@@ -21,6 +22,11 @@ export function CompareButton({ slabId }: { slabId: string }) {
 
   function toggle() {
     toggleGuestCompare(slabId);
+    if (included) {
+      toast.info("Removed from compare");
+    } else {
+      toast.success("Added to compare");
+    }
   }
 
   return (

@@ -137,6 +137,8 @@ export async function releaseTransaction(transactionId: string): Promise<void> {
 export type TransactionEmailData = {
   slabName: string;
   slabId: string;
+  buyerId: string;
+  vendorId: string;
   total: string;
   vendorPayout: string;
   platformFee: string;
@@ -190,6 +192,8 @@ export async function getTransactionEmailData(
   return {
     slabName: tx.slab?.name ?? "Slab",
     slabId: tx.slab?.id ?? tx.slabId,
+    buyerId: tx.buyerId,
+    vendorId: tx.vendorId,
     total: tx.total,
     vendorPayout: tx.vendorPayout,
     platformFee: tx.platformFee,

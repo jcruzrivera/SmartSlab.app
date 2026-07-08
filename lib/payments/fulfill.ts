@@ -5,8 +5,14 @@ import {
   getTransactionEmailData,
   markTransactionPaid,
 } from "@/lib/db/transactions";
+import { createNotification } from "@/lib/db/notifications";
 import { sendPaymentNotifications } from "@/lib/email";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
+
+function money(amount: number | string): string {
+  const n = typeof amount === "string" ? Number(amount) : amount;
+  return `$${Number.isFinite(n) ? n.toFixed(2) : "0.00"}`;
+}
 
 /**
  * Marks a transaction paid and, only on the pending -> paid transition, emails
@@ -30,6 +36,8 @@ export async function fulfillTransaction(
     const data = await getTransactionEmailData(transactionId);
     if (data) {
       const base = options.origin ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
+      const slabUrl = `${base}/slab/${data.slabId}`;
+
       await sendPaymentNotifications({
         slabName: data.slabName,
         total: data.total,
@@ -37,8 +45,26 @@ export async function fulfillTransaction(
         platformFee: data.platformFee,
         buyer: data.buyer,
         vendor: data.vendor,
-        slabUrl: `${base}/slab/${data.slabId}`,
+        slabUrl,
       });
+
+      // In-app notifications mirror the emails. Best-effort, never blocking.
+      await Promise.all([
+        createNotification({
+          userId: data.buyerId,
+          type: "purchase",
+          title: "Payment confirmed",
+          body: `Your payment of ${money(data.total)} for ${data.slabName} was received.`,
+          link: `/slab/${data.slabId}`,
+        }),
+        createNotification({
+          userId: data.vendorId,
+          type: "sale",
+          title: "You made a sale",
+          body: `${data.slabName} sold. Your payout: ${money(data.vendorPayout)}.`,
+          link: "/dashboard/sales",
+        }),
+      ]);
     }
   } catch (error) {
     // Notifications must never block fulfillment.

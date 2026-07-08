@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   jsonb,
   numeric,
@@ -292,9 +293,41 @@ export const reviews = pgTable("reviews", {
     .defaultNow(),
 });
 
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    body: text("body"),
+    link: text("link"),
+    isRead: boolean("is_read").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userCreatedIdx: index("notifications_user_created_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   locations: many(locations),
   slabs: many(slabs),
+  notifications: many(notifications),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
 }));
 
 export const locationsRelations = relations(locations, ({ one, many }) => ({
