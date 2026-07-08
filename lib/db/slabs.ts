@@ -423,7 +423,9 @@ export async function setSlabStatus(
 }
 
 // Minutes a checkout reservation holds a slab before it auto-expires.
-export const RESERVATION_MINUTES = 15;
+// Must be >= 30: Stripe requires a Checkout Session `expires_at` at least 30
+// minutes out, and we keep the reservation and the session expiry in sync.
+export const RESERVATION_MINUTES = 30;
 
 /**
  * Atomically reserves a slab for a buyer to prevent two people buying the same
