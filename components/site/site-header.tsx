@@ -18,6 +18,7 @@ const signedInMobileNavItems: NavItem[] = [
   { href: "/dashboard/messages", label: "Messages" },
   { href: "/dashboard/payments", label: "Payments" },
   { href: "/account", label: "Account" },
+  { href: "/account/smartfinder", label: "SmartFinder" },
 ];
 
 export function SiteHeader({
@@ -71,6 +72,14 @@ export function SiteHeader({
           >
             Compare
           </Link>
+          {isSignedIn ? (
+            <Link
+              href="/account/smartfinder"
+              className="rounded-lg px-3 py-1.5 transition hover:bg-[#1bb0ce]/10 hover:text-[#0d8fa8]"
+            >
+              SmartFinder
+            </Link>
+          ) : null}
         </nav>
 
         <div className="flex items-center gap-3">{authSlot}</div>
