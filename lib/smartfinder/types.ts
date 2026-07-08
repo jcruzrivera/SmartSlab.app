@@ -1,0 +1,62 @@
+import type { SlabWithRelations } from "@/lib/db/slabs";
+
+/* ------------------------------------------------------------------ */
+/*  Piece — a rectangular cut the buyer needs                         */
+/* ------------------------------------------------------------------ */
+
+export type Piece = {
+  /** Human label, e.g. "Kitchen counter" */
+  label: string;
+  /** Width in inches */
+  widthIn: number;
+  /** Height (length) in inches */
+  heightIn: number;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Presets — common countertop/surface shapes                        */
+/* ------------------------------------------------------------------ */
+
+export type PiecePreset = Piece & { id: string };
+
+export const PIECE_PRESETS: PiecePreset[] = [
+  { id: "counter-96x26", label: "Standard countertop", widthIn: 96, heightIn: 26 },
+  { id: "island-48x36", label: "Kitchen island", widthIn: 48, heightIn: 36 },
+  { id: "backsplash-96x6", label: "Backsplash", widthIn: 96, heightIn: 6 },
+  { id: "vanity-48x22", label: "Bathroom vanity", widthIn: 48, heightIn: 22 },
+  { id: "bar-60x26", label: "Bar top", widthIn: 60, heightIn: 26 },
+  { id: "fireplace-60x20", label: "Fireplace surround", widthIn: 60, heightIn: 20 },
+];
+
+/* ------------------------------------------------------------------ */
+/*  FitResult — how well a slab matches the buyer's pieces            */
+/* ------------------------------------------------------------------ */
+
+export type FitResult = {
+  slab: SlabWithRelations;
+  /** 0 – 100, higher is better */
+  fitScore: number;
+  /** Sum of all pieces in sq ft */
+  totalPieceSqft: number;
+  /** Slab face area in sq ft */
+  slabSqft: number;
+  /** Percentage of material wasted after cutting all pieces */
+  wastePercent: number;
+  /** true when all pieces geometrically fit within the slab face */
+  fits: boolean;
+  /** Pieces that do NOT fit (too wide or too tall for the slab) */
+  oversizedPieces: string[];
+  /** Estimated price per sq ft of usable material */
+  pricePerUsableSqft: number | null;
+};
+
+/* ------------------------------------------------------------------ */
+/*  SmartFinder project — full client-side state                      */
+/* ------------------------------------------------------------------ */
+
+export type SmartFinderProject = {
+  /** Optional photo of the space (kept as an object URL, never uploaded) */
+  imageUrl: string | null;
+  /** Pieces the buyer needs to cut */
+  pieces: Piece[];
+};

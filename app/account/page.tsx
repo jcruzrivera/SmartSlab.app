@@ -100,6 +100,43 @@ export default async function AccountPage() {
         </div>
       </section>
 
+      {/* SmartFinder CTA */}
+      <section className="mt-10">
+        <Link
+          href="/account/smartfinder"
+          className="group flex items-center gap-5 rounded-2xl border border-[#1bb0ce]/30 bg-gradient-to-r from-[#1bb0ce]/10 to-transparent p-6 transition hover:border-[#1bb0ce]/60 hover:shadow-md"
+        >
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#1bb0ce]/15 text-[#0d8fa8] transition group-hover:bg-[#1bb0ce]/25">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+              <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M8 11h6M11 8v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold tracking-tight">SmartFinder</h2>
+              <span className="rounded-full bg-[#1bb0ce]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0d8fa8]">
+                New
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+              Define your project pieces and find the perfect slab from our inventory.
+            </p>
+          </div>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="ml-auto flex-shrink-0 text-slate-400 transition group-hover:text-[#0d8fa8]"
+            aria-hidden
+          >
+            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </section>
+
       <section id="purchases" className="mt-10 scroll-mt-24">
         <h2 className="text-lg font-semibold">Purchase history</h2>
         {purchases.length === 0 ? (
