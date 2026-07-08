@@ -71,9 +71,11 @@ export default async function RootLayout({
         <body className="flex min-h-full flex-col text-slate-900 dark:text-slate-50">
           <CanonicalHostGuard />
           <RegisterServiceWorker />
-          <SiteHeader authSlot={<GuestAuthSlot />} />
-          <AppProviders>{children}</AppProviders>
-          <SiteFooter />
+          <AppProviders>
+            <SiteHeader authSlot={<GuestAuthSlot />} />
+            {children}
+            <SiteFooter />
+          </AppProviders>
           <Analytics />
         </body>
       </html>
@@ -102,12 +104,14 @@ export default async function RootLayout({
           signInFallbackRedirectUrl="/onboarding"
           signUpFallbackRedirectUrl="/onboarding"
         >
-          <SiteHeader
-            authSlot={<ClerkAuthSlotLoader isSignedIn={isSignedIn} />}
-            isSignedIn={isSignedIn}
-          />
-          <AppProviders>{children}</AppProviders>
-          <SiteFooter />
+          <AppProviders>
+            <SiteHeader
+              authSlot={<ClerkAuthSlotLoader isSignedIn={isSignedIn} />}
+              isSignedIn={isSignedIn}
+            />
+            {children}
+            <SiteFooter />
+          </AppProviders>
         </ClerkProvider>
         <Analytics />
       </body>
