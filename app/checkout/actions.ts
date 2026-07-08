@@ -132,7 +132,18 @@ export async function startCheckout(
       cancel_url: `${origin}/slab/${slab.id}?canceled=1`,
     });
     checkoutUrl = session.url;
-  } catch {
+  } catch (error) {
+    // Surface the real Stripe error in server logs so misconfigured Connect /
+    // test-vs-live key issues are diagnosable (the buyer still sees a generic
+    // message).
+    const detail =
+      error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    console.error("[checkout] stripe.checkout.sessions.create failed:", detail, {
+      slabId: slab.id,
+      vendorAccount: vendor.stripeAccountId,
+      total: fees.total,
+      platformFee: fees.platformFee,
+    });
     // Roll back the reservation + pending transaction so the slab is buyable
     // again right away.
     await releaseTransaction(transactionId);
