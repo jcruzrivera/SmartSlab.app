@@ -16,7 +16,7 @@ import type { Piece } from "@/lib/smartfinder/types";
 type Step = "upload" | "pieces" | "results";
 
 const STEP_META: Record<Step, { number: number; label: string }> = {
-  upload: { number: 1, label: "Upload photo" },
+  upload: { number: 1, label: "Upload plan" },
   pieces: { number: 2, label: "Define pieces" },
   results: { number: 3, label: "View results" },
 };
@@ -31,6 +31,7 @@ export function SmartfinderFlow() {
   const [step, setStep] = useState<Step>("upload");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
+  const [autoFilled, setAutoFilled] = useState(false);
   const [results, setResults] = useState<SmartFinderResult[]>([]);
   const [totalMatches, setTotalMatches] = useState(0);
   const [limited, setLimited] = useState(false);
@@ -38,10 +39,22 @@ export function SmartfinderFlow() {
 
   const handleImageSelected = useCallback((url: string | null) => {
     setImageUrl(url);
+    setAutoFilled(false);
     setStep("pieces");
   }, []);
 
+  const handlePiecesExtracted = useCallback(
+    (extracted: Piece[], url: string | null) => {
+      setPieces(extracted);
+      setImageUrl(url);
+      setAutoFilled(true);
+      setStep("pieces");
+    },
+    [],
+  );
+
   const handleSkipUpload = useCallback(() => {
+    setAutoFilled(false);
     setStep("pieces");
   }, []);
 
@@ -132,6 +145,7 @@ export function SmartfinderFlow() {
         <UploadStep
           imageUrl={imageUrl}
           onImageSelected={handleImageSelected}
+          onPiecesExtracted={handlePiecesExtracted}
           onSkip={handleSkipUpload}
         />
       )}
@@ -140,6 +154,7 @@ export function SmartfinderFlow() {
         <PieceEditor
           initialPieces={pieces}
           imageUrl={imageUrl}
+          autoFilled={autoFilled}
           onSearch={handleSearch}
           onBack={() => setStep("upload")}
         />

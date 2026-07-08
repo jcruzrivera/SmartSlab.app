@@ -26,7 +26,48 @@ operations.
 
 ## Version status
 
-### Design system, branding & UX pass (current working version)
+### SmartFinder AI piece extraction (current working version)
+
+SmartFinder can now read a project drawing and pre-fill the "Define your pieces"
+step automatically, instead of forcing manual entry.
+
+#### What was added
+
+- **File upload + AI extraction** — the SmartFinder step 1 accepts **PDF, DXF,
+  and images (JPG/PNG/WebP)**. The file is analyzed by vision AI, which returns
+  the list of stone pieces (`label`, `widthIn`, `heightIn`, converted to inches)
+  and pre-fills step 2 for the user to review and adjust.
+  - Images/PDF go through vision (Anthropic reads PDF natively; OpenAI PDFs use
+    the Responses API). DXF is parsed as text.
+- **New files**
+  - `lib/ai/piece-extraction.ts` — provider-agnostic extraction (OpenAI +
+    Anthropic), JSON parsing, unit conversion, validation (max 20 pieces,
+    1–600 in).
+  - `app/api/smartfinder/extract-pieces/route.ts` — `POST` (multipart, auth,
+    12 MB limit, type detection) returns pieces; `GET` reports whether AI is
+    configured.
+- **Reworked** `components/smartfinder/upload-step.tsx` (drop zone, extract
+  button, loading/error states, privacy note) and wired
+  `smartfinder-flow.tsx` / `piece-editor.tsx` (auto-fill notice prompting
+  review).
+- **Graceful degradation** — with no AI key, step 1 falls back to the original
+  local reference-photo behavior and manual entry; nothing breaks.
+
+#### Configuration
+
+Requires `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY` (already set in the Vercel
+project). For local testing, add one to `.env.local` and restart the dev server.
+Optional model overrides: `ANTHROPIC_VISION_MODEL`, `OPENAI_VISION_MODEL`.
+
+#### Privacy note
+
+Uploading a plan/photo for AI auto-fill sends that file to the configured AI
+provider to read dimensions (it is not stored by the app). The manual flow
+never uploads anything.
+
+---
+
+### Design system, branding & UX pass (previous version)
 
 This version made the whole product visually coherent around a single source of
 truth for branding, added the reusable UI primitives the app was missing, and

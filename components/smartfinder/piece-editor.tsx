@@ -10,6 +10,7 @@ import { PIECE_PRESETS, type Piece } from "@/lib/smartfinder/types";
 type PieceEditorProps = {
   initialPieces: Piece[];
   imageUrl: string | null;
+  autoFilled?: boolean;
   onSearch: (pieces: Piece[]) => void;
   onBack: () => void;
 };
@@ -34,7 +35,13 @@ function toPieceRow(p: Piece): PieceRow {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: PieceEditorProps) {
+export function PieceEditor({
+  initialPieces,
+  imageUrl,
+  autoFilled = false,
+  onSearch,
+  onBack,
+}: PieceEditorProps) {
   const [pieces, setPieces] = useState<PieceRow[]>(
     initialPieces.length > 0 ? initialPieces.map(toPieceRow) : [],
   );
@@ -91,6 +98,33 @@ export function PieceEditor({ initialPieces, imageUrl, onSearch, onBack }: Piece
           </p>
         </div>
       </div>
+
+      {/* AI auto-fill notice */}
+      {autoFilled && pieces.length > 0 ? (
+        <div className="flex items-start gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4 text-sm">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+            className="mt-0.5 flex-shrink-0 text-brand-strong"
+          >
+            <path
+              d="M13 3l2.5 6.5L22 12l-6.5 2.5L13 21l-2.5-6.5L4 12l6.5-2.5L13 3z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <p className="text-slate-700 dark:text-slate-200">
+            <span className="font-semibold">Auto-filled from your plan.</span>{" "}
+            Please review each piece and adjust the labels and dimensions before
+            searching — AI estimates can be imperfect.
+          </p>
+        </div>
+      ) : null}
 
       {/* Quick presets */}
       <div>
