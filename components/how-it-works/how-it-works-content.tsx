@@ -15,8 +15,8 @@ export function HowItWorksContent() {
           Simplified
         </h1>
         <p>
-          SmartSlab connects stone fabricators, designers, and homeowners on a
-          single marketplace to buy and sell granite, quartz, quartzite, and
+          SmartSlab connects fabricators, distributors, and design professionals on
+          a B2B marketplace to buy and sell granite, quartz, quartzite, and
           marble slabs — including remnants.
         </p>
         <div className={styles.heroBtns}>
@@ -92,20 +92,20 @@ export function HowItWorksContent() {
       <div className={styles.audienceSection}>
         <div className={styles.sectionHeader}>
           <span className={styles.pill}>Who It&apos;s For</span>
-          <h2>Built for Both Sides of the Market</h2>
+          <h2>Built for the Stone Trade</h2>
           <p>
-            SmartSlab was designed to serve buyers and sellers equally — with
-            tools that make every deal easy.
+            SmartSlab connects vendors and trade buyers — fabricators, designers,
+            and contractors — with tools that make every deal straightforward.
           </p>
         </div>
 
         <div className={styles.audienceGrid}>
           <div className={`${styles.audienceCard} ${styles.buyers}`}>
-            <span className={styles.audienceLabel}>For Buyers</span>
-            <h3>Find Exactly What You Need</h3>
+            <span className={styles.audienceLabel}>For Trade Buyers</span>
+            <h3>Source Inventory from Verified Vendors</h3>
             <p className={styles.sub}>
-              Homeowners, designers, and contractors can source slabs and
-              remnants at competitive prices.
+              Fabricators, designers, and contractors can source slabs and
+              remnants at competitive trade pricing.
             </p>
             <ul className={styles.audienceList}>
               <li>
@@ -149,7 +149,7 @@ export function HowItWorksContent() {
               </li>
               <li>
                 <span className={styles.liIcon}>★</span>
-                <span>Reach buyers actively searching for your material</span>
+                <span>Reach trade buyers actively searching for your material</span>
               </li>
               <li>
                 <span className={styles.liIcon}>★</span>
@@ -244,10 +244,10 @@ export function HowItWorksContent() {
       <HowItWorksFaq />
 
       <div className={styles.cta}>
-        <h2>Ready to Find Your Perfect Stone?</h2>
+        <h2>Ready to Grow Your Stone Business?</h2>
         <p>
-          Join buyers and sellers using SmartSlab to connect and transact with
-          confidence.
+          Join fabricators and trade buyers using SmartSlab to list inventory,
+          source slabs, and transact with confidence.
         </p>
         <div className={styles.ctaBtns}>
           <Link href="/browse" className={styles.btnPrimary}>

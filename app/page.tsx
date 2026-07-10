@@ -117,7 +117,7 @@ export default async function Home() {
           <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
             <p className="text-lg font-medium">The marketplace is just starting</p>
             <p className="mt-2 text-slate-600 dark:text-slate-300">
-              Be the first vendor to publish a slab and reach buyers today.
+              Be the first vendor to publish a slab and reach trade buyers today.
             </p>
             <Link
               href="/dashboard/slabs/new"

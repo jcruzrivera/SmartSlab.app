@@ -4,7 +4,7 @@ import { buildLegalMetadata } from "@/lib/legal/metadata";
 export const metadata = buildLegalMetadata({
   title: "How It Works",
   description:
-    "Learn how SmartSlab connects stone buyers and sellers — browse slabs, secure checkout, vendor payouts, and pickup coordination.",
+    "Learn how SmartSlab connects stone fabricators, distributors, and trade buyers — browse slabs, secure checkout, vendor payouts, and pickup coordination.",
   path: "/how-it-works",
 });
 

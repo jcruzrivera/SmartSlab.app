@@ -1,9 +1,9 @@
 # SmartSlab
 
-SmartSlab is a Next.js 16 full-stack marketplace and inventory platform for
-natural stone slabs and remnants. Vendors publish inventory with photos, buyers
-browse live listings, and the platform handles leads, checkout, and vendor
-operations.
+SmartSlab is a Next.js 16 full-stack **B2B** marketplace and inventory platform for
+natural stone slabs and remnants. Vendors publish inventory with photos; fabricators,
+designers, and contractors browse live listings; the platform handles leads,
+checkout, and vendor operations.
 
 ## Stack
 
@@ -19,7 +19,7 @@ operations.
 
 - Public marketplace: homepage, browse, slab detail, compare, SEO sitemap, and robots.
 - Vendor workflow: create, edit, duplicate, hide, import, sell, receive quote leads, and reply to messages.
-- Buyer workflow: browse inventory, save favorites, compare slabs, request quotes, purchase slabs, and review account history.
+- Buyer workflow: browse inventory, save favorites, compare slabs, request quotes, purchase slabs, and review account history (trade accounts — fabricators, designers, contractors).
 - Admin workflow: review vendors, listings, quote requests, orders, and edit listings from an admin panel.
 
 ---
@@ -64,6 +64,45 @@ Optional model overrides: `ANTHROPIC_VISION_MODEL`, `OPENAI_VISION_MODEL`.
 Uploading a plan/photo for AI auto-fill sends that file to the configured AI
 provider to read dimensions (it is not stored by the app). The manual flow
 never uploads anything.
+
+---
+
+### Vendor subscriptions & plan limits (current)
+
+Vendors start on **Free** and can upgrade to **Pro** or **Premium** via Stripe Billing
+(`/api/billing/checkout`). Display prices (see `lib/billing/plan-prices.ts`):
+
+| Plan | Monthly | Annual |
+| --- | --- | --- |
+| **Pro** | $49/month | $39/mo, billed annually |
+| **Premium** | $149/month | $119/mo, billed annually |
+
+Plan limits (`lib/plan/limits.ts`): inventory caps, monthly SmartFinder searches,
+and Premium-only Market Data. Enforcement runs on slab create/import, SmartFinder
+search, and the Market Data dashboard.
+
+**Stripe env vars** (also in `.env.example`):
+
+- `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_ANNUAL`
+- `STRIPE_PRICE_PREMIUM_MONTHLY`, `STRIPE_PRICE_PREMIUM_ANNUAL`
+
+**Database migration** — subscription columns live in
+`drizzle/0007_user_subscription_plan.sql`. On an existing Neon database, apply with:
+
+```bash
+npm run db:apply-subscription
+```
+
+This idempotent script adds `user_plan` / `plan_status` enums and columns on
+`users` (`plan`, `plan_status`, `stripe_customer_id`, `stripe_subscription_id`,
+`plan_renews_at`, `smartfinder_searches_used`, `smartfinder_reset_at`). Run it
+against the same `DATABASE_URL` Vercel uses for production.
+
+Webhook events to configure in Stripe: `customer.subscription.created`,
+`customer.subscription.updated`, `customer.subscription.deleted`,
+`invoice.payment_failed`.
+
+UI: pricing at `/how-it-works#pricing`, **Manage plan** in the vendor dashboard nav.
 
 ---
 
@@ -262,6 +301,12 @@ Optional (SmartSlab also sets these in code):
 npm run db:init
 ```
 
+If upgrading an existing database that predates vendor subscriptions, also run:
+
+```bash
+npm run db:apply-subscription
+```
+
 If this version is being applied to an existing environment, also ensure the new
 migration for marketplace operations is present in the database:
 
@@ -277,6 +322,8 @@ npm run dev
 
 ## Notes
 
+- **Positioning:** SmartSlab is B2B-first — marketing copy targets fabricators,
+  distributors, designers, and contractors, not residential homeowners.
 - Environment variables are read at server start. Restart dev server after editing `.env.local`.
 - Public routes are intended to remain usable without full auth setup, but
   dashboard, account, admin, payments, and protected workflows need working

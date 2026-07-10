@@ -8,9 +8,9 @@ import styles from "./how-it-works.module.css";
 const FAQ_ITEMS = [
   {
     id: "free",
-    question: "Is SmartSlab free to use as a buyer?",
+    question: "Is SmartSlab free for trade accounts?",
     answer:
-      "Yes. Browsing and buying on SmartSlab is free for buyers — you only pay for the slabs you purchase at checkout.",
+      "Yes. Browsing and purchasing on SmartSlab is free for trade buyers — you only pay for the slabs you purchase at checkout. Vendor subscriptions are optional and unlock higher inventory and SmartFinder limits.",
   },
   {
     id: "sell",

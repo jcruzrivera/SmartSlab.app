@@ -10,6 +10,7 @@
     "db:generate": "drizzle-kit generate",
     "db:setup": "tsx scripts/setup-db.ts",
     "db:push": "drizzle-kit push",
+    "db:apply-subscription": "tsx scripts/apply-subscription-migration.ts",
     "db:init": "tsx scripts/setup-db.ts && drizzle-kit push",
     "db:backfill-geo": "tsx scripts/backfill-geo.ts",
     "db:studio": "drizzle-kit studio"

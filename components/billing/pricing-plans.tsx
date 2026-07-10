@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import {
+  formatPlanPrice,
+  formatPlanPricePeriod,
+} from "@/lib/billing/plan-prices";
 import { PLAN_LIMITS } from "@/lib/plan/limits";
 import {
   startCheckout,
   type BillingCycle,
   type BillingPlan,
 } from "@/lib/billing/start-checkout";
-
-const DISPLAY_PRICES = {
-  pro: { monthly: 49, annual: 468 },
-  premium: { monthly: 149, annual: 1428 },
-} as const;
 
 function formatLimit(value: number): string {
   return Number.isFinite(value) ? value.toLocaleString("en-US") : "Unlimited";
@@ -38,8 +37,6 @@ export function PricingPlans({ className }: PricingPlansProps) {
       setLoadingKey(null);
     }
   }
-
-  const isAnnual = billing === "annual";
 
   return (
     <section id="pricing" className={className}>
@@ -113,8 +110,8 @@ export function PricingPlans({ className }: PricingPlansProps) {
 
         <PlanCard
           name="Pro"
-          price={`$${isAnnual ? Math.round(DISPLAY_PRICES.pro.annual / 12) : DISPLAY_PRICES.pro.monthly}`}
-          period={isAnnual ? "/ mo, billed annually" : "/ month"}
+          price={formatPlanPrice("pro", billing)}
+          period={formatPlanPricePeriod(billing)}
           description="For growing yards and fabricators."
           highlighted
           features={[
@@ -137,8 +134,8 @@ export function PricingPlans({ className }: PricingPlansProps) {
 
         <PlanCard
           name="Premium"
-          price={`$${isAnnual ? Math.round(DISPLAY_PRICES.premium.annual / 12) : DISPLAY_PRICES.premium.monthly}`}
-          period={isAnnual ? "/ mo, billed annually" : "/ month"}
+          price={formatPlanPrice("premium", billing)}
+          period={formatPlanPricePeriod(billing)}
           description="Unlimited scale plus market insights."
           features={[
             "Unlimited slabs",

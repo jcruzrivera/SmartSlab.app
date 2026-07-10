@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatPlanPriceLabel } from "@/lib/billing/plan-prices";
 import {
   startCheckout,
   type BillingCycle,
@@ -17,12 +18,32 @@ const CHECKOUT_OPTIONS: Array<{
   plan: Plan;
   billing: Billing;
   label: string;
-  hint?: string;
+  hint: string;
 }> = [
-  { plan: "pro", billing: "monthly", label: "Pro", hint: "Monthly" },
-  { plan: "pro", billing: "annual", label: "Pro", hint: "Annual" },
-  { plan: "premium", billing: "monthly", label: "Premium", hint: "Monthly" },
-  { plan: "premium", billing: "annual", label: "Premium", hint: "Annual" },
+  {
+    plan: "pro",
+    billing: "monthly",
+    label: "Pro",
+    hint: formatPlanPriceLabel("pro", "monthly"),
+  },
+  {
+    plan: "pro",
+    billing: "annual",
+    label: "Pro",
+    hint: formatPlanPriceLabel("pro", "annual"),
+  },
+  {
+    plan: "premium",
+    billing: "monthly",
+    label: "Premium",
+    hint: formatPlanPriceLabel("premium", "monthly"),
+  },
+  {
+    plan: "premium",
+    billing: "annual",
+    label: "Premium",
+    hint: formatPlanPriceLabel("premium", "annual"),
+  },
 ];
 
 function planBadgeVariant(
@@ -117,7 +138,7 @@ export function ManagePlanButton({
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+          className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
         >
           <p className="border-b border-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800">
             Choose a plan
