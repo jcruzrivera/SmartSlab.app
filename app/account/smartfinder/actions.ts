@@ -5,8 +5,6 @@ import { getOrCreateCurrentDbUser } from "@/lib/db/users";
 import { isPlanLimitError } from "@/lib/plan/enforce";
 import { runSmartfinderSearch } from "@/lib/smartfinder/search";
 
-export type { SmartFinderResult };
-
 export type SmartFinderSearchState = {
   results: SmartFinderResult[];
   totalMatches: number;
