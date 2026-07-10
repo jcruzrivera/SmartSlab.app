@@ -127,6 +127,11 @@ export function SlabForm({
 
   const isCreate = mode === "create";
   const isSold = initialValues?.status === "sold";
+  const planUpgradeTo =
+    "upgradeTo" in state &&
+    (state.upgradeTo === "pro" || state.upgradeTo === "premium")
+      ? state.upgradeTo
+      : undefined;
 
   function applyAnalysis(raw: SlabImageAnalysis) {
     const analysis = enrichSuggestedPrice(raw);
@@ -600,10 +605,10 @@ export function SlabForm({
         </label>
 
         {state.error ? (
-          "upgradeTo" in state && state.upgradeTo ? (
+          planUpgradeTo ? (
             <PlanLimitNotice
               message={state.error}
-              upgradeTo={state.upgradeTo}
+              upgradeTo={planUpgradeTo}
             />
           ) : (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40">

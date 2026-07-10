@@ -132,3 +132,27 @@ export function computeFees(subtotal: number): FeeBreakdown {
 export function toCents(amount: number): number {
   return Math.round(amount * 100);
 }
+
+/** Stripe API v22+: subscription id lives under invoice.parent, not invoice.subscription. */
+export function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const subscription = invoice.parent?.subscription_details?.subscription;
+  if (!subscription) {
+    return null;
+  }
+  return typeof subscription === "string" ? subscription : subscription.id;
+}
+
+/** Reads subscription period end from webhook payloads across Stripe SDK typings. */
+export function getSubscriptionPeriodEnd(sub: Stripe.Subscription): number {
+  const legacy = (sub as Stripe.Subscription & { current_period_end?: number })
+    .current_period_end;
+  if (typeof legacy === "number") {
+    return legacy;
+  }
+
+  const itemEnds = sub.items?.data
+    ?.map((item) => item.current_period_end)
+    .filter((value): value is number => typeof value === "number");
+
+  return itemEnds?.length ? Math.max(...itemEnds) : 0;
+}

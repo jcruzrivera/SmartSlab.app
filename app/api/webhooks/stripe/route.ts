@@ -8,7 +8,7 @@ import {
   syncUserSubscription,
 } from "@/lib/db/users";
 import { fulfillTransaction } from "@/lib/payments/fulfill";
-import { getStripe, isStripeConfigured } from "@/lib/stripe";
+import { getStripe, getInvoiceSubscriptionId, getSubscriptionPeriodEnd, isStripeConfigured } from "@/lib/stripe";
 
 /**
  * Stripe webhook (`POST /api/webhooks/stripe`).
@@ -112,10 +112,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           stripeSubscriptionId: sub.id,
           stripeStatus: sub.status,
           planMetadata: sub.metadata?.plan,
-          currentPeriodEnd: Number(
-            (sub as Stripe.Subscription & { current_period_end: number })
-              .current_period_end,
-          ),
+          currentPeriodEnd: getSubscriptionPeriodEnd(sub),
         });
         break;
       }
@@ -133,10 +130,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription?.id ?? null;
+        const subscriptionId = getInvoiceSubscriptionId(invoice);
 
         if (!subscriptionId) {
           break;
@@ -153,10 +147,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           stripeSubscriptionId: sub.id,
           stripeStatus: sub.status,
           planMetadata: sub.metadata?.plan,
-          currentPeriodEnd: Number(
-            (sub as Stripe.Subscription & { current_period_end: number })
-              .current_period_end,
-          ),
+          currentPeriodEnd: getSubscriptionPeriodEnd(sub),
         });
         break;
       }
