@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
+import { saveSmartfinderHandoff } from "@/lib/smartfinder/handoff";
 import { startCheckout } from "@/lib/billing/start-checkout";
-
-/* ------------------------------------------------------------------ */
-/*  Props                                                              */
-/* ------------------------------------------------------------------ */
 
 type ResultsListProps = {
   results: SmartFinderResult[];
+  ownResults: SmartFinderResult[];
+  marketResults: SmartFinderResult[];
   totalMatches: number;
   limited: boolean;
   loading: boolean;
@@ -20,16 +19,18 @@ type ResultsListProps = {
   onStartOver: () => void;
 };
 
-/* ------------------------------------------------------------------ */
-/*  Sub-components                                                     */
-/* ------------------------------------------------------------------ */
-
 function FitBadge({ fits, score }: { fits: boolean; score: number }) {
   if (fits) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M20 6 9 17l-5-5"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         Fits · {score}/100
       </span>
@@ -80,14 +81,13 @@ function formatPrice(value: string | null): string {
   }).format(num);
 }
 
-function formatLocation(city: string | null, state: string | null): string | null {
+function formatLocation(
+  city: string | null,
+  state: string | null,
+): string | null {
   const parts = [city, state].filter(Boolean);
   return parts.length > 0 ? parts.join(", ") : null;
 }
-
-/* ------------------------------------------------------------------ */
-/*  Loading skeleton                                                   */
-/* ------------------------------------------------------------------ */
 
 function Skeleton() {
   return (
@@ -102,11 +102,6 @@ function Skeleton() {
             <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
             <div className="h-5 w-48 rounded bg-slate-200 dark:bg-slate-800" />
             <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800" />
-            <div className="flex gap-6">
-              <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
-              <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
-              <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
-            </div>
           </div>
         </div>
       ))}
@@ -114,12 +109,166 @@ function Skeleton() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main component                                                     */
-/* ------------------------------------------------------------------ */
+function ResultCard({
+  result,
+  index,
+  pieces,
+}: {
+  result: SmartFinderResult;
+  index: number;
+  pieces: Piece[];
+}) {
+  const location = formatLocation(result.city, result.state);
+  const href = `/slab/${result.slabId}?sf=1`;
+
+  function handleNavigate() {
+    saveSmartfinderHandoff(result.slabId, pieces);
+  }
+
+  return (
+    <div className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-md sm:flex-row dark:border-slate-800 dark:bg-slate-900">
+      <Link
+        href={href}
+        onClick={handleNavigate}
+        className="relative block h-32 w-full flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:w-44 dark:bg-slate-800"
+      >
+        {result.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={result.imageUrl}
+            alt={result.slabName}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+            No photo
+          </div>
+        )}
+        <span className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-xs font-bold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+          {index + 1}
+        </span>
+      </Link>
+
+      <div className="flex flex-1 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-brand-strong">
+            {result.materialName ?? "Stone"}
+          </span>
+          {result.colorFamily ? (
+            <span className="text-xs text-slate-400">| {result.colorFamily}</span>
+          ) : null}
+          {result.isOwnListing ? (
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+              Your listing
+            </span>
+          ) : null}
+          <FitBadge fits={result.fits} score={result.fitScore} />
+        </div>
+
+        <Link
+          href={href}
+          onClick={handleNavigate}
+          className="line-clamp-1 text-base font-semibold tracking-tight transition hover:text-brand-strong"
+        >
+          {result.slabName}
+        </Link>
+
+        <ScoreBar score={result.fitScore} />
+
+        <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+          <span>
+            Slab:{" "}
+            <strong className="text-slate-700 dark:text-slate-200">
+              {result.slabSqft} sq ft
+            </strong>
+          </span>
+          <span>
+            Needed:{" "}
+            <strong className="text-slate-700 dark:text-slate-200">
+              {result.totalPieceSqft} sq ft
+            </strong>
+          </span>
+          <span>
+            Waste:{" "}
+            <strong
+              className={
+                result.wastePercent <= 20
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : result.wastePercent <= 40
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-red-500"
+              }
+            >
+              {result.wastePercent}%
+            </strong>
+          </span>
+          {location ? <span>{location}</span> : null}
+        </div>
+
+        <div className="mt-1 flex items-center justify-between">
+          <span className="text-lg font-semibold">
+            {formatPrice(result.price)}
+          </span>
+          <Link
+            href={href}
+            onClick={handleNavigate}
+            className="inline-flex h-8 items-center rounded-lg border border-brand px-3 text-xs font-medium text-brand-strong transition hover:bg-brand hover:text-white"
+          >
+            View slab
+          </Link>
+        </div>
+
+        {result.oversizedPieces.length > 0 ? (
+          <p className="text-xs text-red-500">
+            Pieces too large for this slab: {result.oversizedPieces.join(", ")}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function ResultSection({
+  title,
+  hint,
+  items,
+  startIndex,
+  pieces,
+}: {
+  title: string;
+  hint?: string;
+  items: SmartFinderResult[];
+  startIndex: number;
+  pieces: Piece[];
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div>
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          {title}
+        </h3>
+        {hint ? (
+          <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
+        ) : null}
+      </div>
+      {items.map((result, i) => (
+        <ResultCard
+          key={result.slabId}
+          result={result}
+          index={startIndex + i}
+          pieces={pieces}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function ResultsList({
   results,
+  ownResults,
+  marketResults,
   totalMatches,
   limited,
   loading,
@@ -129,161 +278,113 @@ export function ResultsList({
 }: ResultsListProps) {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const pieceSummary = pieces.map((p) => p.label).join(", ");
-  const totalSqft = pieces.reduce((s, p) => s + (p.widthIn * p.heightIn) / 144, 0);
+  const totalSqft = pieces.reduce(
+    (s, p) => s + (p.widthIn * p.heightIn) / 144,
+    0,
+  );
+  const shown = results.length;
+  const hasSections = ownResults.length > 0 || marketResults.length > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      {/* Header */}
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Matching slabs</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Matching slabs
+        </h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {pieceSummary} — {totalSqft.toFixed(1)} sq ft needed
         </p>
       </div>
 
-      {/* Loading */}
-      {loading && <Skeleton />}
+      {loading ? <Skeleton /> : null}
 
-      {/* Empty state */}
-      {!loading && results.length === 0 && (
+      {!loading && shown === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-              <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="8"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="m21 21-4.35-4.35"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
             </svg>
           </div>
           <p className="font-medium text-slate-600 dark:text-slate-300">
             No slabs match your requirements
           </p>
           <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Try adjusting your piece dimensions or reducing the number of pieces.
-            New inventory is added regularly.
+            Try adjusting your piece dimensions or reducing the number of
+            pieces. New inventory is added regularly.
           </p>
         </div>
-      )}
+      ) : null}
 
-      {/* Results */}
-      {!loading && results.length > 0 && (
-        <div className="flex flex-col gap-4">
+      {!loading && shown > 0 ? (
+        <div className="flex flex-col gap-8">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing {results.length} of {totalMatches} matching slab{totalMatches !== 1 ? "s" : ""}
+            Showing {shown} of {totalMatches} matching slab
+            {totalMatches !== 1 ? "s" : ""}
+            {ownResults.length > 0
+              ? ` · ${ownResults.length} from your inventory`
+              : ""}
           </p>
 
-          {results.map((result, index) => {
-            const location = formatLocation(result.city, result.state);
-
-            return (
-              <div
+          {hasSections ? (
+            <>
+              <ResultSection
+                title="Your inventory"
+                hint="Prioritized so you can maximize your own slabs and remnants."
+                items={ownResults}
+                startIndex={0}
+                pieces={pieces}
+              />
+              <ResultSection
+                title="Marketplace"
+                hint="Listings from other vendors that fit your pieces."
+                items={marketResults}
+                startIndex={ownResults.length}
+                pieces={pieces}
+              />
+            </>
+          ) : (
+            results.map((result, index) => (
+              <ResultCard
                 key={result.slabId}
-                className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-md sm:flex-row dark:border-slate-800 dark:bg-slate-900"
-              >
-                {/* Image */}
-                <Link
-                  href={`/slab/${result.slabId}`}
-                  className="relative block h-32 w-full flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:w-44 dark:bg-slate-800"
-                >
-                  {result.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={result.imageUrl}
-                      alt={result.slabName}
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
-                      No photo
-                    </div>
-                  )}
-                  <span className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-xs font-bold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
-                    {index + 1}
-                  </span>
-                </Link>
-
-                {/* Details */}
-                <div className="flex flex-1 flex-col gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-brand-strong">
-                      {result.materialName ?? "Stone"}
-                    </span>
-                    {result.colorFamily && (
-                      <span className="text-xs text-slate-400">| {result.colorFamily}</span>
-                    )}
-                    <FitBadge fits={result.fits} score={result.fitScore} />
-                  </div>
-
-                  <Link
-                    href={`/slab/${result.slabId}`}
-                    className="line-clamp-1 text-base font-semibold tracking-tight transition hover:text-brand-strong"
-                  >
-                    {result.slabName}
-                  </Link>
-
-                  <ScoreBar score={result.fitScore} />
-
-                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span>
-                      Slab: <strong className="text-slate-700 dark:text-slate-200">{result.slabSqft} sq ft</strong>
-                    </span>
-                    <span>
-                      Needed: <strong className="text-slate-700 dark:text-slate-200">{result.totalPieceSqft} sq ft</strong>
-                    </span>
-                    <span>
-                      Waste:{" "}
-                      <strong
-                        className={
-                          result.wastePercent <= 20
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : result.wastePercent <= 40
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-500"
-                        }
-                      >
-                        {result.wastePercent}%
-                      </strong>
-                    </span>
-                    {location && <span>{location}</span>}
-                  </div>
-
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-lg font-semibold">{formatPrice(result.price)}</span>
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/slab/${result.slabId}`}
-                        className="inline-flex h-8 items-center rounded-lg border border-brand px-3 text-xs font-medium text-brand-strong transition hover:bg-brand hover:text-white"
-                      >
-                        View slab
-                      </Link>
-                    </div>
-                  </div>
-
-                  {result.oversizedPieces.length > 0 && (
-                    <p className="text-xs text-red-500">
-                      Pieces too large for this slab: {result.oversizedPieces.join(", ")}
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                result={result}
+                index={index}
+                pieces={pieces}
+              />
+            ))
+          )}
         </div>
-      )}
+      ) : null}
 
-      {/* Subscription gate */}
-      {!loading && limited && (
+      {!loading && limited ? (
         <div className="relative overflow-hidden rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-brand-strong/5 p-8 text-center">
-          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand/10 blur-2xl" />
-          <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-brand-strong/10 blur-2xl" />
           <div className="relative">
             <p className="text-sm font-semibold text-brand-strong">
-              +{totalMatches - results.length} more matching slabs
+              +{totalMatches - shown} more matching slabs
             </p>
             <h3 className="mt-2 text-lg font-semibold tracking-tight">
               Subscribe to unlock all results
             </h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-              Free accounts see the top 3 matches. Subscribers get full access
-              to all matching slabs, advanced filtering, and priority support.
+              Free accounts see the top 3 matches. Pro and Premium unlock the
+              full ranked list across your inventory and the marketplace.
             </p>
             <button
               type="button"
@@ -298,18 +399,14 @@ export function ResultsList({
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Actions */}
       <div className="flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
           onClick={onBack}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 px-5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
           Edit pieces
         </button>
         <button

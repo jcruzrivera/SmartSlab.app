@@ -1,7 +1,7 @@
 export const PLAN_LIMITS = {
   free: {
     inventory: 49,
-    smartfinderPerMonth: 3,
+    smartfinderPerMonth: 9,
     marketData: false,
   },
   pro: {

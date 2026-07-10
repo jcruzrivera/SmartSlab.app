@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { SlabDetailActionsLoader } from "@/components/slab/slab-detail-actions-loader";
+import { SlabPieceOverlay } from "@/components/slab/slab-piece-overlay";
 import { SlabPhoto } from "@/components/media/slab-photo";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
@@ -29,6 +31,7 @@ type SlabDetailPageProps = {
     paid?: string;
     canceled?: string;
     session_id?: string;
+    sf?: string;
   }>;
 };
 
@@ -203,6 +206,20 @@ export default async function SlabDetailPage({
               })}
             </div>
           ) : null}
+
+          <Suspense fallback={null}>
+            <SlabPieceOverlay
+              slabId={slab.id}
+              slabWidthIn={
+                slab.widthIn != null ? Number(slab.widthIn) : null
+              }
+              slabHeightIn={
+                slab.heightIn != null ? Number(slab.heightIn) : null
+              }
+              imageUrl={primaryImageUrl}
+              slabName={slab.name}
+            />
+          </Suspense>
         </div>
 
         <div className="flex flex-col gap-5">

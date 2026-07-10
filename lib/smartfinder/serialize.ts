@@ -1,6 +1,9 @@
 import type { FitResult, SmartFinderResult } from "@/lib/smartfinder/types";
 
-export function toSmartFinderResult(result: FitResult): SmartFinderResult {
+export function toSmartFinderResult(
+  result: FitResult,
+  options: { isOwnListing: boolean } = { isOwnListing: false },
+): SmartFinderResult {
   const { slab } = result;
   const primaryImage =
     slab.images.find((img) => img.isPrimary)?.url ?? slab.images[0]?.url ?? null;
@@ -11,6 +14,8 @@ export function toSmartFinderResult(result: FitResult): SmartFinderResult {
     materialName: slab.material?.name ?? null,
     colorFamily: slab.colorFamily,
     vendorCompany: slab.vendor?.companyName ?? null,
+    vendorId: slab.vendorId,
+    isOwnListing: options.isOwnListing,
     imageUrl: primaryImage,
     price: slab.price,
     pricePerSqft: slab.pricePerSqft,

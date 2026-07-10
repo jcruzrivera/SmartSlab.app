@@ -9,10 +9,6 @@ import { UploadStep } from "@/components/smartfinder/upload-step";
 import { findMatchingSlabs } from "@/app/account/smartfinder/actions";
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 
-/* ------------------------------------------------------------------ */
-/*  Steps                                                              */
-/* ------------------------------------------------------------------ */
-
 type Step = "upload" | "pieces" | "results";
 
 const STEP_META: Record<Step, { number: number; label: string }> = {
@@ -23,16 +19,14 @@ const STEP_META: Record<Step, { number: number; label: string }> = {
 
 const STEPS: Step[] = ["upload", "pieces", "results"];
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
-
 export function SmartfinderFlow() {
   const [step, setStep] = useState<Step>("upload");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [autoFilled, setAutoFilled] = useState(false);
   const [results, setResults] = useState<SmartFinderResult[]>([]);
+  const [ownResults, setOwnResults] = useState<SmartFinderResult[]>([]);
+  const [marketResults, setMarketResults] = useState<SmartFinderResult[]>([]);
   const [totalMatches, setTotalMatches] = useState(0);
   const [limited, setLimited] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,16 +67,22 @@ export function SmartfinderFlow() {
         setSearchError(data.error);
         setUpgradeTo(data.upgradeTo ?? null);
         setResults([]);
+        setOwnResults([]);
+        setMarketResults([]);
         setTotalMatches(0);
         setLimited(false);
         setStep("pieces");
         return;
       }
       setResults(data.results);
+      setOwnResults(data.ownResults);
+      setMarketResults(data.marketResults);
       setTotalMatches(data.totalMatches);
       setLimited(data.limited);
     } catch {
       setResults([]);
+      setOwnResults([]);
+      setMarketResults([]);
       setTotalMatches(0);
       setLimited(false);
       setSearchError("Could not run SmartFinder search.");
@@ -101,6 +101,8 @@ export function SmartfinderFlow() {
     setImageUrl(null);
     setPieces([]);
     setResults([]);
+    setOwnResults([]);
+    setMarketResults([]);
     setTotalMatches(0);
     setLimited(false);
     setSearchError(null);
@@ -109,8 +111,10 @@ export function SmartfinderFlow() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* ---- Stepper ------------------------------------------------ */}
-      <nav aria-label="SmartFinder steps" className="flex items-center justify-center gap-2">
+      <nav
+        aria-label="SmartFinder steps"
+        className="flex items-center justify-center gap-2"
+      >
         {STEPS.map((s, i) => {
           const meta = STEP_META[s];
           const isCurrent = s === step;
@@ -157,7 +161,6 @@ export function SmartfinderFlow() {
         })}
       </nav>
 
-      {/* ---- Step content ------------------------------------------- */}
       {step === "upload" && (
         <UploadStep
           imageUrl={imageUrl}
@@ -188,6 +191,8 @@ export function SmartfinderFlow() {
       {step === "results" && (
         <ResultsList
           results={results}
+          ownResults={ownResults}
+          marketResults={marketResults}
           totalMatches={totalMatches}
           limited={limited}
           loading={loading}

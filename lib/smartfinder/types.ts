@@ -60,6 +60,8 @@ export type SmartFinderResult = {
   materialName: string | null;
   colorFamily: string | null;
   vendorCompany: string | null;
+  vendorId: string;
+  isOwnListing: boolean;
   imageUrl: string | null;
   price: string | null;
   pricePerSqft: string | null;

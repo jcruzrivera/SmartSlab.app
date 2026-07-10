@@ -77,9 +77,11 @@ Vendors start on **Free** and can upgrade to **Pro** or **Premium** via Stripe B
 | **Pro** | $49/month | $39/mo, billed annually |
 | **Premium** | $149/month | $119/mo, billed annually |
 
-Plan limits (`lib/plan/limits.ts`): inventory caps, monthly SmartFinder searches,
-and Premium-only Market Data. Enforcement runs on slab create/import, SmartFinder
-search, and the Market Data dashboard.
+Plan limits (`lib/plan/limits.ts`): inventory caps, monthly SmartFinder searches
+(Free **9** / Pro **99** / Premium unlimited), and Premium-only Market Data.
+Enforcement runs on slab create/import, SmartFinder search, and the Market Data
+dashboard. SmartFinder ranks **your available inventory first**, then marketplace
+listings, and can preview piece silhouettes on the slab detail page.
 
 **Stripe env vars** (also in `.env.example`):
 
@@ -128,7 +130,9 @@ only adds plan columns on `users` with safe defaults:
   are not removed. A vendor on **Free** with more than 49 slabs **keeps them all**
   but cannot publish new ones until they upgrade or delete listings to get under
   the cap.
-- **SmartFinder** — monthly search counter starts at 0; Free gets 3 searches/month.
+- **SmartFinder** — monthly search counter starts at 0; Free gets **9** searches/month
+  (Pro 99, Premium unlimited). Results prioritize the signed-in vendor's own
+  available listings before marketplace matches.
 - **Market Data** — Premium only; Free/Pro see the upgrade prompt.
 
 Paid plans apply only after Stripe checkout and webhook sync (`plan_status` →

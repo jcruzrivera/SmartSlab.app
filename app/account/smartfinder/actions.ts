@@ -7,42 +7,44 @@ import { runSmartfinderSearch } from "@/lib/smartfinder/search";
 
 export type SmartFinderSearchState = {
   results: SmartFinderResult[];
+  ownResults: SmartFinderResult[];
+  marketResults: SmartFinderResult[];
   totalMatches: number;
   limited: boolean;
   error?: string;
   upgradeTo?: "pro" | "premium";
 };
 
+function emptyState(
+  extra: Partial<SmartFinderSearchState> = {},
+): SmartFinderSearchState {
+  return {
+    results: [],
+    ownResults: [],
+    marketResults: [],
+    totalMatches: 0,
+    limited: false,
+    ...extra,
+  };
+}
+
 export async function findMatchingSlabs(
   rawPieces: Piece[],
 ): Promise<SmartFinderSearchState> {
   const user = await getOrCreateCurrentDbUser();
   if (!user) {
-    return {
-      results: [],
-      totalMatches: 0,
-      limited: false,
-      error: "Sign in to use SmartFinder.",
-    };
+    return emptyState({ error: "Sign in to use SmartFinder." });
   }
 
   try {
     return await runSmartfinderSearch(user, rawPieces);
   } catch (error) {
     if (isPlanLimitError(error)) {
-      return {
-        results: [],
-        totalMatches: 0,
-        limited: false,
+      return emptyState({
         error: error.message,
         upgradeTo: error.upgradeTo,
-      };
+      });
     }
-    return {
-      results: [],
-      totalMatches: 0,
-      limited: false,
-      error: "Could not run SmartFinder search.",
-    };
+    return emptyState({ error: "Could not run SmartFinder search." });
   }
 }
