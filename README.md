@@ -104,6 +104,36 @@ Webhook events to configure in Stripe: `customer.subscription.created`,
 
 UI: pricing at `/how-it-works#pricing`, **Manage plan** in the vendor dashboard nav.
 
+#### Existing vendors who already had slabs
+
+After `npm run db:apply-subscription`, **no listing data is changed**. The migration
+only adds plan columns on `users` with safe defaults:
+
+| Field | Default for existing rows |
+| --- | --- |
+| `plan` | `free` |
+| `plan_status` | `none` |
+| `smartfinder_searches_used` | `0` |
+| `stripe_customer_id` / `stripe_subscription_id` | `NULL` (until checkout) |
+
+**What stays the same**
+
+- Every slab already in the database remains as-is (status, photos, price, visibility).
+- Public browse, checkout, sales history, and dashboard access work unchanged.
+- Vendors who connected Stripe Connect keep their payout setup.
+
+**What changes going forward (enforcement only on new actions)**
+
+- **Inventory cap** — counted on create, CSV import, and duplicate. Existing slabs
+  are not removed. A vendor on **Free** with more than 49 slabs **keeps them all**
+  but cannot publish new ones until they upgrade or delete listings to get under
+  the cap.
+- **SmartFinder** — monthly search counter starts at 0; Free gets 3 searches/month.
+- **Market Data** — Premium only; Free/Pro see the upgrade prompt.
+
+Paid plans apply only after Stripe checkout and webhook sync (`plan_status` →
+`active`). Until then, everyone runs as **Free**.
+
 ---
 
 ### Design system, branding & UX pass (previous version)
