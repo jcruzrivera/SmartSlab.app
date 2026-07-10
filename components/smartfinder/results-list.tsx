@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
-import type { SmartFinderResult } from "@/app/account/smartfinder/actions";
-import type { Piece } from "@/lib/smartfinder/types";
+import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
+import { startCheckout } from "@/lib/billing/start-checkout";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -126,6 +127,7 @@ export function ResultsList({
   onBack,
   onStartOver,
 }: ResultsListProps) {
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const pieceSummary = pieces.map((p) => p.label).join(", ");
   const totalSqft = pieces.reduce((s, p) => s + (p.widthIn * p.heightIn) / 144, 0);
 
@@ -285,10 +287,14 @@ export function ResultsList({
             </p>
             <button
               type="button"
-              disabled
-              className="mt-4 inline-flex h-11 items-center rounded-lg bg-brand px-6 text-sm font-medium text-white opacity-70"
+              disabled={checkoutLoading}
+              onClick={() => {
+                setCheckoutLoading(true);
+                void startCheckout("pro", "monthly");
+              }}
+              className="mt-4 inline-flex h-11 items-center rounded-lg bg-brand px-6 text-sm font-medium text-white transition hover:bg-brand-strong disabled:opacity-70"
             >
-              Coming soon
+              {checkoutLoading ? "Redirecting…" : "Upgrade to Pro"}
             </button>
           </div>
         </div>

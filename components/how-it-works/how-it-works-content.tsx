@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PricingPlans } from "@/components/billing/pricing-plans";
 import { HowItWorksFaq } from "./how-it-works-faq";
 import styles from "./how-it-works.module.css";
 
@@ -234,6 +235,10 @@ export function HowItWorksContent() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className={styles.pricingSection}>
+        <PricingPlans />
       </div>
 
       <HowItWorksFaq />

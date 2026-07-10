@@ -207,6 +207,93 @@ export async function setStripeAccountId(
     .where(eq(users.id, userId));
 }
 
+export async function setStripeCustomerId(
+  userId: string,
+  stripeCustomerId: string,
+): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ stripeCustomerId, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+}
+
+type UserPlan = (typeof users.$inferSelect)["plan"];
+type PlanStatus = (typeof users.$inferSelect)["planStatus"];
+
+function parseUserPlan(value: string | undefined): UserPlan {
+  if (value === "pro" || value === "premium") {
+    return value;
+  }
+  return "free";
+}
+
+function mapStripeSubscriptionStatus(
+  stripeStatus: string,
+): PlanStatus {
+  if (stripeStatus === "active" || stripeStatus === "trialing") {
+    return "active";
+  }
+  if (stripeStatus === "past_due") {
+    return "past_due";
+  }
+  return "canceled";
+}
+
+/** Syncs plan fields from a Stripe subscription webhook event. */
+export async function syncUserSubscription(input: {
+  clerkId: string;
+  stripeSubscriptionId: string;
+  stripeStatus: string;
+  planMetadata?: string;
+  currentPeriodEnd: number;
+}): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const planStatus = mapStripeSubscriptionStatus(input.stripeStatus);
+  const plan =
+    planStatus === "active" || planStatus === "past_due"
+      ? parseUserPlan(input.planMetadata)
+      : "free";
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({
+      plan,
+      planStatus,
+      stripeSubscriptionId: input.stripeSubscriptionId,
+      planRenewsAt: new Date(input.currentPeriodEnd * 1000),
+      updatedAt: new Date(),
+    })
+    .where(eq(users.clerkId, input.clerkId));
+}
+
+/** Downgrades a user to free when their subscription ends. */
+export async function cancelUserSubscription(clerkId: string): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({
+      plan: "free",
+      planStatus: "canceled",
+      stripeSubscriptionId: null,
+      planRenewsAt: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.clerkId, clerkId));
+}
+
 export async function setVendorVerified(
   stripeAccountId: string,
   isVerified: boolean,

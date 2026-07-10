@@ -2,12 +2,12 @@
 
 import { useCallback, useState } from "react";
 
+import { PlanLimitNotice } from "@/components/billing/plan-limit-notice";
 import { PieceEditor } from "@/components/smartfinder/piece-editor";
 import { ResultsList } from "@/components/smartfinder/results-list";
 import { UploadStep } from "@/components/smartfinder/upload-step";
-import type { SmartFinderResult } from "@/app/account/smartfinder/actions";
 import { findMatchingSlabs } from "@/app/account/smartfinder/actions";
-import type { Piece } from "@/lib/smartfinder/types";
+import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 
 /* ------------------------------------------------------------------ */
 /*  Steps                                                              */
@@ -36,6 +36,8 @@ export function SmartfinderFlow() {
   const [totalMatches, setTotalMatches] = useState(0);
   const [limited, setLimited] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [upgradeTo, setUpgradeTo] = useState<"pro" | "premium" | null>(null);
 
   const handleImageSelected = useCallback((url: string | null) => {
     setImageUrl(url);
@@ -61,10 +63,21 @@ export function SmartfinderFlow() {
   const handleSearch = useCallback(async (selectedPieces: Piece[]) => {
     setPieces(selectedPieces);
     setLoading(true);
+    setSearchError(null);
+    setUpgradeTo(null);
     setStep("results");
 
     try {
       const data = await findMatchingSlabs(selectedPieces);
+      if (data.error) {
+        setSearchError(data.error);
+        setUpgradeTo(data.upgradeTo ?? null);
+        setResults([]);
+        setTotalMatches(0);
+        setLimited(false);
+        setStep("pieces");
+        return;
+      }
       setResults(data.results);
       setTotalMatches(data.totalMatches);
       setLimited(data.limited);
@@ -72,6 +85,8 @@ export function SmartfinderFlow() {
       setResults([]);
       setTotalMatches(0);
       setLimited(false);
+      setSearchError("Could not run SmartFinder search.");
+      setStep("pieces");
     } finally {
       setLoading(false);
     }
@@ -88,6 +103,8 @@ export function SmartfinderFlow() {
     setResults([]);
     setTotalMatches(0);
     setLimited(false);
+    setSearchError(null);
+    setUpgradeTo(null);
   }, []);
 
   return (
@@ -151,13 +168,21 @@ export function SmartfinderFlow() {
       )}
 
       {step === "pieces" && (
-        <PieceEditor
-          initialPieces={pieces}
-          imageUrl={imageUrl}
-          autoFilled={autoFilled}
-          onSearch={handleSearch}
-          onBack={() => setStep("upload")}
-        />
+        <>
+          {searchError ? (
+            <PlanLimitNotice
+              message={searchError}
+              upgradeTo={upgradeTo ?? undefined}
+            />
+          ) : null}
+          <PieceEditor
+            initialPieces={pieces}
+            imageUrl={imageUrl}
+            autoFilled={autoFilled}
+            onSearch={handleSearch}
+            onBack={() => setStep("upload")}
+          />
+        </>
       )}
 
       {step === "results" && (

@@ -14,6 +14,7 @@ import {
 import { createSlabAction } from "@/app/dashboard/slabs/new/actions";
 import { ImageUploader } from "@/components/slab/image-uploader";
 import { SlabEditActions } from "@/components/slab/slab-edit-actions";
+import { PlanLimitNotice } from "@/components/billing/plan-limit-notice";
 import {
   enrichSuggestedPrice,
   matchMaterialId,
@@ -599,9 +600,16 @@ export function SlabForm({
         </label>
 
         {state.error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40">
-            {state.error}
-          </p>
+          "upgradeTo" in state && state.upgradeTo ? (
+            <PlanLimitNotice
+              message={state.error}
+              upgradeTo={state.upgradeTo}
+            />
+          ) : (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40">
+              {state.error}
+            </p>
+          )
         ) : null}
 
         {!isSold ? (

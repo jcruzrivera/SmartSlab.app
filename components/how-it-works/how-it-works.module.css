@@ -400,6 +400,11 @@
   text-decoration: underline;
 }
 
+.pricingSection {
+  margin: 60px 0;
+  padding: 40px 0;
+}
+
 .cta {
   text-align: center;
   background: linear-gradient(135deg, #1a0d30, #0d1a3a);

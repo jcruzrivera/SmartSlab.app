@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { slabImages, slabs } from "@/lib/db/schema";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { assertInventoryCapacity, isPlanLimitError } from "@/lib/plan/enforce";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,18 @@ export async function POST(
 
   if (!original) {
     return NextResponse.json({ error: "Listing not found." }, { status: 404 });
+  }
+
+  try {
+    await assertInventoryCapacity(user, 1);
+  } catch (error) {
+    if (isPlanLimitError(error)) {
+      return NextResponse.json(error.toJSON(), { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Could not verify plan limits." },
+      { status: 500 },
+    );
   }
 
   const [duplicate] = await db

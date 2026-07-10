@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { isDbConfigured } from "@/lib/db/client";
-import { createSlab } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
-import { buildAddressQuery, geocodeAddress } from "@/lib/geo/geocode";
+import { assertInventoryCapacity, isPlanLimitError } from "@/lib/plan/enforce";
+import { createSlabFromParsedForm } from "@/lib/slabs/create-from-form";
 import { parseSlabFormData } from "@/lib/validations/slab-form";
 
 export type SlabFormState = {
   error?: string;
+  upgradeTo?: "pro" | "premium";
 };
 
 export async function createSlabAction(
@@ -35,38 +36,13 @@ export async function createSlabAction(
     };
   }
 
-  const data = parsed.data;
-
-  const point = await geocodeAddress(
-    buildAddressQuery({ city: data.city, state: data.state, zip: data.zip }),
-  );
-
   try {
-    await createSlab({
-      vendorId: user.id,
-      name: data.name,
-      type: data.type,
-      materialId: data.materialId,
-      finish: data.finish,
-      colorFamily: data.colorFamily,
-      brandSupplier: data.brandSupplier,
-      city: data.city,
-      state: data.state,
-      zip: data.zip,
-      lat: point?.lat,
-      lng: point?.lng,
-      roomUse: data.roomUse,
-      aestheticTags: data.aestheticTags,
-      widthIn: data.widthIn,
-      heightIn: data.heightIn,
-      thicknessCm: data.thicknessCm,
-      price: data.price,
-      quantity: data.quantity,
-      isNegotiable: data.isNegotiable,
-      notes: data.notes,
-      imageUrls: data.imageUrls,
-    });
-  } catch {
+    await assertInventoryCapacity(user, 1);
+    await createSlabFromParsedForm(user.id, parsed.data);
+  } catch (error) {
+    if (isPlanLimitError(error)) {
+      return { error: error.message, upgradeTo: error.upgradeTo };
+    }
     return {
       error: "Could not save the listing. Please try again.",
     };

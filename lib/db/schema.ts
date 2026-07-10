@@ -64,6 +64,15 @@ export const quoteStatusEnum = pgEnum("quote_status", [
   "cancelled",
 ]);
 
+export const userPlanEnum = pgEnum("user_plan", ["free", "pro", "premium"]);
+
+export const planStatusEnum = pgEnum("plan_status", [
+  "active",
+  "past_due",
+  "canceled",
+  "none",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   clerkId: text("clerk_id").notNull().unique(),
@@ -78,6 +87,15 @@ export const users = pgTable("users", {
   zip: text("zip"),
   country: text("country"),
   stripeAccountId: text("stripe_account_id"),
+  plan: userPlanEnum("plan").notNull().default("free"),
+  planStatus: planStatusEnum("plan_status").notNull().default("none"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  planRenewsAt: timestamp("plan_renews_at", { withTimezone: true }),
+  smartfinderSearchesUsed: integer("smartfinder_searches_used")
+    .notNull()
+    .default(0),
+  smartfinderResetAt: timestamp("smartfinder_reset_at", { withTimezone: true }),
   isVerified: boolean("is_verified").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

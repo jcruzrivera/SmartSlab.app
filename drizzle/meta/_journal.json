@@ -50,6 +50,13 @@
       "when": 1783517261292,
       "tag": "0006_nervous_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783600000000,
+      "tag": "0007_user_subscription_plan",
+      "breakpoints": true
     }
   ]
 }

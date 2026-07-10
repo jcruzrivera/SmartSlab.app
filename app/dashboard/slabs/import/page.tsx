@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 
+import { PlanLimitNotice } from "@/components/billing/plan-limit-notice";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 
 type PreviewRow = {
@@ -34,6 +35,7 @@ export default function ImportSlabsPage() {
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeTo, setUpgradeTo] = useState<"pro" | "premium" | undefined>();
   const [done, setDone] = useState<{ imported: number; skipped: number } | null>(
     null,
   );
@@ -54,6 +56,7 @@ export default function ImportSlabsPage() {
   async function loadPreview(selected: File) {
     setLoading(true);
     setError(null);
+    setUpgradeTo(undefined);
     setDone(null);
     setPreview(null);
     try {
@@ -91,6 +94,7 @@ export default function ImportSlabsPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Import failed.");
+        setUpgradeTo(data.upgradeTo);
         return;
       }
       setDone({ imported: data.imported, skipped: data.skipped });
@@ -179,9 +183,15 @@ export default function ImportSlabsPage() {
           ) : null}
 
           {error ? (
-            <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40">
-              {error}
-            </p>
+            upgradeTo ? (
+              <div className="mt-4">
+                <PlanLimitNotice message={error} upgradeTo={upgradeTo} />
+              </div>
+            ) : (
+              <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40">
+                {error}
+              </p>
+            )
           ) : null}
 
           {preview ? (

@@ -5,6 +5,7 @@ import { getDb, isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { finishTypeEnum, slabs, slabTypeEnum } from "@/lib/db/schema";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { assertInventoryCapacity, isPlanLimitError } from "@/lib/plan/enforce";
 
 export const dynamic = "force-dynamic";
 
@@ -175,6 +176,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(
       { error: "No valid rows to import.", rowErrors },
       { status: 400 },
+    );
+  }
+
+  try {
+    await assertInventoryCapacity(user, validRows.length);
+  } catch (error) {
+    if (isPlanLimitError(error)) {
+      return NextResponse.json(error.toJSON(), { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Could not verify plan limits." },
+      { status: 500 },
     );
   }
 

@@ -3,16 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { ManagePlanButton } from "@/components/billing/manage-plan-button";
+
 const LINKS: Array<{ href: string; label: string; exact?: boolean }> = [
   { href: "/dashboard", label: "Overview", exact: true },
   { href: "/dashboard/slabs", label: "Inventory" },
   { href: "/dashboard/sales", label: "Sales" },
   { href: "/dashboard/leads", label: "Leads" },
   { href: "/dashboard/messages", label: "Messages" },
+  { href: "/dashboard/market-data", label: "Market Data" },
   { href: "/dashboard/payments", label: "Payments" },
 ];
 
-export function DashboardNav() {
+export function DashboardNav({
+  currentPlan,
+  planStatus,
+}: {
+  currentPlan?: string;
+  planStatus?: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -20,7 +29,8 @@ export function DashboardNav() {
       aria-label="Dashboard"
       className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80"
     >
-      <div className="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto px-6 py-2">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-6 py-2">
+        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
         {LINKS.map((link) => {
           const active = link.exact
             ? pathname === link.href
@@ -40,6 +50,15 @@ export function DashboardNav() {
             </Link>
           );
         })}
+        </div>
+        {currentPlan != null && planStatus != null ? (
+          <div className="shrink-0">
+            <ManagePlanButton
+              currentPlan={currentPlan}
+              planStatus={planStatus}
+            />
+          </div>
+        ) : null}
       </div>
     </nav>
   );

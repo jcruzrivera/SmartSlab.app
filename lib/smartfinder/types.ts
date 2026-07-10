@@ -51,6 +51,35 @@ export type FitResult = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  SmartFinderResult — serialised slab match for the client          */
+/* ------------------------------------------------------------------ */
+
+export type SmartFinderResult = {
+  slabId: string;
+  slabName: string;
+  materialName: string | null;
+  colorFamily: string | null;
+  vendorCompany: string | null;
+  imageUrl: string | null;
+  price: string | null;
+  pricePerSqft: string | null;
+  type: string;
+  widthIn: string | null;
+  heightIn: string | null;
+  city: string | null;
+  state: string | null;
+  fitScore: number;
+  totalPieceSqft: number;
+  slabSqft: number;
+  wastePercent: number;
+  fits: boolean;
+  oversizedPieces: string[];
+  pricePerUsableSqft: number | null;
+  isNegotiable: boolean;
+  quantity: number;
+};
+
+/* ------------------------------------------------------------------ */
 /*  SmartFinder project — full client-side state                      */
 /* ------------------------------------------------------------------ */
 
