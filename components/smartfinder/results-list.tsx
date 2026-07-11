@@ -162,6 +162,11 @@ function ResultCard({
               Your listing
             </span>
           ) : null}
+          {result.isOwnListing && result.status === "hidden" ? (
+            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              Private
+            </span>
+          ) : null}
           <FitBadge fits={result.fits} score={result.fitScore} />
         </div>
 
@@ -339,19 +344,31 @@ export function ResultsList({
             Showing {shown} of {totalMatches} matching slab
             {totalMatches !== 1 ? "s" : ""}
             {ownResults.length > 0
-              ? ` · ${ownResults.length} from your inventory`
+              ? ` · ${ownResults.length} from your inventory (always shown)`
               : ""}
           </p>
 
           {hasSections ? (
             <>
-              <ResultSection
-                title="Your inventory"
-                hint="Prioritized so you can maximize your own slabs and remnants."
-                items={ownResults}
-                startIndex={0}
-                pieces={pieces}
-              />
+              {ownResults.length > 0 ? (
+                <ResultSection
+                  title="Your inventory"
+                  hint="Your full slabs and remnants first — maximize your own stock before buying."
+                  items={ownResults}
+                  startIndex={0}
+                  pieces={pieces}
+                />
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  <p className="font-medium text-slate-700 dark:text-slate-200">
+                    No usable listings in your inventory for these pieces
+                  </p>
+                  <p className="mt-1">
+                    Publish or unhide a full slab/remnant with width and height,
+                    then search again. Marketplace matches are shown below.
+                  </p>
+                </div>
+              )}
               <ResultSection
                 title="Marketplace"
                 hint="Listings from other vendors that fit your pieces."
@@ -383,8 +400,8 @@ export function ResultsList({
               Subscribe to unlock all results
             </h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-              Free accounts see the top 3 matches. Pro and Premium unlock the
-              full ranked list across your inventory and the marketplace.
+              Your inventory is always fully listed. Free accounts see up to 3
+              marketplace matches — upgrade for the full market list.
             </p>
             <button
               type="button"

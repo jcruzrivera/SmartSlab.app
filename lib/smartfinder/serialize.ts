@@ -16,6 +16,7 @@ export function toSmartFinderResult(
     vendorCompany: slab.vendor?.companyName ?? null,
     vendorId: slab.vendorId,
     isOwnListing: options.isOwnListing,
+    status: slab.status,
     imageUrl: primaryImage,
     price: slab.price,
     pricePerSqft: slab.pricePerSqft,

@@ -6,7 +6,11 @@ import { rankSlabs } from "@/lib/smartfinder/fit";
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 import { toSmartFinderResult } from "@/lib/smartfinder/serialize";
 
-const FREE_TIER_RESULT_CAP = 3;
+/** Marketplace result cap for Free; own inventory is never capped. */
+const FREE_TIER_MARKET_CAP = 3;
+
+/** Own statuses that still represent usable stock for nesting. */
+const OWN_USABLE_STATUSES = new Set(["available", "hidden"]);
 
 export type SmartfinderSearchPayload = {
   results: SmartFinderResult[];
@@ -46,6 +50,26 @@ function emptyPayload(): SmartfinderSearchPayload {
   };
 }
 
+/**
+ * Own inventory for SmartFinder: full slabs + remnants the vendor can still use.
+ * Includes available and hidden (draft/private) stock; excludes sold/reserved/deleted.
+ */
+function selectOwnUsableSlabs<
+  T extends {
+    status: string;
+    deletedAt?: Date | null;
+    quantity?: number | null;
+  },
+>(slabs: T[]): T[] {
+  return slabs.filter((slab) => {
+    if (slab.deletedAt) return false;
+    if (!OWN_USABLE_STATUSES.has(slab.status)) return false;
+    // quantity 0 means nothing left to cut from
+    if (typeof slab.quantity === "number" && slab.quantity <= 0) return false;
+    return true;
+  });
+}
+
 export async function runSmartfinderSearch(
   user: DbUser,
   rawPieces: unknown,
@@ -62,38 +86,29 @@ export async function runSmartfinderSearch(
     listPublicSlabs({ limit: 200 }),
   ]);
 
-  const ownAvailable = ownSlabs.filter((slab) => slab.status === "available");
+  const ownUsable = selectOwnUsableSlabs(ownSlabs);
   const marketSlabs = publicSlabs.filter((slab) => slab.vendorId !== user.id);
 
-  const ownRanked = rankSlabs(ownAvailable, pieces).map((result) =>
-    toSmartFinderResult(result, { isOwnListing: true }),
+  // Own inventory: keep unscored rows so missing dimensions don't hide stock.
+  const ownRanked = rankSlabs(ownUsable, pieces, { includeUnscored: true }).map(
+    (result) => toSmartFinderResult(result, { isOwnListing: true }),
   );
   const marketRanked = rankSlabs(marketSlabs, pieces).map((result) =>
     toSmartFinderResult(result, { isOwnListing: false }),
   );
 
-  const combined = [...ownRanked, ...marketRanked];
-  const totalMatches = combined.length;
-
   const plan = effectivePlan(user.plan, user.planStatus);
   const isPaid = plan === "pro" || plan === "premium";
-  const limited = !isPaid && totalMatches > FREE_TIER_RESULT_CAP;
 
-  let ownResults = ownRanked;
-  let marketResults = marketRanked;
-  let results = combined;
+  // Own inventory always predominates and is never free-capped.
+  const ownResults = ownRanked;
+  const marketResults = isPaid
+    ? marketRanked
+    : marketRanked.slice(0, FREE_TIER_MARKET_CAP);
+  const limited = !isPaid && marketRanked.length > FREE_TIER_MARKET_CAP;
 
-  if (!isPaid) {
-    // Cap after prioritizing own inventory so vendors see their slabs first.
-    const capped: SmartFinderResult[] = [];
-    for (const item of combined) {
-      if (capped.length >= FREE_TIER_RESULT_CAP) break;
-      capped.push(item);
-    }
-    results = capped;
-    ownResults = capped.filter((item) => item.isOwnListing);
-    marketResults = capped.filter((item) => !item.isOwnListing);
-  }
+  const results = [...ownResults, ...marketResults];
+  const totalMatches = ownRanked.length + marketRanked.length;
 
   return {
     results,

@@ -130,12 +130,15 @@ export function calculateFit(
 
 /**
  * Evaluate every slab against the buyer's pieces and return results
- * sorted by fitScore descending.  Slabs that cannot be scored at all
- * (missing dimensions) are silently excluded.
+ * sorted by fitScore descending.
+ *
+ * When `includeUnscored` is true (own inventory), slabs missing dimensions
+ * are kept with score 0 so vendors still see them instead of a silent drop.
  */
 export function rankSlabs(
   slabs: SlabWithRelations[],
   pieces: Piece[],
+  options: { includeUnscored?: boolean } = {},
 ): FitResult[] {
   const results: FitResult[] = [];
 
@@ -143,10 +146,24 @@ export function rankSlabs(
     const result = calculateFit(slab, pieces);
     if (result) {
       results.push(result);
+      continue;
     }
+
+    if (!options.includeUnscored) continue;
+
+    // Surface own inventory even when dimensions are incomplete.
+    results.push({
+      slab,
+      fitScore: 0,
+      totalPieceSqft: Math.round(totalPieceSqft(pieces) * 10) / 10,
+      slabSqft: 0,
+      wastePercent: 100,
+      fits: false,
+      oversizedPieces: ["Missing slab dimensions — edit listing to enable fit"],
+      pricePerUsableSqft: null,
+    });
   }
 
-  // Primary sort: fits first, then score descending
   results.sort((a, b) => {
     if (a.fits !== b.fits) return a.fits ? -1 : 1;
     return b.fitScore - a.fitScore;

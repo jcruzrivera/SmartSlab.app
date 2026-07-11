@@ -62,6 +62,7 @@ export type SmartFinderResult = {
   vendorCompany: string | null;
   vendorId: string;
   isOwnListing: boolean;
+  status: string;
   imageUrl: string | null;
   price: string | null;
   pricePerSqft: string | null;

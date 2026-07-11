@@ -80,8 +80,9 @@ Vendors start on **Free** and can upgrade to **Pro** or **Premium** via Stripe B
 Plan limits (`lib/plan/limits.ts`): inventory caps, monthly SmartFinder searches
 (Free **9** / Pro **99** / Premium unlimited), and Premium-only Market Data.
 Enforcement runs on slab create/import, SmartFinder search, and the Market Data
-dashboard. SmartFinder ranks **your available inventory first**, then marketplace
-listings, and can preview piece silhouettes on the slab detail page.
+dashboard. SmartFinder ranks **your available/private inventory first** (never
+free-capped), then marketplace listings, and can preview piece silhouettes on
+the slab detail page.
 
 **Stripe env vars** (also in `.env.example`):
 
