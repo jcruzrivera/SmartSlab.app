@@ -50,7 +50,7 @@ export function HowItWorksContent() {
             <h3>Discover</h3>
             <p>
               Browse natural stone slabs and remnants filtered by material, size,
-              color, and location.
+              color, and location — or match project pieces with SmartFinder.
             </p>
           </div>
           <div className={styles.stepCard}>
@@ -69,10 +69,10 @@ export function HowItWorksContent() {
             <div className={styles.stepIcon} aria-hidden>
               🛒
             </div>
-            <h3>Purchase</h3>
+            <h3>Buy now</h3>
             <p>
-              Complete secure Stripe checkout. Inventory is reserved while you
-              pay so the slab stays yours.
+              Complete secure Stripe checkout with one click. Inventory is
+              reserved while you pay so the slab stays yours.
             </p>
           </div>
           <div className={styles.stepCard}>
@@ -114,15 +114,15 @@ export function HowItWorksContent() {
               </li>
               <li>
                 <span className={styles.liIcon}>✓</span>
+                <span>SmartFinder matches your project pieces to real inventory</span>
+              </li>
+              <li>
+                <span className={styles.liIcon}>✓</span>
+                <span>Compare, save, and buy now with secure Stripe checkout</span>
+              </li>
+              <li>
+                <span className={styles.liIcon}>✓</span>
                 <span>Full slabs and one-of-a-kind remnant pieces</span>
-              </li>
-              <li>
-                <span className={styles.liIcon}>✓</span>
-                <span>View high-resolution photos before you buy</span>
-              </li>
-              <li>
-                <span className={styles.liIcon}>✓</span>
-                <span>Secure Stripe checkout with inventory reservation</span>
               </li>
               <li>
                 <span className={styles.liIcon}>✓</span>
@@ -136,16 +136,16 @@ export function HowItWorksContent() {
             <h3>Turn Inventory Into Revenue</h3>
             <p className={styles.sub}>
               Fabricators, distributors, and stone yards can list their slabs
-              and remnants in minutes.
+              and remnants in minutes — and publish a public storefront.
             </p>
             <ul className={styles.audienceList}>
               <li>
                 <span className={styles.liIcon}>★</span>
-                <span>List individual pieces with photos and dimensions</span>
+                <span>List pieces with photos and dimensions, or bulk CSV import</span>
               </li>
               <li>
                 <span className={styles.liIcon}>★</span>
-                <span>Bulk import listings from a CSV template</span>
+                <span>Public storefront at smartslab.app/tienda for WordPress sites</span>
               </li>
               <li>
                 <span className={styles.liIcon}>★</span>
@@ -169,29 +169,39 @@ export function HowItWorksContent() {
           <span className={styles.pill}>Platform Features</span>
           <h2>Everything in One Place</h2>
           <p>
-            SmartSlab is packed with features that make buying and selling stone
-            effortless.
+            From SmartFinder matching to public storefronts and secure checkout —
+            tools built for how the stone trade actually works.
           </p>
         </div>
         <div className={styles.featuresGrid}>
           <div className={styles.featureCard}>
             <span className={styles.featureIcon} aria-hidden>
-              🖼️
+              ✨
             </span>
-            <h4>High-Res Gallery</h4>
+            <h4>SmartFinder</h4>
             <p>
-              Every listing includes clear, detailed photos so you see exactly
-              what you&apos;re getting.
+              Define the pieces you need and match them against marketplace
+              inventory — including your own stock first.
             </p>
           </div>
           <div className={styles.featureCard}>
             <span className={styles.featureIcon} aria-hidden>
-              📦
+              🏪
             </span>
-            <h4>Remnant Marketplace</h4>
+            <h4>Public Storefronts</h4>
             <p>
-              A dedicated flow for leftover slab pieces — perfect for
-              countertops and accent projects.
+              Every vendor gets a public store URL for WordPress at
+              smartslab.app/tienda — share inventory without building a site.
+            </p>
+          </div>
+          <div className={styles.featureCard}>
+            <span className={styles.featureIcon} aria-hidden>
+              🛒
+            </span>
+            <h4>Buy Now Checkout</h4>
+            <p>
+              One-click purchase from browse cards and listing pages, with Stripe
+              reservation so stock stays locked while you pay.
             </p>
           </div>
           <div className={styles.featureCard}>
@@ -206,32 +216,22 @@ export function HowItWorksContent() {
           </div>
           <div className={styles.featureCard}>
             <span className={styles.featureIcon} aria-hidden>
-              🔒
+              📦
             </span>
-            <h4>Secure Payments</h4>
+            <h4>Remnant Marketplace</h4>
             <p>
-              Checkout is handled through Stripe — your payment data stays
-              protected.
-            </p>
-          </div>
-          <div className={styles.featureCard}>
-            <span className={styles.featureIcon} aria-hidden>
-              📍
-            </span>
-            <h4>Location Filters</h4>
-            <p>
-              Find slabs near you to reduce shipping costs and coordinate easy
-              local pickup.
+              A dedicated flow for leftover slab pieces — perfect for
+              countertops and accent projects.
             </p>
           </div>
           <div className={styles.featureCard}>
             <span className={styles.featureIcon} aria-hidden>
               📥
             </span>
-            <h4>CSV Import</h4>
+            <h4>CSV Import &amp; Plans</h4>
             <p>
-              Vendors can upload many listings at once from a spreadsheet
-              template.
+              Bulk-upload listings, then scale with Pro or Premium for higher
+              inventory limits, SmartFinder searches, and market data.
             </p>
           </div>
         </div>

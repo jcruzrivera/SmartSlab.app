@@ -16,7 +16,19 @@ const FAQ_ITEMS = [
     id: "sell",
     question: "How do I start selling on SmartSlab?",
     answer:
-      "Create an account, list your first slab from the vendor dashboard, and connect Stripe under Payments to receive payouts when you sell.",
+      "Create an account, list your first slab from the vendor dashboard, and connect Stripe under Payments to receive payouts when you sell. Your public storefront URL is available in Account settings.",
+  },
+  {
+    id: "storefront",
+    question: "What is a public storefront?",
+    answer:
+      "Vendors get a public store page at smartslab.app/tienda/{slug} that WordPress sites can embed. It shows only listed, available inventory — never private contact or cost data.",
+  },
+  {
+    id: "smartfinder",
+    question: "What is SmartFinder?",
+    answer:
+      "SmartFinder lets you define the stone pieces for a project and matches them against marketplace inventory. Your own stock is prioritized when you are signed in as a vendor.",
   },
   {
     id: "materials",

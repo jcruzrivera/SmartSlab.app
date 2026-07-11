@@ -67,6 +67,45 @@ never uploads anything.
 
 ---
 
+### Public Stores API & How it works refresh (current)
+
+WordPress storefronts at `smartslab.app/tienda/{slug}` consume public JSON from
+this app. Vendors get a `store_slug` / `store_public` profile; inventory is
+allowlisted (available + not deleted only).
+
+#### API
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/v1/public/stores` | Directory of public stores with `slab_count` |
+| `GET /api/v1/public/stores/[slug]` | Vendor summary + public slabs (strict field allowlist) |
+
+Both return `Cache-Control: public, s-maxage=300, stale-while-revalidate=600`
+and `Access-Control-Allow-Origin: *`. Unknown/private slugs →
+`404 { "error": { "code": "not_found" } }`.
+
+#### Database
+
+Migration: `drizzle/0008_store_slug.sql` (`store_slug`, `store_public`,
+`store_slug_locked` on `users`). On Neon production:
+
+```bash
+npm run db:apply-store-slug
+npm run db:backfill-store-slugs
+```
+
+Vendors manage slug (edit once) and public toggle under **Account**. Browse
+cards show a locale-aware **Buy now** CTA (`lib/i18n/buy-now.ts`).
+
+#### How it works page (`/how-it-works`)
+
+- Features updated for SmartFinder, public storefronts, Buy now checkout,
+  compare/save, remnants, and CSV/plans.
+- Light and dark contrast fixed: titles and section headers use theme-aware
+  colors (no white-on-light / low-contrast navy labels).
+
+---
+
 ### Vendor subscriptions & plan limits (current)
 
 Vendors start on **Free** and can upgrade to **Pro** or **Premium** via Stripe Billing
