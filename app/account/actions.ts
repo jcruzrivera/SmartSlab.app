@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { isDbConfigured } from "@/lib/db/client";
-import { getOrCreateCurrentDbUser, updateUserProfile } from "@/lib/db/users";
+import {
+  getOrCreateCurrentDbUser,
+  updateStoreSettings,
+  updateUserProfile,
+} from "@/lib/db/users";
 
 const profileSchema = z.object({
   companyName: z.string().trim().max(120).optional(),
@@ -25,6 +29,10 @@ export type ProfileState = {
 function optional(value: FormDataEntryValue | null): string | undefined {
   const text = typeof value === "string" ? value.trim() : "";
   return text.length > 0 ? text : undefined;
+}
+
+function isVendorRole(role: string): boolean {
+  return role === "vendor" || role === "both";
 }
 
 export async function updateProfileAction(
@@ -60,10 +68,29 @@ export async function updateProfileAction(
 
   try {
     await updateUserProfile(user.id, parsed.data);
-  } catch {
-    return { error: "Could not save your profile. Please try again." };
+
+    if (isVendorRole(user.role)) {
+      const storePublicRaw = formData.get("storePublic");
+      const storePublic =
+        storePublicRaw === "on" ||
+        storePublicRaw === "true" ||
+        storePublicRaw === "1";
+      const storeSlug = optional(formData.get("storeSlug")) ?? null;
+
+      await updateStoreSettings(user.id, {
+        storePublic,
+        storeSlug,
+      });
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Could not save your profile. Please try again.";
+    return { error: message };
   }
 
   revalidatePath("/account");
+  revalidatePath("/dashboard");
   return { success: true };
 }

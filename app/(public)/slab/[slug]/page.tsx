@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { SlabDetailActionsLoader } from "@/components/slab/slab-detail-actions-loader";
 import { SlabPieceOverlay } from "@/components/slab/slab-piece-overlay";
+import { WpStoreUtmTracker } from "@/components/slab/wp-store-utm-tracker";
 import { SlabPhoto } from "@/components/media/slab-photo";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { isDbConfigured } from "@/lib/db/client";
@@ -32,6 +33,7 @@ type SlabDetailPageProps = {
     canceled?: string;
     session_id?: string;
     sf?: string;
+    utm_source?: string;
   }>;
 };
 
@@ -88,7 +90,12 @@ export default async function SlabDetailPage({
   searchParams,
 }: SlabDetailPageProps) {
   const { slug } = await params;
-  const { paid, canceled, session_id: sessionId } = await searchParams;
+  const {
+    paid,
+    canceled,
+    session_id: sessionId,
+    utm_source: utmSource,
+  } = await searchParams;
 
   if (!isDbConfigured()) {
     return (
@@ -161,6 +168,7 @@ export default async function SlabDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
+      <WpStoreUtmTracker slabId={slab.id} utmSource={utmSource} />
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },

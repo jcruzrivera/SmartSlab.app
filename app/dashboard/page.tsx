@@ -35,6 +35,26 @@ export default async function DashboardHomePage() {
           <p className="mt-1 text-slate-600 dark:text-slate-300">
             {user?.companyName ?? user?.contactName ?? "Your vendor workspace"}
           </p>
+          {user?.storeSlug ? (
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              Tu tienda pública:{" "}
+              <a
+                href={`https://smartslab.app/tienda/${user.storeSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand-strong underline-offset-2 hover:underline"
+              >
+                smartslab.app/tienda/{user.storeSlug}
+              </a>
+              {" · "}
+              <Link
+                href="/account"
+                className="underline-offset-2 hover:underline"
+              >
+                Manage in account
+              </Link>
+            </p>
+          ) : null}
         </div>
         <Link
           href="/dashboard/slabs/new"

@@ -11,6 +11,7 @@ const SlabCardActions = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center gap-2 px-4 pb-4">
+        <span className="inline-block h-8 w-20 rounded-lg bg-brand/20" />
         <span className="inline-block h-8 w-14 rounded-lg bg-slate-100 dark:bg-slate-800" />
         <span className="inline-block h-8 w-20 rounded-lg bg-slate-100 dark:bg-slate-800" />
       </div>

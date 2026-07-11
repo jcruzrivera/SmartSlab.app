@@ -4,9 +4,15 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { startCheckout, type CheckoutState } from "@/app/checkout/actions";
+import {
+  useBuyNowLabel,
+  useStartingCheckoutLabel,
+} from "@/lib/i18n/use-buy-now-label";
 
 function Submit() {
   const { pending } = useFormStatus();
+  const buyLabel = useBuyNowLabel();
+  const pendingLabel = useStartingCheckoutLabel();
 
   return (
     <button
@@ -14,7 +20,7 @@ function Submit() {
       disabled={pending}
       className="inline-flex h-11 items-center rounded-lg bg-brand px-5 text-sm font-medium text-white transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending ? "Starting checkout..." : "Buy now"}
+      {pending ? pendingLabel : buyLabel}
     </button>
   );
 }

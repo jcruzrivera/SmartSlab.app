@@ -11,6 +11,7 @@ import {
   transactions,
   users,
 } from "@/lib/db/schema";
+import { ensureVendorStoreSlug } from "@/lib/db/users";
 
 export type SlabFinish = (typeof finishTypeEnum.enumValues)[number];
 export type SlabKind = (typeof slabTypeEnum.enumValues)[number];
@@ -338,6 +339,8 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
       })),
     );
   }
+
+  await ensureVendorStoreSlug(input.vendorId);
 
   return slabId;
 }

@@ -2,8 +2,15 @@ import { eq } from "drizzle-orm";
 
 import { getClerkUser, getClerkUserId } from "@/lib/auth/session";
 import { getDb, isDbConfigured } from "@/lib/db/client";
+import { storeSlugExists } from "@/lib/db/stores";
 import { users } from "@/lib/db/schema";
 import { parseAppRole, type AppRole } from "@/lib/auth/roles";
+import {
+  buildStoreSlugSource,
+  ensureUniqueStoreSlug,
+  isReservedStoreSlug,
+  normalizeStoreSlug,
+} from "@/lib/stores/slug";
 
 export type DbUser = typeof users.$inferSelect;
 
@@ -38,6 +45,55 @@ function mergeContactName(
   return existing ?? undefined;
 }
 
+function isVendorRole(role: string): boolean {
+  return role === "vendor" || role === "both";
+}
+
+/**
+ * Assigns a store_slug when the vendor does not have one yet.
+ * Never overwrites an existing slug.
+ */
+export async function ensureVendorStoreSlug(
+  userId: string,
+): Promise<string | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  const db = getDb();
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
+      id: true,
+      role: true,
+      companyName: true,
+      contactName: true,
+      storeSlug: true,
+    },
+  });
+
+  if (!user || !isVendorRole(user.role)) {
+    return user?.storeSlug ?? null;
+  }
+
+  if (user.storeSlug) {
+    return user.storeSlug;
+  }
+
+  const source = buildStoreSlugSource(user);
+  const slug = await ensureUniqueStoreSlug(source, (candidate) =>
+    storeSlugExists(candidate),
+  );
+
+  const [row] = await db
+    .update(users)
+    .set({ storeSlug: slug, updatedAt: new Date() })
+    .where(eq(users.id, userId))
+    .returning({ storeSlug: users.storeSlug });
+
+  return row?.storeSlug ?? slug;
+}
+
 /**
  * Creates or updates the app user row for a Clerk account. Re-links by email when
  * a production Clerk user signs in with an address that still has a dev-era row
@@ -64,7 +120,10 @@ export async function upsertUserFromClerk(
         .update(users)
         .set({
           email,
-          contactName: mergeContactName(input.contactName, existingByClerk.contactName),
+          contactName: mergeContactName(
+            input.contactName,
+            existingByClerk.contactName,
+          ),
           ...(input.role ? { role: input.role } : {}),
           updatedAt: new Date(),
         })
@@ -83,7 +142,10 @@ export async function upsertUserFromClerk(
         .update(users)
         .set({
           clerkId: input.clerkId,
-          contactName: mergeContactName(input.contactName, existingByEmail.contactName),
+          contactName: mergeContactName(
+            input.contactName,
+            existingByEmail.contactName,
+          ),
           ...(input.role ? { role: input.role } : {}),
           updatedAt: new Date(),
         })
@@ -232,9 +294,7 @@ function parseUserPlan(value: string | undefined): UserPlan {
   return "free";
 }
 
-function mapStripeSubscriptionStatus(
-  stripeStatus: string,
-): PlanStatus {
+function mapStripeSubscriptionStatus(stripeStatus: string): PlanStatus {
   if (stripeStatus === "active" || stripeStatus === "trialing") {
     return "active";
   }
@@ -329,6 +389,11 @@ export async function updateUserProfile(
   }
 
   const db = getDb();
+  const existing = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { id: true, role: true, storeSlug: true },
+  });
+
   await db
     .update(users)
     .set({
@@ -343,6 +408,83 @@ export async function updateUserProfile(
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));
+
+  if (existing && isVendorRole(existing.role) && !existing.storeSlug) {
+    await ensureVendorStoreSlug(userId);
+  }
+}
+
+export type StoreSettingsInput = {
+  storePublic: boolean;
+  storeSlug?: string | null;
+};
+
+/**
+ * Updates storefront visibility and optionally the slug (once).
+ * Throws with a user-facing message on validation failure.
+ */
+export async function updateStoreSettings(
+  userId: string,
+  input: StoreSettingsInput,
+): Promise<void> {
+  if (!isDbConfigured()) {
+    return;
+  }
+
+  const db = getDb();
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
+      id: true,
+      role: true,
+      storeSlug: true,
+      storeSlugLocked: true,
+      storePublic: true,
+    },
+  });
+
+  if (!user || !isVendorRole(user.role)) {
+    throw new Error("Only vendors can manage a public store.");
+  }
+
+  const patch: {
+    storePublic: boolean;
+    storeSlug?: string;
+    storeSlugLocked?: boolean;
+    updatedAt: Date;
+  } = {
+    storePublic: input.storePublic,
+    updatedAt: new Date(),
+  };
+
+  const requested = input.storeSlug?.trim();
+  if (requested) {
+    const normalized = normalizeStoreSlug(requested);
+
+    if (isReservedStoreSlug(normalized)) {
+      throw new Error("That store URL is reserved. Please choose another.");
+    }
+
+    if (user.storeSlugLocked && normalized !== user.storeSlug) {
+      throw new Error("Your store URL can only be changed once.");
+    }
+
+    if (normalized !== user.storeSlug) {
+      const taken = await storeSlugExists(normalized, userId);
+      if (taken) {
+        throw new Error("That store URL is already taken.");
+      }
+
+      patch.storeSlug = normalized;
+      patch.storeSlugLocked = true;
+    }
+  }
+
+  await db.update(users).set(patch).where(eq(users.id, userId));
+
+  if (!user.storeSlug && !patch.storeSlug) {
+    await ensureVendorStoreSlug(userId);
+  }
 }
 
 export async function getDbUserById(id: string): Promise<DbUser | null> {

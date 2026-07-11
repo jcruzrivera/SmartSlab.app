@@ -97,6 +97,12 @@ export const users = pgTable("users", {
     .default(0),
   smartfinderResetAt: timestamp("smartfinder_reset_at", { withTimezone: true }),
   isVerified: boolean("is_verified").notNull().default(false),
+  /** Public WordPress storefront slug at smartslab.app/tienda/{slug}. */
+  storeSlug: text("store_slug").unique(),
+  /** Vendor can opt out of the public storefront directory. */
+  storePublic: boolean("store_public").notNull().default(true),
+  /** After the vendor customizes the slug once, further edits are blocked. */
+  storeSlugLocked: boolean("store_slug_locked").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

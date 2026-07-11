@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { useSyncExternalStore } from "react";
 
 import { toggleFavoriteAction } from "@/app/actions/marketplace";
+import { useBuyNowLabel } from "@/lib/i18n/use-buy-now-label";
 import {
   COMPARE_CHANGE_EVENT,
   FAVORITES_CHANGE_EVENT,
@@ -50,6 +51,7 @@ export function SlabCardActions({
 
   const inCompare = compareIds.includes(slabId);
   const isFavorite = guestFavorite || initialIsFavorite;
+  const buyLabel = useBuyNowLabel();
 
   function toggleCompare(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -74,6 +76,13 @@ export function SlabCardActions({
           <input type="hidden" name="slabId" value={slabId} />
         </form>
       ) : null}
+      <Link
+        href={`/slab/${slabId}`}
+        onClick={(event) => event.stopPropagation()}
+        className="inline-flex h-8 items-center rounded-lg bg-brand px-3 text-xs font-medium text-white transition hover:bg-brand-strong"
+      >
+        {buyLabel}
+      </Link>
       <button
         type="button"
         onClick={toggleSave}

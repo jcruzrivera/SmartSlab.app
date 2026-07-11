@@ -8,6 +8,14 @@ import {
   type SmartfinderHandoff,
 } from "@/lib/smartfinder/handoff";
 import { nestPiecesOnSlab } from "@/lib/smartfinder/nest";
+import { getSlabMetric } from "@/lib/smartfinder/slabMetric";
+import { SlabLayoutViz } from "@/components/smartfinder/slab-layout-viz";
+
+const METRIC_TONE_CLASS = {
+  good: "text-emerald-600 dark:text-emerald-400",
+  warn: "text-amber-600 dark:text-amber-400",
+  bad: "text-rose-500 dark:text-rose-400",
+} as const;
 
 type SlabPieceOverlayProps = {
   slabId: string;
@@ -18,7 +26,8 @@ type SlabPieceOverlayProps = {
 };
 
 /**
- * Silhouette overlay of SmartFinder pieces nested onto the chosen slab photo.
+ * Silhouette overlay of SmartFinder pieces nested onto the chosen slab.
+ * Uses photo background when aspect is usable; otherwise a to-scale cut layout.
  * Only renders when arriving from SmartFinder (`?sf=1`) with session handoff.
  */
 export function SlabPieceOverlay({
@@ -57,7 +66,15 @@ export function SlabPieceOverlay({
     return null;
   }
 
-  const { placements, oversized, slabWidthIn: sw, slabHeightIn: sh } = nest;
+  const { placements, oversized, placed, slabWidthIn: sw, slabHeightIn: sh } =
+    nest;
+
+  const slabAreaSqft = (sw * sh) / 144;
+  const neededAreaSqft = handoff.pieces.reduce(
+    (sum, p) => sum + (p.widthIn * p.heightIn) / 144,
+    0,
+  );
+  const metric = getSlabMetric(slabAreaSqft, neededAreaSqft, placed);
 
   return (
     <section className="rounded-2xl border border-brand/30 bg-white p-4 dark:border-brand/40 dark:bg-slate-900">
@@ -70,65 +87,24 @@ export function SlabPieceOverlay({
             Piece silhouettes nested on this slab
           </p>
         </div>
-        <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand-strong">
-          {placements.length} placed
-          {oversized.length > 0 ? ` · ${oversized.length} oversized` : ""}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`text-xs font-semibold ${METRIC_TONE_CLASS[metric.tone]}`}>
+            {metric.label}: {metric.value}
+          </span>
+          <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand-strong">
+            {placements.length} placed
+            {oversized.length > 0 ? ` · ${oversized.length} oversized` : ""}
+          </span>
+        </div>
       </div>
 
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-        {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt={slabName}
-            className="absolute inset-0 h-full w-full object-cover opacity-90"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-slate-950/25" />
-        <svg
-          viewBox={`0 0 ${sw} ${sh}`}
-          className="absolute inset-0 h-full w-full"
-          preserveAspectRatio="xMidYMid meet"
-          role="img"
-          aria-label="Nested piece silhouettes"
-        >
-          <rect
-            x={0}
-            y={0}
-            width={sw}
-            height={sh}
-            fill="none"
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth={Math.max(sw, sh) * 0.004}
-          />
-          {placements.map((p, i) => (
-            <g key={`${p.label}-${i}`}>
-              <rect
-                x={p.x}
-                y={p.y}
-                width={p.w}
-                height={p.h}
-                fill="rgba(27, 176, 206, 0.28)"
-                stroke="#1bb0ce"
-                strokeWidth={Math.max(sw, sh) * 0.006}
-              />
-              <text
-                x={p.x + p.w / 2}
-                y={p.y + p.h / 2}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="#ffffff"
-                fontSize={Math.min(p.w, p.h) * 0.18}
-                fontWeight={600}
-                style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
-              >
-                {p.label.length > 18 ? `${p.label.slice(0, 16)}…` : p.label}
-              </text>
-            </g>
-          ))}
-        </svg>
-      </div>
+      <SlabLayoutViz
+        slabWidthIn={sw}
+        slabHeightIn={sh}
+        pieces={placements}
+        photoUrl={imageUrl}
+        slabName={slabName}
+      />
 
       {oversized.length > 0 ? (
         <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">

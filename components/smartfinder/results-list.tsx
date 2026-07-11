@@ -5,7 +5,14 @@ import { useState } from "react";
 
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 import { saveSmartfinderHandoff } from "@/lib/smartfinder/handoff";
+import { getSlabMetric } from "@/lib/smartfinder/slabMetric";
 import { startCheckout } from "@/lib/billing/start-checkout";
+
+const METRIC_TONE_CLASS = {
+  good: "text-emerald-600 dark:text-emerald-400",
+  warn: "text-amber-600 dark:text-amber-400",
+  bad: "text-rose-500 dark:text-rose-400",
+} as const;
 
 type ResultsListProps = {
   results: SmartFinderResult[];
@@ -120,6 +127,11 @@ function ResultCard({
 }) {
   const location = formatLocation(result.city, result.state);
   const href = `/slab/${result.slabId}?sf=1`;
+  const metric = getSlabMetric(
+    result.slabSqft,
+    result.totalPieceSqft,
+    result.fits,
+  );
 
   function handleNavigate() {
     saveSmartfinderHandoff(result.slabId, pieces);
@@ -194,17 +206,9 @@ function ResultCard({
             </strong>
           </span>
           <span>
-            Waste:{" "}
-            <strong
-              className={
-                result.wastePercent <= 20
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : result.wastePercent <= 40
-                    ? "text-amber-600 dark:text-amber-400"
-                    : "text-red-500"
-              }
-            >
-              {result.wastePercent}%
+            {metric.label}:{" "}
+            <strong className={METRIC_TONE_CLASS[metric.tone]}>
+              {metric.value}
             </strong>
           </span>
           {location ? <span>{location}</span> : null}

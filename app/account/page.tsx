@@ -95,6 +95,10 @@ export default async function AccountPage() {
               state: user?.state,
               zip: user?.zip,
               country: user?.country,
+              role: user?.role,
+              storeSlug: user?.storeSlug,
+              storePublic: user?.storePublic,
+              storeSlugLocked: user?.storeSlugLocked,
             }}
           />
         </div>

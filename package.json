@@ -11,9 +11,12 @@
     "db:setup": "tsx scripts/setup-db.ts",
     "db:push": "drizzle-kit push",
     "db:apply-subscription": "tsx scripts/apply-subscription-migration.ts",
+    "db:apply-store-slug": "tsx scripts/apply-store-slug-migration.ts",
+    "db:backfill-store-slugs": "tsx scripts/backfill-store-slugs.ts",
     "db:init": "tsx scripts/setup-db.ts && drizzle-kit push",
     "db:backfill-geo": "tsx scripts/backfill-geo.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.3",
@@ -45,6 +48,7 @@
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
