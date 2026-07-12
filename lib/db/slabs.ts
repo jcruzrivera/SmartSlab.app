@@ -12,6 +12,7 @@ import {
   users,
 } from "@/lib/db/schema";
 import { ensureVendorStoreSlug } from "@/lib/db/users";
+import { ensureUniqueShortCode } from "@/lib/inventory/short-code";
 
 export type SlabFinish = (typeof finishTypeEnum.enumValues)[number];
 export type SlabKind = (typeof slabTypeEnum.enumValues)[number];
@@ -83,6 +84,41 @@ export async function getSlabById(
   });
 
   return (row as SlabWithRelations | undefined) ?? null;
+}
+
+/**
+ * Resolves a slab from its printed QR short code. Codes are stored uppercase;
+ * callers should uppercase user/QR input before passing it in.
+ */
+export async function getSlabByShortCode(
+  code: string,
+): Promise<SlabWithRelations | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  const db = getDb();
+  const row = await db.query.slabs.findFirst({
+    where: eq(slabs.shortCode, code),
+    with: slabRelations,
+  });
+
+  return (row as SlabWithRelations | undefined) ?? null;
+}
+
+/** True when a slab already carries the given short code (collision check). */
+export async function shortCodeExists(code: string): Promise<boolean> {
+  if (!isDbConfigured()) {
+    return false;
+  }
+
+  const db = getDb();
+  const row = await db.query.slabs.findFirst({
+    where: eq(slabs.shortCode, code),
+    columns: { id: true },
+  });
+
+  return Boolean(row);
 }
 
 export async function listPublicSlabsByIds(
@@ -293,11 +329,14 @@ export async function createSlab(input: CreateSlabInput): Promise<string> {
   const db = getDb();
   await ensureMaterials();
 
+  const shortCode = await ensureUniqueShortCode(shortCodeExists);
+
   const [row] = await db
     .insert(slabs)
     .values({
       vendorId: input.vendorId,
       name: input.name,
+      shortCode,
       type: input.type,
       materialId: input.materialId,
       finish: input.finish,

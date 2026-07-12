@@ -35,7 +35,7 @@ export function SiteHeader({
     : publicMobileNavItems;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/60">
+    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/60 print:hidden">
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <div className="flex items-center gap-3">
           <MobileNav items={mobileNavItems} />

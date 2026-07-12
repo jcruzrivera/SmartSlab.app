@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
@@ -71,6 +72,21 @@ export const planStatusEnum = pgEnum("plan_status", [
   "past_due",
   "canceled",
   "none",
+]);
+
+export const inventoryEventTypeEnum = pgEnum("inventory_event_type", [
+  "used",
+  "sold_offline",
+  "adjusted",
+  "remnant_created",
+  "marked_missing",
+  "restored",
+]);
+
+export const reconciliationStatusEnum = pgEnum("reconciliation_status", [
+  "open",
+  "completed",
+  "abandoned",
 ]);
 
 export const users = pgTable("users", {
@@ -153,6 +169,13 @@ export const slabs = pgTable("slabs", {
   type: slabTypeEnum("type").notNull(),
   status: slabStatusEnum("status").notNull().default("available"),
   sku: text("sku"),
+  /** 8-char human-readable code printed on the QR label (QR payload). */
+  shortCode: text("short_code").unique(),
+  /** Set when this slab is a remnant spawned from a parent slab. */
+  parentSlabId: uuid("parent_slab_id").references(
+    (): AnyPgColumn => slabs.id,
+    { onDelete: "set null" },
+  ),
   name: text("name").notNull(),
   /** Slab face width in inches (industry standard). */
   widthIn: numeric("width_in", { precision: 10, scale: 2 }),
@@ -204,6 +227,63 @@ export const slabImages = pgTable("slab_images", {
   aiAnalyzed: boolean("ai_analyzed").notNull().default(false),
   aiRawResponse: jsonb("ai_raw_response"),
   createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// Full audit trail of every inventory movement (used, sold offline, adjusted,
+// remnant spawned, reconciliation missing/restored). vendor_id/slab_id are uuid
+// FKs here to match the rest of the schema (the feature prompt used `text`).
+export const inventoryEvents = pgTable(
+  "inventory_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    slabId: uuid("slab_id")
+      .notNull()
+      .references(() => slabs.id, { onDelete: "cascade" }),
+    vendorId: uuid("vendor_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    eventType: inventoryEventTypeEnum("event_type").notNull(),
+    quantityDelta: integer("quantity_delta").notNull(),
+    note: text("note"),
+    sessionId: uuid("session_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    vendorCreatedIdx: index("inventory_events_vendor_created_idx").on(
+      table.vendorId,
+      table.createdAt,
+    ),
+    slabIdx: index("inventory_events_slab_idx").on(table.slabId),
+  }),
+);
+
+// Physical count sessions (reconciliation). Created now; wired up in Release 2.
+export const reconciliationSessions = pgTable("reconciliation_sessions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  vendorId: uuid("vendor_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  status: reconciliationStatusEnum("status").notNull().default("open"),
+  startedAt: timestamp("started_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  summary: jsonb("summary"),
+});
+
+export const reconciliationScans = pgTable("reconciliation_scans", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  sessionId: uuid("session_id")
+    .notNull()
+    .references(() => reconciliationSessions.id, { onDelete: "cascade" }),
+  slabId: uuid("slab_id")
+    .notNull()
+    .references(() => slabs.id, { onDelete: "cascade" }),
+  scannedAt: timestamp("scanned_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });
@@ -383,7 +463,47 @@ export const slabsRelations = relations(slabs, ({ one, many }) => ({
   quoteRequests: many(quoteRequests),
   favorites: many(favorites),
   listingFlags: many(listingFlags),
+  inventoryEvents: many(inventoryEvents),
 }));
+
+export const inventoryEventsRelations = relations(
+  inventoryEvents,
+  ({ one }) => ({
+    slab: one(slabs, {
+      fields: [inventoryEvents.slabId],
+      references: [slabs.id],
+    }),
+    vendor: one(users, {
+      fields: [inventoryEvents.vendorId],
+      references: [users.id],
+    }),
+  }),
+);
+
+export const reconciliationSessionsRelations = relations(
+  reconciliationSessions,
+  ({ one, many }) => ({
+    vendor: one(users, {
+      fields: [reconciliationSessions.vendorId],
+      references: [users.id],
+    }),
+    scans: many(reconciliationScans),
+  }),
+);
+
+export const reconciliationScansRelations = relations(
+  reconciliationScans,
+  ({ one }) => ({
+    session: one(reconciliationSessions, {
+      fields: [reconciliationScans.sessionId],
+      references: [reconciliationSessions.id],
+    }),
+    slab: one(slabs, {
+      fields: [reconciliationScans.slabId],
+      references: [slabs.id],
+    }),
+  }),
+);
 
 export const slabImagesRelations = relations(slabImages, ({ one }) => ({
   slab: one(slabs, {

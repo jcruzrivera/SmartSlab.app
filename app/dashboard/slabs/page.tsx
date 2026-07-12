@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import {
+  InventoryTable,
+  type InventoryRow,
+} from "@/components/inventory/inventory-table";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
-import { DuplicateButton } from "@/components/slab/duplicate-button";
-import { Badge, slabStatusVariant } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { isDbConfigured } from "@/lib/db/client";
 import { listSlabsByVendor } from "@/lib/db/slabs";
@@ -25,6 +27,20 @@ export default async function DashboardSlabsPage() {
 
   const user = await getOrCreateCurrentDbUser();
   const slabs = user ? await listSlabsByVendor(user.id) : [];
+
+  const rows: InventoryRow[] = slabs.map((slab) => ({
+    id: slab.id,
+    name: slab.name,
+    materialName: slab.material?.name ?? "—",
+    dimensions: formatDimensions(
+      slab.widthIn,
+      slab.heightIn,
+      slab.thicknessCm,
+    ),
+    price: formatPrice(slab.price),
+    status: slab.status,
+    hasShortCode: Boolean(slab.shortCode),
+  }));
 
   return (
     <section className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -72,62 +88,7 @@ export default async function DashboardSlabsPage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
-          <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900">
-              <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Material</th>
-                <th className="px-4 py-3">Dimensions</th>
-                <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {slabs.map((slab) => (
-                <tr key={slab.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/slab/${slab.id}`}
-                      className="font-medium hover:text-brand-strong"
-                    >
-                      {slab.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {slab.material?.name ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {formatDimensions(slab.widthIn, slab.heightIn, slab.thicknessCm)}
-                  </td>
-                  <td className="px-4 py-3 font-medium">{formatPrice(slab.price)}</td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      variant={slabStatusVariant[slab.status] ?? "muted"}
-                      className="capitalize"
-                    >
-                      {slab.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <DuplicateButton slabId={slab.id} />
-                      <Link
-                        href={`/dashboard/slabs/${slab.id}/edit`}
-                        className="text-sm font-medium text-brand-strong hover:underline"
-                      >
-                        Edit
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        </div>
+        <InventoryTable rows={rows} />
       )}
     </section>
   );

@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { slabImages, slabs } from "@/lib/db/schema";
+import { shortCodeExists } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { ensureUniqueShortCode } from "@/lib/inventory/short-code";
 import { assertInventoryCapacity, isPlanLimitError } from "@/lib/plan/enforce";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +54,8 @@ export async function POST(
     );
   }
 
+  const shortCode = await ensureUniqueShortCode(shortCodeExists);
+
   const [duplicate] = await db
     .insert(slabs)
     .values({
@@ -60,6 +64,7 @@ export async function POST(
       materialId: original.materialId,
       type: original.type,
       sku: original.sku,
+      shortCode,
       name: `${original.name} (copy)`,
       widthIn: original.widthIn,
       heightIn: original.heightIn,

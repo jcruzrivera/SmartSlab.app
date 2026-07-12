@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SlabForm, type SlabFormInitialValues } from "@/components/slab/slab-form";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
+import { buttonClasses } from "@/components/ui/button";
 import { isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { getSlabForVendor } from "@/lib/db/slabs";
@@ -71,12 +73,20 @@ export default async function EditSlabPage({ params }: EditSlabPageProps) {
           { label: "Edit listing" },
         ]}
       />
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-        Edit listing
-      </h1>
-      <p className="mt-1 text-slate-600 dark:text-slate-300">
-        Update photos, dimensions, price, and location for your slab.
-      </p>
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Edit listing</h1>
+          <p className="mt-1 text-slate-600 dark:text-slate-300">
+            Update photos, dimensions, price, and location for your slab.
+          </p>
+        </div>
+        <Link
+          href={`/dashboard/labels/print?ids=${slab.id}`}
+          className={buttonClasses({ variant: "outline", size: "sm" })}
+        >
+          Imprimir etiqueta
+        </Link>
+      </div>
 
       <div className="mt-6">
         <SlabForm

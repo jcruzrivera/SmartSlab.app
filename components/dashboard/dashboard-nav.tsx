@@ -27,7 +27,7 @@ export function DashboardNav({
   return (
     <nav
       aria-label="Dashboard"
-      className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80"
+      className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 print:hidden"
     >
       <div className="mx-auto flex w-full max-w-6xl items-center gap-1 overflow-x-auto px-6 py-2">
         {LINKS.map((link) => {

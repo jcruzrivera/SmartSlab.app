@@ -15,7 +15,7 @@ export function SiteFooter() {
   const clerkEnabled = hasValidClerkConfig();
 
   return (
-    <footer className="mt-auto border-t border-slate-200/70 bg-white/60 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/50">
+    <footer className="mt-auto border-t border-slate-200/70 bg-white/60 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/50 print:hidden">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <Link href="/" className="flex items-center gap-2" aria-label="SmartSlab">
