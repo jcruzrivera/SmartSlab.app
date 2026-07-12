@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { SmartSlabLogo } from "@/components/brand/smartslab-logo";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { MobileNav, type NavItem } from "@/components/site/mobile-nav";
 
@@ -38,13 +39,8 @@ export function SiteHeader({
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <div className="flex items-center gap-3">
           <MobileNav items={mobileNavItems} />
-          <Link href="/" className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-              S
-            </span>
-            <span className="text-base font-semibold tracking-tight">
-              SmartSlab
-            </span>
+          <Link href="/" className="flex items-center gap-2" aria-label="SmartSlab">
+            <SmartSlabLogo />
           </Link>
         </div>
 

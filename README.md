@@ -26,6 +26,21 @@ checkout, and vendor operations.
 
 ## Version status
 
+### Brand icons (favicon / PWA / header)
+
+Master mark: `public/brand/smartslab-mark.svg` (S/ on brand gradient).
+Regenerate favicon, apple-touch (180), and PWA icons with:
+
+```bash
+npm run brand:icons
+```
+
+Outputs: `app/favicon.ico`, `app/apple-icon.png`, `app/icon.png`,
+`public/icons/icon-192.png`, `icon-512.png`, `icon-512-maskable.png`.
+Header/footer use the vector `SmartSlabLogo` component for retina clarity.
+
+---
+
 ### SmartFinder AI piece extraction (current working version)
 
 SmartFinder can now read a project drawing and pre-fill the "Define your pieces"

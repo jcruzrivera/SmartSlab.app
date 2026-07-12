@@ -30,7 +30,7 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "any",
       },
       {
-        src: "/icons/icon-512.png",
+        src: "/icons/icon-512-maskable.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
@@ -41,19 +41,25 @@ export default function manifest(): MetadataRoute.Manifest {
         name: "Browse slabs",
         short_name: "Browse",
         url: "/browse",
-        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        icons: [
+          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        ],
       },
       {
         name: "Compare slabs",
         short_name: "Compare",
         url: "/compare",
-        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        icons: [
+          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        ],
       },
       {
         name: "Dashboard",
         short_name: "Dashboard",
         url: "/dashboard",
-        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        icons: [
+          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        ],
       },
     ],
   };

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SmartSlabLogo } from "@/components/brand/smartslab-logo";
 import { hasValidClerkConfig } from "@/lib/auth/config";
 
 const categories = [
@@ -17,13 +18,8 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-slate-200/70 bg-white/60 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/50">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div>
-          <Link href="/" className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-              S
-            </span>
-            <span className="text-base font-semibold tracking-tight">
-              SmartSlab
-            </span>
+          <Link href="/" className="flex items-center gap-2" aria-label="SmartSlab">
+            <SmartSlabLogo />
           </Link>
           <p className="mt-3 max-w-xs text-sm text-slate-500 dark:text-slate-400">
             The marketplace to buy and sell natural stone slabs and remnants.
