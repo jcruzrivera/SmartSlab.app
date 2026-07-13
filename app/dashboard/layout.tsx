@@ -14,12 +14,16 @@ export default async function DashboardLayout({
 }) {
   const user = isDbConfigured() ? await getOrCreateCurrentDbUser() : null;
   const complimentary = hasComplimentaryAccess(user?.clerkId);
+  const displayPlan = user ? effectivePlanForUser(user) : undefined;
+  // Align badge with enforcement: complimentary → active; otherwise keep
+  // real subscription status (so past_due / canceled still surface).
+  const displayStatus = complimentary ? "active" : user?.planStatus;
 
   return (
     <>
       <DashboardNav
-        currentPlan={complimentary && user ? effectivePlanForUser(user) : user?.plan}
-        planStatus={complimentary ? "active" : user?.planStatus}
+        currentPlan={displayPlan}
+        planStatus={displayStatus}
         complimentary={complimentary}
       />
       <Suspense fallback={null}>

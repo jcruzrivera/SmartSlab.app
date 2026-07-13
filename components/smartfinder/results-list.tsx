@@ -120,10 +120,14 @@ function ResultCard({
   result,
   index,
   pieces,
+  ownResults,
+  marketResults,
 }: {
   result: SmartFinderResult;
   index: number;
   pieces: Piece[];
+  ownResults: SmartFinderResult[];
+  marketResults: SmartFinderResult[];
 }) {
   const location = formatLocation(result.city, result.state);
   const href = `/slab/${result.slabId}?sf=1`;
@@ -134,7 +138,10 @@ function ResultCard({
   );
 
   function handleNavigate() {
-    saveSmartfinderHandoff(result.slabId, pieces);
+    saveSmartfinderHandoff(result.slabId, pieces, {
+      ownResults,
+      marketResults,
+    });
   }
 
   return (
@@ -243,12 +250,16 @@ function ResultSection({
   items,
   startIndex,
   pieces,
+  ownResults,
+  marketResults,
 }: {
   title: string;
   hint?: string;
   items: SmartFinderResult[];
   startIndex: number;
   pieces: Piece[];
+  ownResults: SmartFinderResult[];
+  marketResults: SmartFinderResult[];
 }) {
   if (items.length === 0) return null;
 
@@ -268,6 +279,8 @@ function ResultSection({
           result={result}
           index={startIndex + i}
           pieces={pieces}
+          ownResults={ownResults}
+          marketResults={marketResults}
         />
       ))}
     </div>
@@ -361,6 +374,8 @@ export function ResultsList({
                   items={ownResults}
                   startIndex={0}
                   pieces={pieces}
+                  ownResults={ownResults}
+                  marketResults={marketResults}
                 />
               ) : (
                 <div className="rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
@@ -379,6 +394,8 @@ export function ResultsList({
                 items={marketResults}
                 startIndex={ownResults.length}
                 pieces={pieces}
+                ownResults={ownResults}
+                marketResults={marketResults}
               />
             </>
           ) : (
@@ -388,6 +405,8 @@ export function ResultsList({
                 result={result}
                 index={index}
                 pieces={pieces}
+                ownResults={ownResults}
+                marketResults={marketResults}
               />
             ))
           )}

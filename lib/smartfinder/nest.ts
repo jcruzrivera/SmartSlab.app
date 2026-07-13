@@ -11,8 +11,12 @@ export type NestedPiece = {
 
 export type NestResult = {
   placements: NestedPiece[];
+  /** True when every input piece was placed. */
   placed: boolean;
+  /** Labels of pieces that could not be placed (legacy / display). */
   oversized: string[];
+  /** Actual piece objects that could not be placed on this slab. */
+  unplaced: Piece[];
   slabWidthIn: number;
   slabHeightIn: number;
 };
@@ -28,6 +32,7 @@ export function nestPiecesOnSlab(
   pieces: Piece[],
 ): NestResult {
   const oversized: string[] = [];
+  const unplaced: Piece[] = [];
   const placements: NestedPiece[] = [];
 
   if (
@@ -41,6 +46,7 @@ export function nestPiecesOnSlab(
       placements: [],
       placed: false,
       oversized: pieces.map((p) => p.label),
+      unplaced: [...pieces],
       slabWidthIn,
       slabHeightIn,
     };
@@ -70,6 +76,7 @@ export function nestPiecesOnSlab(
     );
     if (!fitsSlab) {
       oversized.push(piece.label);
+      unplaced.push(piece);
       continue;
     }
 
@@ -124,6 +131,7 @@ export function nestPiecesOnSlab(
 
     if (!placed) {
       oversized.push(piece.label);
+      unplaced.push(piece);
     }
   }
 
@@ -131,6 +139,7 @@ export function nestPiecesOnSlab(
     placements,
     placed: oversized.length === 0 && placements.length === pieces.length,
     oversized,
+    unplaced,
     slabWidthIn,
     slabHeightIn,
   };

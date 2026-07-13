@@ -1,12 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { PlanLimitNotice } from "@/components/billing/plan-limit-notice";
 import { PieceEditor } from "@/components/smartfinder/piece-editor";
 import { ResultsList } from "@/components/smartfinder/results-list";
 import { UploadStep } from "@/components/smartfinder/upload-step";
 import { findMatchingSlabs } from "@/app/account/smartfinder/actions";
+import {
+  clearSmartfinderSeed,
+  peekSmartfinderSeed,
+} from "@/lib/smartfinder/handoff";
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 
 type Step = "upload" | "pieces" | "results";
@@ -19,11 +23,18 @@ const STEP_META: Record<Step, { number: number; label: string }> = {
 
 const STEPS: Step[] = ["upload", "pieces", "results"];
 
+function readInitialSeed(): Piece[] {
+  return peekSmartfinderSeed() ?? [];
+}
+
 export function SmartfinderFlow() {
-  const [step, setStep] = useState<Step>("upload");
+  const [initialSeed] = useState(readInitialSeed);
+  const [step, setStep] = useState<Step>(
+    initialSeed.length > 0 ? "pieces" : "upload",
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [pieces, setPieces] = useState<Piece[]>([]);
-  const [autoFilled, setAutoFilled] = useState(false);
+  const [pieces, setPieces] = useState<Piece[]>(initialSeed);
+  const [autoFilled, setAutoFilled] = useState(initialSeed.length > 0);
   const [results, setResults] = useState<SmartFinderResult[]>([]);
   const [ownResults, setOwnResults] = useState<SmartFinderResult[]>([]);
   const [marketResults, setMarketResults] = useState<SmartFinderResult[]>([]);
@@ -32,6 +43,12 @@ export function SmartfinderFlow() {
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [upgradeTo, setUpgradeTo] = useState<"pro" | "premium" | null>(null);
+
+  useEffect(() => {
+    if (initialSeed.length > 0) {
+      clearSmartfinderSeed();
+    }
+  }, [initialSeed]);
 
   const handleImageSelected = useCallback((url: string | null) => {
     setImageUrl(url);

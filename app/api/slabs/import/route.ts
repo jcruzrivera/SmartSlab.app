@@ -4,7 +4,9 @@ import { parseCsv } from "@/lib/csv";
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { listMaterials } from "@/lib/db/materials";
 import { finishTypeEnum, slabs, slabTypeEnum } from "@/lib/db/schema";
+import { shortCodeExists } from "@/lib/db/slabs";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
+import { ensureUniqueShortCode } from "@/lib/inventory/short-code";
 import { assertInventoryCapacity, isPlanLimitError } from "@/lib/plan/enforce";
 
 export const dynamic = "force-dynamic";
@@ -192,9 +194,23 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const db = getDb();
+
+  // Assign QR short codes the same way createSlab does (unique per row,
+  // including collisions within this import batch).
+  const batchCodes = new Set<string>();
+  const rowsWithCodes: Array<ParsedRow & { shortCode: string }> = [];
+  for (const row of validRows) {
+    const shortCode = await ensureUniqueShortCode(async (code) => {
+      if (batchCodes.has(code)) return true;
+      return shortCodeExists(code);
+    });
+    batchCodes.add(shortCode);
+    rowsWithCodes.push({ ...row, shortCode });
+  }
+
   const inserted = await db
     .insert(slabs)
-    .values(validRows)
+    .values(rowsWithCodes)
     .returning({ id: slabs.id });
 
   return NextResponse.json({
