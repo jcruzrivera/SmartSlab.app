@@ -1,21 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="SmartSlab">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8B7BB8"/>
-      <stop offset="35%" stop-color="#C5D96B"/>
-      <stop offset="70%" stop-color="#1BB0CE"/>
-      <stop offset="100%" stop-color="#0D8FA8"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="#1BB0CE"/>
   <text
     x="512"
-    y="560"
+    y="700"
     text-anchor="middle"
     font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
-    font-size="420"
+    font-size="620"
     font-weight="800"
     fill="#ffffff"
-    letter-spacing="-12"
-  >S/</text>
+    letter-spacing="-8"
+  >S</text>
 </svg>

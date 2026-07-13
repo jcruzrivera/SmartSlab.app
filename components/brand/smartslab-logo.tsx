@@ -1,5 +1,3 @@
-import { useId } from "react";
-
 type SmartSlabLogoProps = {
   className?: string;
   /** Show the "SmartSlab" wordmark next to the mark. */
@@ -9,15 +7,14 @@ type SmartSlabLogoProps = {
 };
 
 /**
- * Crisp vector brand mark (S/) + optional wordmark for header/footer.
+ * Crisp flat vector brand mark (white "S" on the brand cyan) + optional
+ * wordmark for header/footer.
  */
 export function SmartSlabLogo({
   className,
   withWordmark = true,
   markSize = 28,
 }: SmartSlabLogoProps) {
-  const gradientId = useId();
-
   return (
     <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
       <svg
@@ -28,26 +25,18 @@ export function SmartSlabLogo({
         aria-hidden
         className="shrink-0 rounded-lg"
       >
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8B7BB8" />
-            <stop offset="35%" stopColor="#C5D96B" />
-            <stop offset="70%" stopColor="#1BB0CE" />
-            <stop offset="100%" stopColor="#0D8FA8" />
-          </linearGradient>
-        </defs>
-        <rect width="64" height="64" rx="12" fill={`url(#${gradientId})`} />
+        <rect width="64" height="64" rx="14" fill="#1BB0CE" />
         <text
           x="32"
-          y="42"
+          y="44"
           textAnchor="middle"
           fill="#ffffff"
           fontFamily="var(--font-geist-sans), Segoe UI, Helvetica Neue, Arial, sans-serif"
-          fontSize="28"
+          fontSize="40"
           fontWeight="800"
-          letterSpacing="-1.5"
+          letterSpacing="-1"
         >
-          S/
+          S
         </text>
       </svg>
       {withWordmark ? (
