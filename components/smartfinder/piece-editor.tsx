@@ -87,18 +87,19 @@ export function PieceEditor({
       setPieces((prev) =>
         prev.map((p) => {
           if (p.key !== key) return p;
-          // Editing AABB dimensions clears polygon so UI stays consistent.
-          if (field === "widthIn" || field === "heightIn") {
-            const next: PieceRow = {
-              key: p.key,
-              label: p.label,
-              widthIn: p.widthIn,
-              heightIn: p.heightIn,
-              [field]: value,
-            };
-            return next;
+
+          if (field === "label") {
+            return { ...p, label: String(value) };
           }
-          return { ...p, [field]: value };
+
+          // Editing AABB dimensions clears polygon so UI stays consistent.
+          const dim = typeof value === "number" ? value : Number(value);
+          return {
+            key: p.key,
+            label: p.label,
+            widthIn: field === "widthIn" ? dim : p.widthIn,
+            heightIn: field === "heightIn" ? dim : p.heightIn,
+          };
         }),
       );
     },
