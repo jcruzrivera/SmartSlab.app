@@ -1,4 +1,5 @@
 import type { SlabWithRelations } from "@/lib/db/slabs";
+import { pieceAreaSqft } from "@/lib/smartfinder/geometry";
 import type { FitResult, Piece } from "@/lib/smartfinder/types";
 
 /* ------------------------------------------------------------------ */
@@ -19,9 +20,9 @@ function slabSqft(slab: SlabWithRelations): number | null {
   return (w * h) / 144;
 }
 
-/** Sum of all piece areas in square feet. */
+/** Sum of all piece areas in square feet (polygon area when available). */
 function totalPieceSqft(pieces: Piece[]): number {
-  return pieces.reduce((sum, p) => sum + (p.widthIn * p.heightIn) / 144, 0);
+  return pieces.reduce((sum, p) => sum + pieceAreaSqft(p), 0);
 }
 
 /* ------------------------------------------------------------------ */

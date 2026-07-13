@@ -19,6 +19,8 @@ export async function GET(): Promise<NextResponse> {
   const userId = await getClerkUserId();
   return NextResponse.json({
     configured: isPieceExtractionConfigured(),
+    // Geometric DXF parsing works without AI provider keys.
+    dxfSupported: true,
     signedIn: Boolean(userId),
   });
 }
@@ -47,17 +49,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   const userId = await getClerkUserId();
   if (!userId) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
-  }
-
-  if (!isPieceExtractionConfigured()) {
-    return NextResponse.json(
-      {
-        error:
-          "AI extraction is not configured. Add OPENAI_API_KEY or ANTHROPIC_API_KEY.",
-        configured: false,
-      },
-      { status: 503 },
-    );
   }
 
   let file: File | null = null;
@@ -90,6 +81,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(
       { error: "Unsupported file type. Upload a PDF, DXF, or image." },
       { status: 415 },
+    );
+  }
+
+  // DXF has a geometric parser that needs no AI keys; PDF/image still need AI.
+  if (kind !== "dxf" && !isPieceExtractionConfigured()) {
+    return NextResponse.json(
+      {
+        error:
+          "AI extraction is not configured. Add OPENAI_API_KEY or ANTHROPIC_API_KEY.",
+        configured: false,
+      },
+      { status: 503 },
     );
   }
 

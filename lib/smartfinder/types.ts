@@ -1,16 +1,29 @@
 import type { SlabWithRelations } from "@/lib/db/slabs";
 
 /* ------------------------------------------------------------------ */
-/*  Piece — a rectangular cut the buyer needs                         */
+/*  Piece — a cut the buyer needs (rect or polygon with AABB)         */
 /* ------------------------------------------------------------------ */
+
+export type PieceVertex = {
+  /** X in inches (drawing space) */
+  x: number;
+  /** Y in inches (drawing space) */
+  y: number;
+};
 
 export type Piece = {
   /** Human label, e.g. "Kitchen counter" */
   label: string;
-  /** Width in inches */
+  /** Width in inches (AABB when vertices are present) */
   widthIn: number;
-  /** Height (length) in inches */
+  /** Height (length) in inches (AABB when vertices are present) */
   heightIn: number;
+  /**
+   * Optional closed polygon in inches. When present this is the true cut
+   * outline; widthIn/heightIn are the axis-aligned bounding box used by
+   * rectangular fit/nest until polygon nesting ships.
+   */
+  vertices?: PieceVertex[];
 };
 
 /* ------------------------------------------------------------------ */

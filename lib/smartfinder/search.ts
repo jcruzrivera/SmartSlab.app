@@ -2,6 +2,7 @@ import type { DbUser } from "@/lib/db/users";
 import { listPublicSlabs, listSlabsByVendor } from "@/lib/db/slabs";
 import { consumeSmartfinderSearch } from "@/lib/plan/enforce";
 import { effectivePlanForUser } from "@/lib/plan/limits";
+import { normalizeVertices } from "@/lib/smartfinder/geometry";
 import { rankSlabs } from "@/lib/smartfinder/fit";
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 import { toSmartFinderResult } from "@/lib/smartfinder/serialize";
@@ -26,15 +27,26 @@ function validatePieces(raw: unknown): Piece[] | null {
   const pieces: Piece[] = [];
   for (const item of raw) {
     if (typeof item !== "object" || item === null) return null;
-    const { label, widthIn, heightIn } = item as Record<string, unknown>;
+    const { label, widthIn, heightIn, vertices } = item as Record<
+      string,
+      unknown
+    >;
     if (typeof label !== "string" || !label.trim()) return null;
     if (typeof widthIn !== "number" || widthIn <= 0 || widthIn > 600) return null;
     if (typeof heightIn !== "number" || heightIn <= 0 || heightIn > 600) return null;
-    pieces.push({
+
+    const piece: Piece = {
       label: label.trim(),
       widthIn: Math.round(widthIn * 100) / 100,
       heightIn: Math.round(heightIn * 100) / 100,
-    });
+    };
+
+    const normalized = normalizeVertices(vertices);
+    if (normalized) {
+      piece.vertices = normalized;
+    }
+
+    pieces.push(piece);
   }
 
   return pieces;

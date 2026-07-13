@@ -3,6 +3,11 @@
 import { useCallback, useState } from "react";
 
 import { PlanPreview } from "@/components/smartfinder/plan-preview";
+import {
+  pieceAreaSqft,
+  polygonAabb,
+  verticesToSvgPath,
+} from "@/lib/smartfinder/geometry";
 import { PIECE_PRESETS, type Piece } from "@/lib/smartfinder/types";
 
 type PieceEditorProps = {
@@ -14,7 +19,7 @@ type PieceEditorProps = {
 };
 
 function totalSqft(pieces: Piece[]): number {
-  return pieces.reduce((sum, p) => sum + (p.widthIn * p.heightIn) / 144, 0);
+  return pieces.reduce((sum, p) => sum + pieceAreaSqft(p), 0);
 }
 
 let nextId = 1;
@@ -23,6 +28,29 @@ type PieceRow = Piece & { key: number };
 
 function toPieceRow(p: Piece): PieceRow {
   return { ...p, key: nextId++ };
+}
+
+function PieceOutlinePreview({ piece }: { piece: Piece }) {
+  if (!piece.vertices || piece.vertices.length < 3) return null;
+  const aabb = polygonAabb(piece.vertices);
+  const d = verticesToSvgPath(piece.vertices);
+  if (!aabb || !d) return null;
+
+  return (
+    <svg
+      viewBox={`0 0 ${aabb.widthIn} ${aabb.heightIn}`}
+      className="h-10 w-10 shrink-0 rounded-md border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800"
+      aria-hidden
+    >
+      <path
+        d={d}
+        fill="rgba(27,176,206,0.25)"
+        stroke="#1bb0ce"
+        strokeWidth={Math.max(aabb.widthIn, aabb.heightIn) * 0.02}
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 export function PieceEditor({
@@ -55,9 +83,23 @@ export function PieceEditor({
   }, []);
 
   const updatePiece = useCallback(
-    (key: number, field: keyof Piece, value: string | number) => {
+    (key: number, field: "label" | "widthIn" | "heightIn", value: string | number) => {
       setPieces((prev) =>
-        prev.map((p) => (p.key === key ? { ...p, [field]: value } : p)),
+        prev.map((p) => {
+          if (p.key !== key) return p;
+          // Editing AABB dimensions clears polygon so UI stays consistent.
+          if (field === "widthIn" || field === "heightIn") {
+            const next: PieceRow = {
+              key: p.key,
+              label: p.label,
+              widthIn: p.widthIn,
+              heightIn: p.heightIn,
+              [field]: value,
+            };
+            return next;
+          }
+          return { ...p, [field]: value };
+        }),
       );
     },
     [],
@@ -76,11 +118,11 @@ export function PieceEditor({
   const handleSubmit = useCallback(() => {
     if (!isValid) return;
     onSearch(
-      pieces.map(({ label, widthIn, heightIn }) => ({
-        label,
-        widthIn,
-        heightIn,
-      })),
+      pieces.map(({ label, widthIn, heightIn, vertices }) => {
+        const piece: Piece = { label, widthIn, heightIn };
+        if (vertices && vertices.length >= 3) piece.vertices = vertices;
+        return piece;
+      }),
     );
   }, [isValid, onSearch, pieces]);
 
@@ -174,93 +216,112 @@ export function PieceEditor({
           </div>
 
           <div className="flex flex-col gap-3">
-            {pieces.map((piece, index) => (
-              <div
-                key={piece.key}
-                className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:shadow-sm sm:flex-row sm:items-end dark:border-slate-800 dark:bg-slate-900"
-              >
-                <div className="flex-1">
-                  <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Piece {index + 1}
-                  </label>
-                  <input
-                    type="text"
-                    value={piece.label}
-                    onChange={(e) =>
-                      updatePiece(piece.key, "label", e.target.value)
-                    }
-                    placeholder="e.g. Kitchen counter"
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
-                  />
-                </div>
-
-                <div className="w-28">
-                  <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Width (in)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="600"
-                    step="0.5"
-                    value={piece.widthIn || ""}
-                    onChange={(e) =>
-                      updatePiece(piece.key, "widthIn", Number(e.target.value))
-                    }
-                    placeholder="96"
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
-                  />
-                </div>
-
-                <div className="w-28">
-                  <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Height (in)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="600"
-                    step="0.5"
-                    value={piece.heightIn || ""}
-                    onChange={(e) =>
-                      updatePiece(piece.key, "heightIn", Number(e.target.value))
-                    }
-                    placeholder="26"
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
-                  />
-                </div>
-
-                <div className="flex items-end gap-2">
-                  <span className="mb-2 whitespace-nowrap text-xs text-slate-400">
-                    {piece.widthIn > 0 && piece.heightIn > 0
-                      ? `${((piece.widthIn * piece.heightIn) / 144).toFixed(1)} sq ft`
-                      : "—"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removePiece(piece.key)}
-                    aria-label={`Remove ${piece.label || "piece"}`}
-                    className="mb-1 rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden
-                    >
-                      <path
-                        d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            {pieces.map((piece, index) => {
+              const area = pieceAreaSqft(piece);
+              return (
+                <div
+                  key={piece.key}
+                  className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                >
+                  {/* Row 1: full-width name (+ optional polygon preview) */}
+                  <div className="flex w-full items-end gap-3">
+                    <PieceOutlinePreview piece={piece} />
+                    <div className="min-w-0 flex-1">
+                      <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                        Piece {index + 1}
+                        {piece.vertices && piece.vertices.length >= 3
+                          ? " · complex shape"
+                          : ""}
+                      </label>
+                      <input
+                        type="text"
+                        value={piece.label}
+                        onChange={(e) =>
+                          updatePiece(piece.key, "label", e.target.value)
+                        }
+                        placeholder="e.g. Kitchen counter"
+                        className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
                       />
-                    </svg>
-                  </button>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Width, Height, sq ft, delete */}
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="w-28">
+                      <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                        Width (in)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="600"
+                        step="0.5"
+                        value={piece.widthIn || ""}
+                        onChange={(e) =>
+                          updatePiece(
+                            piece.key,
+                            "widthIn",
+                            Number(e.target.value),
+                          )
+                        }
+                        placeholder="96"
+                        className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
+                      />
+                    </div>
+
+                    <div className="w-28">
+                      <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                        Height (in)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="600"
+                        step="0.5"
+                        value={piece.heightIn || ""}
+                        onChange={(e) =>
+                          updatePiece(
+                            piece.key,
+                            "heightIn",
+                            Number(e.target.value),
+                          )
+                        }
+                        placeholder="26"
+                        className="h-10 w-full rounded-lg border border-slate-300 bg-transparent px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700"
+                      />
+                    </div>
+
+                    <div className="flex items-end gap-2">
+                      <span className="mb-2 whitespace-nowrap text-xs text-slate-400">
+                        {area > 0 ? `${area.toFixed(1)} sq ft` : "—"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removePiece(piece.key)}
+                        aria-label={`Remove ${piece.label || "piece"}`}
+                        className="mb-1 rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden
+                        >
+                          <path
+                            d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <button
               type="button"

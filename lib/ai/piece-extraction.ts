@@ -1,3 +1,5 @@
+import { parseDxfPieces } from "@/lib/smartfinder/dxf-parse";
+import { normalizeVertices } from "@/lib/smartfinder/geometry";
 import type { Piece } from "@/lib/smartfinder/types";
 
 /*
@@ -5,9 +7,12 @@ import type { Piece } from "@/lib/smartfinder/types";
  * (DXF, text), or a photo/plan image and returns the list of flat stone pieces
  * to fabricate, so SmartFinder can pre-fill the "Define your pieces" step.
  *
- * Reuses the same provider strategy as lib/ai/slab-analysis.ts (OpenAI or
- * Anthropic, whichever key is present). Everything degrades gracefully: with no
- * key configured, callers keep the manual flow.
+ * DXF: geometric parser first (closed polygons + labels). LLM is a fallback
+ * when no closed shapes are found.
+ *
+ * PDF/image: OpenAI or Anthropic vision (same strategy as lib/ai/slab-analysis.ts).
+ * Everything degrades gracefully: with no key configured, callers keep the
+ * manual flow (except DXF geometric parse, which needs no AI).
  */
 
 export type PieceExtractionInput =
@@ -17,7 +22,7 @@ export type PieceExtractionInput =
 
 export type PieceExtractionResult = {
   pieces: Piece[];
-  provider: "openai" | "anthropic" | null;
+  provider: "openai" | "anthropic" | "dxf" | null;
   unitsDetected?: string;
 };
 
@@ -32,9 +37,10 @@ Return JSON ONLY in exactly this shape:
 { "pieces": [ { "label": string, "widthIn": number, "heightIn": number } ], "unitsDetected": string }
 
 Rules:
-- widthIn and heightIn are the piece's two rectangular dimensions expressed in INCHES. If the drawing uses millimeters, centimeters, meters or feet, convert to inches (1 in = 25.4 mm = 2.54 cm; 1 ft = 12 in).
+- widthIn and heightIn are the piece's two outer dimensions expressed in INCHES (axis-aligned overall size). If the drawing uses millimeters, centimeters, meters or feet, convert to inches (1 in = 25.4 mm = 2.54 cm; 1 ft = 12 in).
+- Prefer ONE piece per fabricatable stone outline. Do NOT split an L-shaped, stepped, notched, or otherwise complex outline into multiple rectangles — return a single piece using the outer overall width × height of that outline.
 - "unitsDetected": the source units you detected ("in", "mm", "cm", "m", or "ft"); use "unknown" if unclear.
-- label: a short human name (e.g. "Kitchen counter", "Island", "Backsplash"). If a piece has no name, use "Piece 1", "Piece 2", etc.
+- label: a short human name from the drawing when readable (e.g. "Kitchen counter", "Island", "Backsplash"). If a piece has no name, use "Piece 1", "Piece 2", etc.
 - Only include flat pieces meant to be fabricated from stone slabs. Ignore walls, cabinets, appliances, room dimensions and annotation text that are not stone pieces.
 - Maximum 20 pieces. Skip a piece if you cannot determine BOTH dimensions.
 - If you cannot identify any stone pieces, return { "pieces": [], "unitsDetected": "unknown" }.
@@ -59,7 +65,10 @@ export function parsePiecesJson(raw: string): {
     for (const item of rawPieces) {
       if (pieces.length >= MAX_PIECES) break;
       if (typeof item !== "object" || item === null) continue;
-      const { label, widthIn, heightIn } = item as Record<string, unknown>;
+      const { label, widthIn, heightIn, vertices } = item as Record<
+        string,
+        unknown
+      >;
       const w = clampDim(widthIn);
       const h = clampDim(heightIn);
       if (w === null || h === null) continue;
@@ -67,7 +76,10 @@ export function parsePiecesJson(raw: string): {
         typeof label === "string" && label.trim()
           ? label.trim().slice(0, 60)
           : `Piece ${pieces.length + 1}`;
-      pieces.push({ label: cleanLabel, widthIn: w, heightIn: h });
+      const piece: Piece = { label: cleanLabel, widthIn: w, heightIn: h };
+      const normalized = normalizeVertices(vertices);
+      if (normalized) piece.vertices = normalized;
+      pieces.push(piece);
     }
 
     const unitsDetected =
@@ -265,6 +277,18 @@ async function runAnthropic(input: PieceExtractionInput): Promise<string> {
 export async function extractPieces(
   input: PieceExtractionInput,
 ): Promise<PieceExtractionResult> {
+  // DXF: geometric parse first — one closed outline = one piece with vertices.
+  if (input.kind === "dxf") {
+    const geometric = parseDxfPieces(input.text);
+    if (geometric.pieces.length > 0) {
+      return {
+        pieces: geometric.pieces,
+        unitsDetected: geometric.unitsDetected,
+        provider: "dxf",
+      };
+    }
+  }
+
   // Anthropic reads PDFs natively; prefer it for PDFs when available.
   const preferAnthropicForPdf = input.kind === "pdf" && hasAnthropic();
 

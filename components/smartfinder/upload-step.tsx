@@ -20,6 +20,16 @@ type UploadStepProps = {
 const ACCEPT = ".pdf,.dxf,image/jpeg,image/png,image/webp,image/gif";
 const MAX_FILE_BYTES = 12 * 1024 * 1024;
 
+function isDxf(file: File): boolean {
+  const name = file.name.toLowerCase();
+  return (
+    name.endsWith(".dxf") ||
+    file.type === "application/dxf" ||
+    file.type === "application/x-dxf" ||
+    file.type === "image/vnd.dxf"
+  );
+}
+
 function isImage(file: File): boolean {
   return file.type.startsWith("image/") && !file.name.toLowerCase().endsWith(".dxf");
 }
@@ -45,18 +55,24 @@ export function UploadStep({
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl);
   const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const [dxfSupported, setDxfSupported] = useState(true);
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     fetch("/api/smartfinder/extract-pieces", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : { configured: false }))
-      .then((data: { configured?: boolean }) => {
-        if (active) setAiConfigured(Boolean(data.configured));
+      .then((res) => (res.ok ? res.json() : { configured: false, dxfSupported: true }))
+      .then((data: { configured?: boolean; dxfSupported?: boolean }) => {
+        if (!active) return;
+        setAiConfigured(Boolean(data.configured));
+        setDxfSupported(data.dxfSupported !== false);
       })
       .catch(() => {
-        if (active) setAiConfigured(false);
+        if (active) {
+          setAiConfigured(false);
+          setDxfSupported(true);
+        }
       });
     return () => {
       active = false;
@@ -71,9 +87,13 @@ export function UploadStep({
         setError("File is too large (max 12 MB).");
         return;
       }
-      // Without AI configured, only images (used as a visual reference) make sense.
-      if (aiConfigured === false && !isImage(selected)) {
-        setError("Upload an image (JPG, PNG, WebP).");
+      // Without AI: images (reference) + DXF (geometric). With AI/unknown: all plan types.
+      if (
+        aiConfigured === false &&
+        !isImage(selected) &&
+        !(dxfSupported && isDxf(selected))
+      ) {
+        setError("Upload an image (JPG, PNG, WebP) or a DXF file.");
         return;
       }
       setPreview((prev) => {
@@ -82,7 +102,7 @@ export function UploadStep({
       });
       setFile(selected);
     },
-    [aiConfigured],
+    [aiConfigured, dxfSupported],
   );
 
   const handleDrop = useCallback(
@@ -148,6 +168,18 @@ export function UploadStep({
   }, [onImageSelected, preview]);
 
   const showAi = aiConfigured !== false;
+  const canExtract =
+    Boolean(file) &&
+    (aiConfigured === true ||
+      (Boolean(file && isDxf(file)) && dxfSupported) ||
+      // While probing config, allow extract attempt for any selected file.
+      aiConfigured === null);
+  const acceptTypes =
+    aiConfigured === false
+      ? dxfSupported
+        ? ".dxf,image/jpeg,image/png,image/webp,image/gif"
+        : "image/jpeg,image/png,image/webp,image/gif"
+      : ACCEPT;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-6">
@@ -160,7 +192,7 @@ export function UploadStep({
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           {showAi
             ? "Add a shop drawing, cut list, CAD export or photo and SmartFinder will read the dimensions and pre-fill your pieces. Supports PDF, DXF, JPG, PNG."
-            : "Add a photo of the room you're designing (kitchen, bathroom, etc.) to help you visualize the stone in context."}
+            : "Add a photo for context, or a DXF CAD export — SmartFinder reads closed outlines from DXF without AI."}
         </p>
       </div>
 
@@ -248,12 +280,12 @@ export function UploadStep({
           </div>
           <div>
             <p className="font-medium text-slate-700 dark:text-slate-200">
-              {showAi ? "Drag & drop your plan here" : "Drag & drop your photo here"}
+              {showAi ? "Drag & drop your plan here" : "Drag & drop your file here"}
             </p>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {showAi
                 ? "or click to browse — PDF, DXF, JPG, PNG"
-                : "or click to browse — JPG, PNG, WebP"}
+                : "or click to browse — DXF, JPG, PNG, WebP"}
             </p>
           </div>
         </button>
@@ -262,7 +294,7 @@ export function UploadStep({
       <input
         ref={inputRef}
         type="file"
-        accept={showAi ? ACCEPT : "image/jpeg,image/png,image/webp,image/gif"}
+        accept={acceptTypes}
         onChange={handleInputChange}
         className="hidden"
       />
@@ -275,7 +307,7 @@ export function UploadStep({
 
       {/* Actions */}
       <div className="flex w-full flex-col items-center gap-3">
-        {file && showAi ? (
+        {file && canExtract ? (
           <button
             type="button"
             onClick={handleExtract}
@@ -308,7 +340,9 @@ export function UploadStep({
                     strokeLinejoin="round"
                   />
                 </svg>
-                Auto-fill pieces with AI
+                {file && isDxf(file)
+                  ? "Extract pieces from DXF"
+                  : "Auto-fill pieces with AI"}
               </>
             )}
           </button>
@@ -334,10 +368,11 @@ export function UploadStep({
         </div>
       </div>
 
-      {file && showAi ? (
+      {file && canExtract ? (
         <p className="max-w-md text-center text-xs text-slate-400">
-          Files are sent securely to our AI provider only to read dimensions.
-          Always review the auto-filled pieces before searching.
+          {file && isDxf(file)
+            ? "DXF outlines are read geometrically on the server. Always review the pieces before searching."
+            : "Files are sent securely to our AI provider only to read dimensions. Always review the auto-filled pieces before searching."}
         </p>
       ) : null}
     </div>
