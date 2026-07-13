@@ -31,6 +31,7 @@ export function SiteFooter() {
           <FooterLink href="/how-it-works">How it works</FooterLink>
           <FooterLink href="/dashboard/slabs/new">Sell a slab</FooterLink>
           <FooterLink href="/dashboard">Dashboard</FooterLink>
+          <FooterLink href="/developers">Developers</FooterLink>
         </FooterColumn>
 
         <FooterColumn title="Categories">
