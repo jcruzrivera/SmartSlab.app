@@ -1,7 +1,7 @@
 import type { DbUser } from "@/lib/db/users";
 import { listPublicSlabs, listSlabsByVendor } from "@/lib/db/slabs";
 import { consumeSmartfinderSearch } from "@/lib/plan/enforce";
-import { effectivePlan } from "@/lib/plan/limits";
+import { effectivePlanForUser } from "@/lib/plan/limits";
 import { rankSlabs } from "@/lib/smartfinder/fit";
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
 import { toSmartFinderResult } from "@/lib/smartfinder/serialize";
@@ -97,7 +97,7 @@ export async function runSmartfinderSearch(
     toSmartFinderResult(result, { isOwnListing: false }),
   );
 
-  const plan = effectivePlan(user.plan, user.planStatus);
+  const plan = effectivePlanForUser(user);
   const isPaid = plan === "pro" || plan === "premium";
 
   // Own inventory always predominates and is never free-capped.

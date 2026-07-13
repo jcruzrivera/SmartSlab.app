@@ -4,7 +4,7 @@ import { getDb, isDbConfigured } from "@/lib/db/client";
 import { slabs, users } from "@/lib/db/schema";
 import type { DbUser } from "@/lib/db/users";
 import {
-  effectivePlan,
+  effectivePlanForUser,
   PLAN_LIMITS,
   type UserPlan,
 } from "@/lib/plan/limits";
@@ -55,7 +55,7 @@ export async function assertInventoryCapacity(
   user: DbUser,
   additionalSlabs = 1,
 ): Promise<void> {
-  const plan = effectivePlan(user.plan, user.planStatus);
+  const plan = effectivePlanForUser(user);
   const cap = PLAN_LIMITS[plan].inventory;
 
   if (!Number.isFinite(cap)) {
@@ -119,7 +119,7 @@ async function refreshSmartfinderUsage(userId: string): Promise<{
 
 /** Checks the monthly SmartFinder quota and increments the counter on success. */
 export async function consumeSmartfinderSearch(user: DbUser): Promise<void> {
-  const plan = effectivePlan(user.plan, user.planStatus);
+  const plan = effectivePlanForUser(user);
   const cap = PLAN_LIMITS[plan].smartfinderPerMonth;
 
   if (!Number.isFinite(cap)) {
@@ -146,7 +146,7 @@ export async function consumeSmartfinderSearch(user: DbUser): Promise<void> {
 }
 
 export function assertMarketDataAccess(user: DbUser): void {
-  const plan = effectivePlan(user.plan, user.planStatus);
+  const plan = effectivePlanForUser(user);
   if (!PLAN_LIMITS[plan].marketData) {
     throw new PlanLimitError(
       "Market Data is available on the Premium plan.",

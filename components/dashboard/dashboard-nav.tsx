@@ -18,9 +18,11 @@ const LINKS: Array<{ href: string; label: string; exact?: boolean }> = [
 export function DashboardNav({
   currentPlan,
   planStatus,
+  complimentary = false,
 }: {
   currentPlan?: string;
   planStatus?: string;
+  complimentary?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -56,6 +58,7 @@ export function DashboardNav({
             <ManagePlanButton
               currentPlan={currentPlan}
               planStatus={planStatus}
+              complimentary={complimentary}
             />
           </div>
         ) : null}

@@ -9,7 +9,7 @@ import { listSlabsByVendor } from "@/lib/db/slabs";
 import { listSalesByVendor } from "@/lib/db/transactions";
 import { getOrCreateCurrentDbUser } from "@/lib/db/users";
 import { buildVendorInsights } from "@/lib/dashboard/insights";
-import { effectivePlan, PLAN_LIMITS } from "@/lib/plan/limits";
+import { effectivePlanForUser, PLAN_LIMITS } from "@/lib/plan/limits";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export default async function MarketDataPage() {
     redirect("/sign-in");
   }
 
-  const plan = effectivePlan(user.plan, user.planStatus);
+  const plan = effectivePlanForUser(user);
   const hasAccess = PLAN_LIMITS[plan].marketData;
 
   if (!hasAccess) {

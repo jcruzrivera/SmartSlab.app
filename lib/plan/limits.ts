@@ -1,3 +1,5 @@
+import { collaboratorProActive, isPartnerClerkId } from "./partners";
+
 export const PLAN_LIMITS = {
   free: {
     inventory: 49,
@@ -34,4 +36,30 @@ export function effectivePlan(
     return plan;
   }
   return "free";
+}
+
+const PLAN_RANK: Record<UserPlan, number> = { free: 0, pro: 1, premium: 2 };
+
+/**
+ * Effective plan for a specific user, applying complimentary access grants:
+ * lifetime partners get `premium`; active collaborators get at least `pro`
+ * (never downgrading a real paid plan). Falls back to the normal
+ * subscription-derived plan otherwise.
+ */
+export function effectivePlanForUser(user: {
+  clerkId?: string | null;
+  plan: string;
+  planStatus: string;
+}): UserPlan {
+  if (isPartnerClerkId(user.clerkId)) {
+    return "premium";
+  }
+
+  const base = effectivePlan(user.plan, user.planStatus);
+
+  if (collaboratorProActive(user.clerkId)) {
+    return PLAN_RANK[base] >= PLAN_RANK.pro ? base : "pro";
+  }
+
+  return base;
 }

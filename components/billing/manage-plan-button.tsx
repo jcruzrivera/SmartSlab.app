@@ -65,9 +65,11 @@ function formatPlanLabel(plan: string): string {
 export function ManagePlanButton({
   currentPlan,
   planStatus,
+  complimentary = false,
 }: {
   currentPlan: string;
   planStatus: string;
+  complimentary?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
@@ -108,6 +110,19 @@ export function ManagePlanButton({
   }, []);
 
   const isBusy = loadingKey !== null;
+
+  if (complimentary) {
+    return (
+      <div className="flex items-center gap-2">
+        <Badge variant={planBadgeVariant(currentPlan, planStatus)} className="capitalize">
+          {formatPlanLabel(currentPlan)}
+        </Badge>
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          Cortesía
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative">
