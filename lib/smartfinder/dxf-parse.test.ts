@@ -188,4 +188,53 @@ EOF
   it("returns empty for non-DXF text", () => {
     expect(parseDxfPieces("not a dxf").pieces).toEqual([]);
   });
+
+  it("ignores closed polylines on annotation/dimension layers", () => {
+    const { pieces } = parseDxfPieces(rectangleDxf("A-ANNO-DIMS"));
+    expect(pieces).toHaveLength(0);
+  });
+
+  it("keeps closed polylines on a stone/pieces layer", () => {
+    const { pieces } = parseDxfPieces(rectangleDxf("STONE"));
+    expect(pieces).toHaveLength(1);
+    expect(pieces[0]!.widthIn).toBe(30);
+    expect(pieces[0]!.heightIn).toBe(20);
+  });
 });
+
+/** Closed 30x20 in rectangle LWPOLYLINE on the given layer. */
+function rectangleDxf(layer: string): string {
+  return `0
+SECTION
+2
+ENTITIES
+0
+LWPOLYLINE
+8
+${layer}
+90
+4
+70
+1
+10
+0
+20
+0
+10
+30
+20
+0
+10
+30
+20
+20
+10
+0
+20
+20
+0
+ENDSEC
+0
+EOF
+`;
+}

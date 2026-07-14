@@ -93,9 +93,16 @@ export async function runSmartfinderSearch(
 
   await consumeSmartfinderSearch(user);
 
+  // Longest edge any piece needs; slabs smaller than this in both dimensions
+  // cannot fit it, so we let the DB pre-filter and widen the scan cap.
+  const minLongestEdgeIn = pieces.reduce(
+    (max, p) => Math.max(max, p.widthIn, p.heightIn),
+    0,
+  );
+
   const [ownSlabs, publicSlabs] = await Promise.all([
     listSlabsByVendor(user.id),
-    listPublicSlabs({ limit: 200 }),
+    listPublicSlabs({ limit: 2000, minLongestEdgeIn }),
   ]);
 
   const ownUsable = selectOwnUsableSlabs(ownSlabs);

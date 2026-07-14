@@ -10,6 +10,8 @@ export type LayoutPiece = {
   y: number;
   w: number;
   h: number;
+  /** Absolute polygon outline (inches) when the piece has real geometry. */
+  points?: Array<{ x: number; y: number }>;
 };
 
 type SlabLayoutVizProps = {
@@ -102,17 +104,28 @@ export function SlabLayoutViz({
 
         {pieces.map((p, i) => (
           <g key={`${p.label}-${i}`}>
-            <rect
-              x={p.x}
-              y={p.y}
-              width={p.w}
-              height={p.h}
-              fill={
-                usePhoto ? "rgba(27,176,206,0.28)" : "rgba(27,176,206,0.55)"
-              }
-              stroke="#1bb0ce"
-              strokeWidth={strokeBase * 0.006}
-            />
+            {p.points && p.points.length >= 3 ? (
+              <polygon
+                points={p.points.map((v) => `${v.x},${v.y}`).join(" ")}
+                fill={
+                  usePhoto ? "rgba(27,176,206,0.28)" : "rgba(27,176,206,0.55)"
+                }
+                stroke="#1bb0ce"
+                strokeWidth={strokeBase * 0.006}
+              />
+            ) : (
+              <rect
+                x={p.x}
+                y={p.y}
+                width={p.w}
+                height={p.h}
+                fill={
+                  usePhoto ? "rgba(27,176,206,0.28)" : "rgba(27,176,206,0.55)"
+                }
+                stroke="#1bb0ce"
+                strokeWidth={strokeBase * 0.006}
+              />
+            )}
             <text
               x={p.x + p.w / 2}
               y={p.y + p.h / 2}

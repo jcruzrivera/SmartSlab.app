@@ -1,5 +1,6 @@
 import type { SlabWithRelations } from "@/lib/db/slabs";
 import { pieceAreaSqft } from "@/lib/smartfinder/geometry";
+import { nestPiecesOnSlab } from "@/lib/smartfinder/nest";
 import type { FitResult, Piece } from "@/lib/smartfinder/types";
 
 /* ------------------------------------------------------------------ */
@@ -58,7 +59,7 @@ export function calculateFit(
 
   if (pieceSqft <= 0) return null;
 
-  // Check which pieces are geometrically oversized for the slab
+  // Check which pieces are geometrically oversized for the slab (AABB).
   const oversizedPieces: string[] = [];
 
   for (const piece of pieces) {
@@ -69,7 +70,24 @@ export function calculateFit(
     }
   }
 
-  const fits = oversizedPieces.length === 0 && pieceSqft <= sqft;
+  // Cheap AABB pre-check. When it passes and any piece has real geometry, we
+  // confirm with true polygon nesting so an L-shape isn't marked "Fits" just
+  // because its bounding box (and total area) happen to fit.
+  const passesAabb = oversizedPieces.length === 0 && pieceSqft <= sqft;
+  const hasPolygon = pieces.some((p) => p.vertices && p.vertices.length >= 3);
+
+  let fits = passesAabb;
+  if (passesAabb && hasPolygon) {
+    const nested = nestPiecesOnSlab(slabW, slabH, pieces);
+    fits = nested.placed;
+    if (!fits) {
+      for (const piece of nested.unplaced) {
+        if (!oversizedPieces.includes(piece.label)) {
+          oversizedPieces.push(piece.label);
+        }
+      }
+    }
+  }
 
   // Waste percentage (capped at 100 in degenerate cases)
   const wastePercent = fits

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import type { Piece, SmartFinderResult } from "@/lib/smartfinder/types";
+import { pieceAreaSqft } from "@/lib/smartfinder/geometry";
 import { saveSmartfinderHandoff } from "@/lib/smartfinder/handoff";
 import { getSlabMetric } from "@/lib/smartfinder/slabMetric";
 import { startCheckout } from "@/lib/billing/start-checkout";
@@ -300,10 +301,7 @@ export function ResultsList({
 }: ResultsListProps) {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const pieceSummary = pieces.map((p) => p.label).join(", ");
-  const totalSqft = pieces.reduce(
-    (s, p) => s + (p.widthIn * p.heightIn) / 144,
-    0,
-  );
+  const totalSqft = pieces.reduce((s, p) => s + pieceAreaSqft(p), 0);
   const shown = results.length;
   const hasSections = ownResults.length > 0 || marketResults.length > 0;
 

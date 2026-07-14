@@ -17,7 +17,39 @@ const MAX_PIECES = 20;
 const MAX_DIM_IN = 600;
 const MIN_EDGE_IN = 0.5;
 const MIN_AREA_SQ_IN = 4; // ignore tiny annotation boxes
+const MAX_ASPECT_RATIO = 30; // reject leader lines / border strips
 const LABEL_SEARCH_PAD_IN = 24;
+
+/** Layer name tokens that never represent a cuttable stone outline. */
+const ANNOTATION_LAYER_TOKENS = new Set([
+  "DIM",
+  "DIMS",
+  "DIMENSION",
+  "DIMENSIONS",
+  "ANNO",
+  "ANNOTATION",
+  "TEXT",
+  "NOTE",
+  "NOTES",
+  "TITLE",
+  "TITLEBLOCK",
+  "HATCH",
+  "CENTER",
+  "CENTRE",
+  "HIDDEN",
+  "DEFPOINTS",
+  "LEADER",
+  "SYMBOL",
+  "GRID",
+  "AXIS",
+  "BORDER",
+]);
+
+function isAnnotationLayer(layer: string | null): boolean {
+  if (!layer) return false;
+  const tokens = layer.toUpperCase().split(/[^A-Z0-9]+/);
+  return tokens.some((t) => ANNOTATION_LAYER_TOKENS.has(t));
+}
 
 type DxfPair = { code: number; value: string };
 
@@ -119,10 +151,20 @@ function closeIfNeeded(verts: PieceVertex[]): PieceVertex[] {
   return verts;
 }
 
-function parseLwPolyline(block: DxfPair[], scale: number): PieceVertex[] | null {
+type ParsedPolyline = { verts: PieceVertex[]; layer: string | null };
+
+function readLayer(block: DxfPair[]): string | null {
+  for (const { code, value } of block) {
+    if (code === 8) return value || null;
+  }
+  return null;
+}
+
+function parseLwPolyline(block: DxfPair[], scale: number): ParsedPolyline | null {
   let closed = false;
   const verts: PieceVertex[] = [];
   let pendingX: number | null = null;
+  const layer = readLayer(block);
 
   for (const { code, value } of block) {
     if (code === 70) {
@@ -149,11 +191,12 @@ function parseLwPolyline(block: DxfPair[], scale: number): PieceVertex[] | null 
   }
 
   if (!closed || verts.length < 3) return null;
-  return closeIfNeeded(verts);
+  return { verts: closeIfNeeded(verts), layer };
 }
 
-function parsePolyline(block: DxfPair[], scale: number, allBlocks: DxfPair[][], index: number): PieceVertex[] | null {
+function parsePolyline(block: DxfPair[], scale: number, allBlocks: DxfPair[][], index: number): ParsedPolyline | null {
   let closed = false;
+  const layer = readLayer(block);
   for (const { code, value } of block) {
     if (code === 70) {
       const flags = Number(value);
@@ -192,7 +235,7 @@ function parsePolyline(block: DxfPair[], scale: number, allBlocks: DxfPair[][], 
   }
 
   if (!closed || verts.length < 3) return null;
-  return closeIfNeeded(verts);
+  return { verts: closeIfNeeded(verts), layer };
 }
 
 function decodeMtext(raw: string): string {
@@ -277,12 +320,16 @@ function assignLabel(
   return labels[bestIdx]!.text;
 }
 
-function isUsableShape(vertices: PieceVertex[]): boolean {
+function isUsableShape(vertices: PieceVertex[], layer: string | null): boolean {
+  if (isAnnotationLayer(layer)) return false;
   const aabb = polygonAabb(vertices);
   if (!aabb) return false;
   if (aabb.widthIn < MIN_EDGE_IN || aabb.heightIn < MIN_EDGE_IN) return false;
   if (aabb.widthIn > MAX_DIM_IN || aabb.heightIn > MAX_DIM_IN) return false;
   if (polygonAreaSqIn(vertices) < MIN_AREA_SQ_IN) return false;
+  const longEdge = Math.max(aabb.widthIn, aabb.heightIn);
+  const shortEdge = Math.max(Math.min(aabb.widthIn, aabb.heightIn), 1e-6);
+  if (longEdge / shortEdge > MAX_ASPECT_RATIO) return false;
   return true;
 }
 
@@ -314,14 +361,18 @@ export function parseDxfPieces(text: string): DxfParseResult {
     }
 
     if (type === "LWPOLYLINE") {
-      const verts = parseLwPolyline(block, factor);
-      if (verts && isUsableShape(verts)) polygons.push(verts);
+      const parsed = parseLwPolyline(block, factor);
+      if (parsed && isUsableShape(parsed.verts, parsed.layer)) {
+        polygons.push(parsed.verts);
+      }
       continue;
     }
 
     if (type === "POLYLINE") {
-      const verts = parsePolyline(block, factor, blocks, i);
-      if (verts && isUsableShape(verts)) polygons.push(verts);
+      const parsed = parsePolyline(block, factor, blocks, i);
+      if (parsed && isUsableShape(parsed.verts, parsed.layer)) {
+        polygons.push(parsed.verts);
+      }
     }
   }
 

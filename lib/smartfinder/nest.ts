@@ -1,4 +1,8 @@
-import type { Piece } from "@/lib/smartfinder/types";
+import { nestPolygonPieces } from "@/lib/smartfinder/polygon-nest";
+import type { Piece, PieceVertex } from "@/lib/smartfinder/types";
+
+/** Above this many polygon pieces we skip raster nesting for cost reasons. */
+const MAX_POLYGON_PIECES = 8;
 
 export type NestedPiece = {
   label: string;
@@ -7,6 +11,8 @@ export type NestedPiece = {
   w: number;
   h: number;
   rotated: boolean;
+  /** Absolute polygon outline (inches) when the piece has real geometry. */
+  points?: PieceVertex[];
 };
 
 export type NestResult = {
@@ -50,6 +56,13 @@ export function nestPiecesOnSlab(
       slabWidthIn,
       slabHeightIn,
     };
+  }
+
+  // Real polygon nesting when any piece carries geometry (and the count is
+  // small enough to stay fast). Rectangles keep the cheap shelf packer below.
+  const hasPolygon = pieces.some((p) => p.vertices && p.vertices.length >= 3);
+  if (hasPolygon && pieces.length <= MAX_POLYGON_PIECES) {
+    return nestPolygonPieces(slabWidthIn, slabHeightIn, pieces);
   }
 
   // Largest-first tends to pack better for countertop pieces.

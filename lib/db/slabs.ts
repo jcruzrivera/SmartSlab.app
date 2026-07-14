@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { ensureMaterials } from "@/lib/db/materials";
@@ -46,6 +46,12 @@ const slabRelations = {
 export type ListPublicSlabsOptions = {
   materialSlug?: string;
   limit?: number;
+  /**
+   * Longest piece edge (inches). Slabs whose both dimensions are below this
+   * cannot fit the largest piece in any orientation, so they are excluded.
+   * Never drops a slab that could fit.
+   */
+  minLongestEdgeIn?: number;
 };
 
 export async function listPublicSlabs(
@@ -55,9 +61,21 @@ export async function listPublicSlabs(
     return [];
   }
 
+  const edge =
+    typeof options.minLongestEdgeIn === "number" &&
+    Number.isFinite(options.minLongestEdgeIn) &&
+    options.minLongestEdgeIn > 0
+      ? String(options.minLongestEdgeIn)
+      : null;
+
   const db = getDb();
   const rows = await db.query.slabs.findMany({
-    where: eq(slabs.status, "available"),
+    where: edge
+      ? and(
+          eq(slabs.status, "available"),
+          or(gte(slabs.widthIn, edge), gte(slabs.heightIn, edge)),
+        )
+      : eq(slabs.status, "available"),
     with: slabRelations,
     orderBy: desc(slabs.createdAt),
     limit: options.limit ?? 60,
