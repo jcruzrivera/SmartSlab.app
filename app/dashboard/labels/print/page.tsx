@@ -69,7 +69,7 @@ export default async function LabelPrintPage({
   }
 
   return (
-    <>
+    <div className="labels-print-root">
       <AutoPrint />
 
       <div className="labels-note print:hidden">
@@ -111,6 +111,11 @@ export default async function LabelPrintPage({
       <style
         dangerouslySetInnerHTML={{
           __html: `
+        /* Force light print surface — app dark mode must not ink the sticker. */
+        .labels-print-root,
+        .labels-print-root * {
+          color-scheme: only light;
+        }
         .labels-note {
           max-width: 42rem;
           margin: 1.5rem auto;
@@ -126,6 +131,7 @@ export default async function LabelPrintPage({
           gap: 0;
           justify-content: center;
           margin: 0 auto;
+          background: #ffffff;
         }
         .label {
           box-sizing: border-box;
@@ -137,13 +143,23 @@ export default async function LabelPrintPage({
           padding: 0.16in;
           overflow: hidden;
           border: 1px dashed #cbd5e1;
+          background: #ffffff;
+          color: #0f172a;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
         .label-qr {
           width: 1.2in;
           height: 1.2in;
           flex: 0 0 1.2in;
+          background: #ffffff;
         }
-        .label-qr svg { width: 100%; height: 100%; display: block; }
+        .label-qr svg {
+          width: 100%;
+          height: 100%;
+          display: block;
+          background: #ffffff;
+        }
         .label-body {
           min-width: 0;
           display: flex;
@@ -170,13 +186,18 @@ export default async function LabelPrintPage({
         .label-meta { font-size: 8pt; color: #334155; }
         .label-domain { font-size: 8pt; color: #64748b; margin-top: 0.02in; }
         @media print {
-          .label { border: none; }
-          .labels-sheet { gap: 0; }
+          html, body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+          }
+          .label { border: none; background: #ffffff !important; }
+          .labels-sheet { gap: 0; background: #ffffff !important; }
+          .label-qr, .label-qr svg { background: #ffffff !important; }
         }
         @page { margin: 0; size: letter; }
       `,
         }}
       />
-    </>
+    </div>
   );
 }
