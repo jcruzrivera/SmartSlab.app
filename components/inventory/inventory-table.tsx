@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
 
 import { DuplicateButton } from "@/components/slab/duplicate-button";
 import { Badge, type BadgeVariant, slabStatusVariant } from "@/components/ui/badge";
@@ -17,6 +17,10 @@ export type InventoryRow = {
   status: string;
   hasShortCode: boolean;
 };
+
+function editHref(id: string): string {
+  return `/dashboard/slabs/${id}/edit`;
+}
 
 export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
   const router = useRouter();
@@ -49,6 +53,29 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     router.push(`/dashboard/labels/print?ids=${ids.join(",")}`);
+  }
+
+  function goToEdit(id: string) {
+    router.push(editHref(id));
+  }
+
+  function onRowClick(event: MouseEvent<HTMLTableRowElement>, id: string) {
+    const target = event.target as HTMLElement | null;
+    if (
+      target?.closest(
+        "a, button, input, label, [role='button'], [data-row-stop]",
+      )
+    ) {
+      return;
+    }
+    goToEdit(id);
+  }
+
+  function onRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      goToEdit(id);
+    }
   }
 
   return (
@@ -97,9 +124,13 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
               {rows.map((slab) => (
                 <tr
                   key={slab.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                  role="link"
+                  tabIndex={0}
+                  onClick={(event) => onRowClick(event, slab.id)}
+                  onKeyDown={(event) => onRowKeyDown(event, slab.id)}
+                  className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" data-row-stop>
                     <input
                       type="checkbox"
                       aria-label={`Seleccionar ${slab.name}`}
@@ -111,7 +142,7 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      href={`/slab/${slab.id}`}
+                      href={editHref(slab.id)}
                       className="font-medium hover:text-brand-strong"
                     >
                       {slab.name}
@@ -135,7 +166,7 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
                       {slab.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right" data-row-stop>
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/dashboard/labels/print?ids=${slab.id}`}
@@ -145,7 +176,7 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
                       </Link>
                       <DuplicateButton slabId={slab.id} />
                       <Link
-                        href={`/dashboard/slabs/${slab.id}/edit`}
+                        href={editHref(slab.id)}
                         className="text-sm font-medium text-brand-strong hover:underline"
                       >
                         Edit

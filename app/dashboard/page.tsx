@@ -14,11 +14,15 @@ export const dynamic = "force-dynamic";
 export default async function DashboardHomePage() {
   const dbReady = isDbConfigured();
   const user = dbReady ? await getOrCreateCurrentDbUser() : null;
-  const slabs = user ? await listSlabsByVendor(user.id) : [];
+  const allSlabs = user ? await listSlabsByVendor(user.id) : [];
+  const slabs = allSlabs.filter((slab) => !slab.deletedAt);
   const sales = user ? await listSalesByVendor(user.id) : [];
 
   const activeCount = slabs.filter((slab) => slab.status === "available").length;
+  const inactiveCount = slabs.filter((slab) => slab.status === "hidden").length;
+  const reservedCount = slabs.filter((slab) => slab.status === "reserved").length;
   const soldCount = slabs.filter((slab) => slab.status === "sold").length;
+  const totalCount = activeCount + inactiveCount + reservedCount;
   const inventoryValue = slabs
     .filter((slab) => slab.status === "available")
     .reduce((sum, slab) => sum + Number(slab.price ?? 0), 0);
@@ -64,10 +68,34 @@ export default async function DashboardHomePage() {
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <Metric label="Active listings" value={activeCount.toString()} />
-        <Metric label="Inventory value" value={formatPrice(inventoryValue)} />
-        <Metric label="Sold" value={soldCount.toString()} />
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric
+          href="/dashboard/slabs?status=available"
+          label="Active listings"
+          value={activeCount.toString()}
+          hint={`${formatPrice(inventoryValue)} available value`}
+        />
+        <Metric
+          href="/dashboard/slabs?status=hidden"
+          label="Inactive listings"
+          value={inactiveCount.toString()}
+          hint="Hidden from the marketplace"
+        />
+        <Metric
+          href="/dashboard/slabs"
+          label="Total inventory"
+          value={totalCount.toString()}
+          hint={
+            reservedCount > 0
+              ? `${reservedCount} reserved included`
+              : "Active, inactive, and reserved"
+          }
+        />
+        <Metric
+          href="/dashboard/slabs?status=sold"
+          label="Sold"
+          value={soldCount.toString()}
+        />
       </div>
 
       {!onboardingComplete ? (
@@ -102,12 +130,28 @@ export default async function DashboardHomePage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  href,
+  label,
+  value,
+  hint,
+}: {
+  href: string;
+  label: string;
+  value: string;
+  hint?: string;
+}) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <Link
+      href={href}
+      className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand hover:bg-brand/5 dark:border-slate-800 dark:bg-slate-900"
+    >
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
-    </div>
+      {hint ? (
+        <p className="mt-1 text-xs text-slate-400">{hint}</p>
+      ) : null}
+    </Link>
   );
 }
 
