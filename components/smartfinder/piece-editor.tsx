@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { PlanPreview } from "@/components/smartfinder/plan-preview";
 import {
@@ -8,6 +9,7 @@ import {
   polygonAabb,
   verticesToSvgPath,
 } from "@/lib/smartfinder/geometry";
+import { seedSmartfinderPieces } from "@/lib/smartfinder/handoff";
 import { PIECE_PRESETS, type Piece } from "@/lib/smartfinder/types";
 
 type PieceEditorProps = {
@@ -60,6 +62,7 @@ export function PieceEditor({
   onSearch,
   onBack,
 }: PieceEditorProps) {
+  const router = useRouter();
   const [pieces, setPieces] = useState<PieceRow[]>(
     initialPieces.length > 0 ? initialPieces.map(toPieceRow) : [],
   );
@@ -126,6 +129,18 @@ export function PieceEditor({
       }),
     );
   }, [isValid, onSearch, pieces]);
+
+  const handleOpenInStudio = useCallback(() => {
+    if (!isValid) return;
+    seedSmartfinderPieces(
+      pieces.map(({ label, widthIn, heightIn, vertices }) => {
+        const piece: Piece = { label, widthIn, heightIn };
+        if (vertices && vertices.length >= 3) piece.vertices = vertices;
+        return piece;
+      }),
+    );
+    router.push("/account/smartfinder/studio?seed=1");
+  }, [isValid, pieces, router]);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -391,6 +406,14 @@ export function PieceEditor({
                   />
                 </svg>
                 Find matching slabs
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenInStudio}
+                disabled={!isValid}
+                className="inline-flex h-11 items-center justify-center rounded-lg border border-brand/50 px-4 text-sm font-medium text-brand-strong transition hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Open in Layout Studio
               </button>
               <button
                 type="button"
