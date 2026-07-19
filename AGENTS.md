@@ -42,6 +42,8 @@ secrets (`DATABASE_URL`, `NEXT_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`,
 - **Offline DB option (no real Neon):** install Postgres + `postgresql-16-pgvector`,
   add `127.0.0.1 api.localtest.me db.localtest.me` to `/etc/hosts`, run a small
   Neon-HTTP `/sql` proxy on `:443` (backed by local Postgres) with a self-signed cert,
-  set `DATABASE_URL=postgres://<user>:<pw>@db.localtest.me:5432/<db>`, and start
-  `next dev` with `NODE_EXTRA_CA_CERTS` pointing at that cert. This is how the public
-  marketplace was demonstrated end-to-end when no Neon secret was available.
+ set `DATABASE_URL=postgres://<user>:<pw>@db.localtest.me:5432/<db>`, and start
+ `next dev` with `NODE_EXTRA_CA_CERTS` pointing at that cert. This is how the public
+ marketplace was demonstrated end-to-end when no Neon secret was available.
+ `scripts/seed-local.sql` (run via `psql`) seeds a demo vendor + a handful of
+ public slabs so `/` and `/browse` show live inventory in this offline mode.
