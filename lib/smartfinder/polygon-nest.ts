@@ -9,7 +9,13 @@
  * SmartFinder deals with; callers must gate on piece count before calling.
  */
 
-import { polygonAabb, polygonAreaSqIn } from "@/lib/smartfinder/geometry";
+import {
+  pointInPolygon,
+  polygonAabb,
+  polygonAreaSqIn,
+  rectPolygon,
+  rotateNormalized,
+} from "@/lib/smartfinder/geometry";
 import type { NestResult, NestedPiece } from "@/lib/smartfinder/nest";
 import type { Piece, PieceVertex } from "@/lib/smartfinder/types";
 
@@ -24,34 +30,6 @@ type Shape = {
   heightIn: number;
   rotated: boolean;
 };
-
-function rectPolygon(w: number, h: number): PieceVertex[] {
-  return [
-    { x: 0, y: 0 },
-    { x: w, y: 0 },
-    { x: w, y: h },
-    { x: 0, y: h },
-  ];
-}
-
-/** Rotate a polygon by a multiple of 90° and re-normalize to origin. */
-function rotateNormalized(poly: PieceVertex[], quarter: number): PieceVertex[] {
-  const rotated = poly.map(({ x, y }) => {
-    switch (((quarter % 4) + 4) % 4) {
-      case 1:
-        return { x: y, y: -x };
-      case 2:
-        return { x: -x, y: -y };
-      case 3:
-        return { x: -y, y: x };
-      default:
-        return { x, y };
-    }
-  });
-  const aabb = polygonAabb(rotated);
-  if (!aabb) return rotated;
-  return rotated.map((v) => ({ x: v.x - aabb.minX, y: v.y - aabb.minY }));
-}
 
 function polyKey(poly: PieceVertex[]): string {
   return poly.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(";");
@@ -85,19 +63,6 @@ function shapesForPiece(piece: Piece): Shape[] {
   }
 
   return shapes;
-}
-
-function pointInPolygon(px: number, py: number, poly: PieceVertex[]): boolean {
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const a = poly[i]!;
-    const b = poly[j]!;
-    const intersect =
-      a.y > py !== b.y > py &&
-      px < ((b.x - a.x) * (py - a.y)) / (b.y - a.y) + a.x;
-    if (intersect) inside = !inside;
-  }
-  return inside;
 }
 
 type Mask = {

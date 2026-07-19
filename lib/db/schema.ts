@@ -1,7 +1,8 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -14,6 +15,12 @@ import {
   uuid,
   vector,
 } from "drizzle-orm/pg-core";
+import type {
+  SfCutout,
+  SfPieceSnapshot,
+  SfPolygon,
+  SfVirtualSlab,
+} from "@/lib/db/sfTypes";
 
 export const userRoleEnum = pgEnum("user_role", [
   "admin",
@@ -87,6 +94,20 @@ export const reconciliationStatusEnum = pgEnum("reconciliation_status", [
   "open",
   "completed",
   "abandoned",
+]);
+
+export const sfProjectStatusEnum = pgEnum("sf_project_status", [
+  "draft",
+  "placed",
+  "quoted",
+  "ordered",
+]);
+
+export const sfPieceKindEnum = pgEnum("sf_piece_kind", [
+  "countertop",
+  "backsplash",
+  "island",
+  "other",
 ]);
 
 export const users = pgTable("users", {
@@ -425,6 +446,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   locations: many(locations),
   slabs: many(slabs),
   notifications: many(notifications),
+  sfProjects: many(sfProjects),
 }));
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
@@ -464,6 +486,7 @@ export const slabsRelations = relations(slabs, ({ one, many }) => ({
   favorites: many(favorites),
   listingFlags: many(listingFlags),
   inventoryEvents: many(inventoryEvents),
+  sfPlacements: many(sfPlacements),
 }));
 
 export const inventoryEventsRelations = relations(
@@ -625,4 +648,180 @@ export const adminAuditLogRelations = relations(adminAuditLog, ({ one }) => ({
     fields: [adminAuditLog.adminId],
     references: [users.id],
   }),
+}));
+
+/* ------------------------------------------------------------------ */
+/*  Layout Studio (sf_*) — countertop project nesting                 */
+/* ------------------------------------------------------------------ */
+
+export const sfProjects = pgTable("sf_projects", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  status: sfProjectStatusEnum("status").notNull().default("draft"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const sfPieces = pgTable(
+  "sf_pieces",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => sfProjects.id, { onDelete: "cascade" }),
+    kind: sfPieceKindEnum("kind").notNull().default("countertop"),
+    /** Rectilinear polygon, inches, {x,y}[] — same convention as
+     * lib/smartfinder's PieceVertex. */
+    polygon: jsonb("polygon").$type<SfPolygon>().notNull(),
+    /** Sink/cooktop/faucet/custom cutouts — geometry only, no fabrication
+     * logic reads this yet. */
+    cutouts: jsonb("cutouts").$type<SfCutout[]>().notNull().default([]),
+    /** true = piece may only be placed at 0°/180° (grain direction locked). */
+    veinLocked: boolean("vein_locked").notNull().default(true),
+    /** One flag per polygon edge (index i = edge from vertex i to i+1 mod
+     * length) — generalizes to L-shapes, unlike a fixed
+     * top/right/bottom/left object. Stored, not yet acted on (future
+     * fabrication upsell). */
+    edgeFinished: jsonb("edge_finished").$type<boolean[]>(),
+    label: text("label").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    projectSortIdx: index("sf_pieces_project_sort_idx").on(
+      table.projectId,
+      table.sortOrder,
+    ),
+  }),
+);
+
+export const sfLayouts = pgTable(
+  "sf_layouts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => sfProjects.id, { onDelete: "cascade" }),
+    /** e.g. "rect-raster-v1" (see NESTING_ENGINE_VERSION in lib/nesting).
+     * Plain text, not an enum, so bumping the algorithm never needs a
+     * migration. */
+    engineVersion: text("engine_version").notNull(),
+    /** Stored for display only ("1.5" includes kerf + handling space") —
+     * the nesting engine's marginIn already accounts for kerf; this is not
+     * an additional geometric buffer. */
+    kerfIn: numeric("kerf_in", { precision: 6, scale: 3 })
+      .notNull()
+      .default("0.125"),
+    /** Margin from the slab edge AND between pieces, inches. */
+    marginIn: numeric("margin_in", { precision: 6, scale: 3 })
+      .notNull()
+      .default("1.5"),
+    slabsUsed: integer("slabs_used").notNull().default(1),
+    totalPieceSqft: numeric("total_piece_sqft", { precision: 12, scale: 2 }),
+    totalSlabSqft: numeric("total_slab_sqft", { precision: 12, scale: 2 }),
+    wastePct: numeric("waste_pct", { precision: 5, scale: 2 }),
+    estCost: numeric("est_cost", { precision: 12, scale: 2 }),
+    // Immutable engine-run snapshot — no updatedAt; a re-nest creates a new row.
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    projectIdx: index("sf_layouts_project_idx").on(table.projectId),
+  }),
+);
+
+export const sfPlacements = pgTable(
+  "sf_placements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    layoutId: uuid("layout_id")
+      .notNull()
+      .references(() => sfLayouts.id, { onDelete: "cascade" }),
+    pieceId: uuid("piece_id")
+      .notNull()
+      .references(() => sfPieces.id, { onDelete: "cascade" }),
+    /** Set when nested against real marketplace/inventory stock. */
+    slabId: uuid("slab_id").references(() => slabs.id, {
+      onDelete: "set null",
+    }),
+    /** Set when nested against a virtual/generic slab. Exactly one of
+     * slabId/virtualSlab must be set — enforced by slabSourceCheck below. */
+    virtualSlab: jsonb("virtual_slab").$type<SfVirtualSlab>(),
+    /** Which slab within this layout run (1, 2, 3…). */
+    slabIndex: integer("slab_index").notNull().default(1),
+    /** Exact as long as the raster grid cell stays a multiple of 0.25in
+     * (lib/nesting's fixed v1 resolution) — widen precision/scale together
+     * if a future resolution increase (e.g. 1/16") is ever needed. */
+    xIn: numeric("x_in", { precision: 10, scale: 2 }).notNull(),
+    yIn: numeric("y_in", { precision: 10, scale: 2 }).notNull(),
+    rotation: integer("rotation").notNull().default(0),
+    /** Exact geometry nested at creation time — see SfPieceSnapshot doc. */
+    pieceSnapshot: jsonb("piece_snapshot").$type<SfPieceSnapshot>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    layoutIdx: index("sf_placements_layout_idx").on(table.layoutId),
+    uniquePiecePerLayout: uniqueIndex(
+      "sf_placements_layout_piece_unique",
+    ).on(table.layoutId, table.pieceId),
+    slabSourceCheck: check(
+      "sf_placements_slab_xor_virtual",
+      sql`(("slab_id" IS NULL) <> ("virtual_slab" IS NULL))`,
+    ),
+    rotationCheck: check(
+      "sf_placements_rotation_valid",
+      sql`"rotation" IN (0, 90, 180, 270)`,
+    ),
+  }),
+);
+
+export const sfProjectsRelations = relations(sfProjects, ({ one, many }) => ({
+  user: one(users, { fields: [sfProjects.userId], references: [users.id] }),
+  pieces: many(sfPieces),
+  layouts: many(sfLayouts),
+}));
+
+export const sfPiecesRelations = relations(sfPieces, ({ one, many }) => ({
+  project: one(sfProjects, {
+    fields: [sfPieces.projectId],
+    references: [sfProjects.id],
+  }),
+  placements: many(sfPlacements),
+}));
+
+export const sfLayoutsRelations = relations(sfLayouts, ({ one, many }) => ({
+  project: one(sfProjects, {
+    fields: [sfLayouts.projectId],
+    references: [sfProjects.id],
+  }),
+  placements: many(sfPlacements),
+}));
+
+export const sfPlacementsRelations = relations(sfPlacements, ({ one }) => ({
+  layout: one(sfLayouts, {
+    fields: [sfPlacements.layoutId],
+    references: [sfLayouts.id],
+  }),
+  piece: one(sfPieces, {
+    fields: [sfPlacements.pieceId],
+    references: [sfPieces.id],
+  }),
+  slab: one(slabs, { fields: [sfPlacements.slabId], references: [slabs.id] }),
 }));
