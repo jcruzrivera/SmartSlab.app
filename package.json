@@ -14,6 +14,7 @@
     "db:apply-store-slug": "tsx scripts/apply-store-slug-migration.ts",
     "db:backfill-store-slugs": "tsx scripts/backfill-store-slugs.ts",
     "db:apply-qr-inventory": "tsx scripts/apply-qr-inventory-migration.ts",
+    "db:apply-sf-layout-studio": "tsx scripts/apply-sf-layout-studio-migration.ts",
     "db:backfill-short-codes": "tsx scripts/backfill-short-codes.ts",
     "db:init": "tsx scripts/setup-db.ts && drizzle-kit push",
     "db:backfill-geo": "tsx scripts/backfill-geo.ts",
